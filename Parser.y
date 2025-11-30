@@ -2,7 +2,7 @@
 %{
     #include <stdio.h>
     #include <stdlib.h>
-
+    #include <math.h>
     void yyerror(const char *s);
     int yylex(void);
     
@@ -26,24 +26,31 @@
 %token OPENBRACE
 %token CLOSEDBRACE
 %token SEMICOLON
+%token MOD
+%token POWER
 %token ASSIGN   
 %token <c> CHAR
-%type<i> S E T G
+%type<f> S MATHEXPR T G M
 /* Production Rules */
 %%
-S: E { printf("Result: %d\n", $1); }
+S: MATHEXPR { printf("Result: %.2f\n", $1); }
    ;
-E: E PLUS T {$$=$1+$3;}
-| E MINUS T {$$=$1-$3;}
+MATHEXPR: MATHEXPR PLUS T {$$=$1+$3;}
+| MATHEXPR MINUS T {$$=$1-$3;}
 | T {$$=$1;}
 ;
-T: T MULTIPLY G {$$=$1*$3;}
-| T DIVIDE G    {if($3==0){yyerror("Division By zero");}$$=$1/$3;}
-| G {$$=$1;}
+T:T MULTIPLY M {$$=$1*$3;}
+| T DIVIDE M    {if($3==0){yyerror("Division By zero");}else $$=$1/$3;}
+| T MOD M      {if((int)$3==0){yyerror("Modulo By zero");}else $$=(int)$1 % (int)$3;}
+| M {$$=$1;}
 ;
-G: OPENBRACKET E CLOSEDBRACKET {$$=$2;}
+M: G POWER M {$$=pow($1,$3);}
+|  G   {$$=$1;}
+;
+G: OPENBRACKET MATHEXPR CLOSEDBRACKET {$$=$2;}
 |  MINUS G  {$$=-$2;}
-|  INTEGER {$$=$1;}
+|  INTEGER {$$=(float)$1;}
+|  FLOAT {$$=$1;}
 %%
 
 /* Subroutines */

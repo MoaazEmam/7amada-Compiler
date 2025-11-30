@@ -1,7 +1,6 @@
 Terminals unused in grammar
 
    STRING
-   FLOAT
    OPENBRACE
    CLOSEDBRACE
    SEMICOLON
@@ -13,53 +12,62 @@ Grammar
 
     0 $accept: S $end
 
-    1 S: E
+    1 S: MATHEXPR
 
-    2 E: E PLUS T
-    3  | E MINUS T
-    4  | T
+    2 MATHEXPR: MATHEXPR PLUS T
+    3         | MATHEXPR MINUS T
+    4         | T
 
-    5 T: T MULTIPLY G
-    6  | T DIVIDE G
-    7  | G
+    5 T: T MULTIPLY M
+    6  | T DIVIDE M
+    7  | T MOD M
+    8  | M
 
-    8 G: OPENBRACKET E CLOSEDBRACKET
-    9  | MINUS G
-   10  | INTEGER
+    9 M: G POWER M
+   10  | G
+
+   11 G: OPENBRACKET MATHEXPR CLOSEDBRACKET
+   12  | MINUS G
+   13  | INTEGER
+   14  | FLOAT
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
 error (256)
-MINUS (258) 3 9
+MINUS (258) 3 12
 PLUS (259) 2
 MULTIPLY (260) 5
 DIVIDE (261) 6
-OPENBRACKET (262) 8
-CLOSEDBRACKET (263) 8
-INTEGER (264) 10
+OPENBRACKET (262) 11
+CLOSEDBRACKET (263) 11
+INTEGER (264) 13
 STRING (265)
-FLOAT (266)
+FLOAT (266) 14
 OPENBRACE (267)
 CLOSEDBRACE (268)
 SEMICOLON (269)
-ASSIGN (270)
-CHAR (271)
+MOD (270) 7
+POWER (271) 9
+ASSIGN (272)
+CHAR (273)
 
 
 Nonterminals, with rules where they appear
 
-$accept (17)
+$accept (19)
     on left: 0
-S (18)
+S (20)
     on left: 1, on right: 0
-E (19)
-    on left: 2 3 4, on right: 1 2 3 8
-T (20)
-    on left: 5 6 7, on right: 2 3 4 5 6
-G (21)
-    on left: 8 9 10, on right: 5 6 7 9
+MATHEXPR (21)
+    on left: 2 3 4, on right: 1 2 3 11
+T (22)
+    on left: 5 6 7 8, on right: 2 3 4 5 6 7
+M (23)
+    on left: 9 10, on right: 5 6 7 8 9
+G (24)
+    on left: 11 12 13 14, on right: 9 10 12
 
 
 state 0
@@ -69,193 +77,269 @@ state 0
     MINUS        shift, and go to state 1
     OPENBRACKET  shift, and go to state 2
     INTEGER      shift, and go to state 3
+    FLOAT        shift, and go to state 4
 
-    S  go to state 4
-    E  go to state 5
-    T  go to state 6
-    G  go to state 7
+    S         go to state 5
+    MATHEXPR  go to state 6
+    T         go to state 7
+    M         go to state 8
+    G         go to state 9
 
 
 state 1
 
-    9 G: MINUS . G
+   12 G: MINUS . G
 
     MINUS        shift, and go to state 1
     OPENBRACKET  shift, and go to state 2
     INTEGER      shift, and go to state 3
+    FLOAT        shift, and go to state 4
 
-    G  go to state 8
+    G  go to state 10
 
 
 state 2
 
-    8 G: OPENBRACKET . E CLOSEDBRACKET
+   11 G: OPENBRACKET . MATHEXPR CLOSEDBRACKET
 
     MINUS        shift, and go to state 1
     OPENBRACKET  shift, and go to state 2
     INTEGER      shift, and go to state 3
+    FLOAT        shift, and go to state 4
 
-    E  go to state 9
-    T  go to state 6
-    G  go to state 7
+    MATHEXPR  go to state 11
+    T         go to state 7
+    M         go to state 8
+    G         go to state 9
 
 
 state 3
 
-   10 G: INTEGER .
+   13 G: INTEGER .
 
-    $default  reduce using rule 10 (G)
+    $default  reduce using rule 13 (G)
 
 
 state 4
 
-    0 $accept: S . $end
+   14 G: FLOAT .
 
-    $end  shift, and go to state 10
+    $default  reduce using rule 14 (G)
 
 
 state 5
 
-    1 S: E .
-    2 E: E . PLUS T
-    3  | E . MINUS T
+    0 $accept: S . $end
 
-    MINUS  shift, and go to state 11
-    PLUS   shift, and go to state 12
-
-    $default  reduce using rule 1 (S)
+    $end  shift, and go to state 12
 
 
 state 6
 
-    4 E: T .
-    5 T: T . MULTIPLY G
-    6  | T . DIVIDE G
+    1 S: MATHEXPR .
+    2 MATHEXPR: MATHEXPR . PLUS T
+    3         | MATHEXPR . MINUS T
 
-    MULTIPLY  shift, and go to state 13
-    DIVIDE    shift, and go to state 14
+    MINUS  shift, and go to state 13
+    PLUS   shift, and go to state 14
 
-    $default  reduce using rule 4 (E)
+    $default  reduce using rule 1 (S)
 
 
 state 7
 
-    7 T: G .
+    4 MATHEXPR: T .
+    5 T: T . MULTIPLY M
+    6  | T . DIVIDE M
+    7  | T . MOD M
 
-    $default  reduce using rule 7 (T)
+    MULTIPLY  shift, and go to state 15
+    DIVIDE    shift, and go to state 16
+    MOD       shift, and go to state 17
+
+    $default  reduce using rule 4 (MATHEXPR)
 
 
 state 8
 
-    9 G: MINUS G .
+    8 T: M .
 
-    $default  reduce using rule 9 (G)
+    $default  reduce using rule 8 (T)
 
 
 state 9
 
-    2 E: E . PLUS T
-    3  | E . MINUS T
-    8 G: OPENBRACKET E . CLOSEDBRACKET
+    9 M: G . POWER M
+   10  | G .
 
-    MINUS          shift, and go to state 11
-    PLUS           shift, and go to state 12
-    CLOSEDBRACKET  shift, and go to state 15
+    POWER  shift, and go to state 18
+
+    $default  reduce using rule 10 (M)
 
 
 state 10
+
+   12 G: MINUS G .
+
+    $default  reduce using rule 12 (G)
+
+
+state 11
+
+    2 MATHEXPR: MATHEXPR . PLUS T
+    3         | MATHEXPR . MINUS T
+   11 G: OPENBRACKET MATHEXPR . CLOSEDBRACKET
+
+    MINUS          shift, and go to state 13
+    PLUS           shift, and go to state 14
+    CLOSEDBRACKET  shift, and go to state 19
+
+
+state 12
 
     0 $accept: S $end .
 
     $default  accept
 
 
-state 11
-
-    3 E: E MINUS . T
-
-    MINUS        shift, and go to state 1
-    OPENBRACKET  shift, and go to state 2
-    INTEGER      shift, and go to state 3
-
-    T  go to state 16
-    G  go to state 7
-
-
-state 12
-
-    2 E: E PLUS . T
-
-    MINUS        shift, and go to state 1
-    OPENBRACKET  shift, and go to state 2
-    INTEGER      shift, and go to state 3
-
-    T  go to state 17
-    G  go to state 7
-
-
 state 13
 
-    5 T: T MULTIPLY . G
+    3 MATHEXPR: MATHEXPR MINUS . T
 
     MINUS        shift, and go to state 1
     OPENBRACKET  shift, and go to state 2
     INTEGER      shift, and go to state 3
+    FLOAT        shift, and go to state 4
 
-    G  go to state 18
+    T  go to state 20
+    M  go to state 8
+    G  go to state 9
 
 
 state 14
 
-    6 T: T DIVIDE . G
+    2 MATHEXPR: MATHEXPR PLUS . T
 
     MINUS        shift, and go to state 1
     OPENBRACKET  shift, and go to state 2
     INTEGER      shift, and go to state 3
+    FLOAT        shift, and go to state 4
 
-    G  go to state 19
+    T  go to state 21
+    M  go to state 8
+    G  go to state 9
 
 
 state 15
 
-    8 G: OPENBRACKET E CLOSEDBRACKET .
+    5 T: T MULTIPLY . M
 
-    $default  reduce using rule 8 (G)
+    MINUS        shift, and go to state 1
+    OPENBRACKET  shift, and go to state 2
+    INTEGER      shift, and go to state 3
+    FLOAT        shift, and go to state 4
+
+    M  go to state 22
+    G  go to state 9
 
 
 state 16
 
-    3 E: E MINUS T .
-    5 T: T . MULTIPLY G
-    6  | T . DIVIDE G
+    6 T: T DIVIDE . M
 
-    MULTIPLY  shift, and go to state 13
-    DIVIDE    shift, and go to state 14
+    MINUS        shift, and go to state 1
+    OPENBRACKET  shift, and go to state 2
+    INTEGER      shift, and go to state 3
+    FLOAT        shift, and go to state 4
 
-    $default  reduce using rule 3 (E)
+    M  go to state 23
+    G  go to state 9
 
 
 state 17
 
-    2 E: E PLUS T .
-    5 T: T . MULTIPLY G
-    6  | T . DIVIDE G
+    7 T: T MOD . M
 
-    MULTIPLY  shift, and go to state 13
-    DIVIDE    shift, and go to state 14
+    MINUS        shift, and go to state 1
+    OPENBRACKET  shift, and go to state 2
+    INTEGER      shift, and go to state 3
+    FLOAT        shift, and go to state 4
 
-    $default  reduce using rule 2 (E)
+    M  go to state 24
+    G  go to state 9
 
 
 state 18
 
-    5 T: T MULTIPLY G .
+    9 M: G POWER . M
 
-    $default  reduce using rule 5 (T)
+    MINUS        shift, and go to state 1
+    OPENBRACKET  shift, and go to state 2
+    INTEGER      shift, and go to state 3
+    FLOAT        shift, and go to state 4
+
+    M  go to state 25
+    G  go to state 9
 
 
 state 19
 
-    6 T: T DIVIDE G .
+   11 G: OPENBRACKET MATHEXPR CLOSEDBRACKET .
+
+    $default  reduce using rule 11 (G)
+
+
+state 20
+
+    3 MATHEXPR: MATHEXPR MINUS T .
+    5 T: T . MULTIPLY M
+    6  | T . DIVIDE M
+    7  | T . MOD M
+
+    MULTIPLY  shift, and go to state 15
+    DIVIDE    shift, and go to state 16
+    MOD       shift, and go to state 17
+
+    $default  reduce using rule 3 (MATHEXPR)
+
+
+state 21
+
+    2 MATHEXPR: MATHEXPR PLUS T .
+    5 T: T . MULTIPLY M
+    6  | T . DIVIDE M
+    7  | T . MOD M
+
+    MULTIPLY  shift, and go to state 15
+    DIVIDE    shift, and go to state 16
+    MOD       shift, and go to state 17
+
+    $default  reduce using rule 2 (MATHEXPR)
+
+
+state 22
+
+    5 T: T MULTIPLY M .
+
+    $default  reduce using rule 5 (T)
+
+
+state 23
+
+    6 T: T DIVIDE M .
 
     $default  reduce using rule 6 (T)
+
+
+state 24
+
+    7 T: T MOD M .
+
+    $default  reduce using rule 7 (T)
+
+
+state 25
+
+    9 M: G POWER M .
+
+    $default  reduce using rule 9 (M)

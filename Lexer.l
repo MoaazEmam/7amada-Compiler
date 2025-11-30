@@ -16,7 +16,10 @@
 "+"          {return PLUS;}
 "*"          {return MULTIPLY;}
 "/"          {return DIVIDE;}
+"^"          {return POWER;}
+"%"         {return MOD;}
 [\t\n ]      {/* ignore comments*/}
+([1-9]+[0-9]*|0)\.[0-9]+  {yylval.f = atof(yytext); return FLOAT;}
 %%
 
 int yywrap(){

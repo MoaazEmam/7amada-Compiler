@@ -51,8 +51,10 @@
      OPENBRACE = 267,
      CLOSEDBRACE = 268,
      SEMICOLON = 269,
-     ASSIGN = 270,
-     CHAR = 271
+     MOD = 270,
+     POWER = 271,
+     ASSIGN = 272,
+     CHAR = 273
    };
 #endif
 
@@ -73,7 +75,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 77 "Parser.tab.h"
+#line 79 "Parser.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
