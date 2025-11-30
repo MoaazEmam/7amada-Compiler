@@ -5,13 +5,18 @@
 %}
 /* Regex Rules*/
 %%
-[0-9]+      {yyval.ival = atoi(yytext); return INTEGER;}
-[()]    {return yytext[0];}
+[0-9]+      {yylval.i = atoi(yytext); return INTEGER;}
+"("          {return OPENBRACKET;}
+")"          {return CLOSEDBRACKET;}
+"{"          {return OPENBRACE;}
+"}"          {return CLOSEDBRACE;}
+";"          {return SEMICOLON;}
+"="          {return ASSIGN;}
 "-"          {return MINUS;}
 "+"          {return PLUS;}
 "*"          {return MULTIPLY;}
 "/"          {return DIVIDE;}
-[\t\n]      {/* ignore comments*/}
+[\t\n ]      {/* ignore comments*/}
 %%
 
 int yywrap(){
