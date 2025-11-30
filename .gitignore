@@ -1,0 +1,26 @@
+# Bison/Flex generated files
+y.tab.c
+y.tab.h
+lex.yy.c
+
+# Object files
+*.o
+
+# Executables
+parser
+*.exe
+
+# Backup files / editor temporary files
+*~
+*.swp
+*.bak
+*.tmp
+
+# IDE or editor folders
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
