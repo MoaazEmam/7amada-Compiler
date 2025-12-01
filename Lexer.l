@@ -8,51 +8,31 @@
 /* Regex Rules*/
 %%
 [0-9]+      {yylval.i = atoi(yytext); return INTEGER;}
-"("          {return OPENBRACKET;}
-")"          {return CLOSEDBRACKET;}
-"{"          {return OPENBRACE;}
-"}"          {return CLOSEDBRACE;}
-";"          {return SEMICOLON;}
-"="          {return ASSIGN;}
-"-"          {return MINUS;}
-"+"          {return PLUS;}
-"*"          {return MULTIPLY;}
-"/"          {return DIVIDE;}
-"^"          {return POWER;}
-"%"         {return MOD;}
-[\t\n ]      {/* ignore comments*/}
 ([1-9]+[0-9]*|0)\.[0-9]+  {yylval.f = atof(yytext); return FLOAT;}
 "true"     { yylval.b = true; return BOOLEAN; }
 "false"    { yylval.b = false; return BOOLEAN; }
-"["          {return OPENSQUARE;}
-"]"          {return CLOSESQUARE;}
-","          {return COMMA;}
-"bool"     {return BOOLTYPE;}
-"int"      {return INTTYPE;}
-"float"    {return FLOATTYPE;}
-"walahaga"     {return VOIDTYPE;}
-"string"   {return STRINGTYPE;}
-"3alawad3o" {return CONST;}
-[a-zA-Z_][a-zA-Z0-9_]*  {yylval.str = strdup(yytext); return IDENTIFIER;}
-">"          {return GREATERTHAN;}
-"<"          {return LESSTHAN;}
+
+/* Multi-character operators FIRST (before single-char versions) */
 ">="         {return GREATERTHANEQ;}
 "<="         {return LESSTHANEQ;}
 "=="         {return EQUALITY;}
 "!="         {return NOTEQUALITY;}
 "++"         {return INCREMENT;}
 "--"         {return DECREMENT;}
-"="         {return EQUAL;}
 "-="        {return MINUSEQ;}
 "+="        {return PLUSEQ;}
 "*="        {return MULTIPLYEQ;}
 "/="        {return DIVIDEEQ;}
-"and"       {return AND;}
-"or"         {return OR;}
-"not"      {return NOT;}
+
+/* Keywords */
+"bool"     {return BOOLTYPE;}
+"int"      {return INTTYPE;}
+"float"    {return FLOATTYPE;}
+"walahaga"     {return VOIDTYPE;}
+"string"   {return STRINGTYPE;}
+"3alawad3o" {return CONST;}
 "law"        {return IF;}
 "tayeb"      {return ELSE;}
-"."       {return DOT;}
 "karar"     {return FOR;}
 "to"        {return TO;}
 "e3mel"      {return REPEAT;}
@@ -64,10 +44,36 @@
 "case"      {return CASE;}
 "default"   {return DEFAULT;}
 "raga3"     {return RETURN;}
+"and"       {return AND;}
+"or"         {return OR;}
+"not"      {return NOT;}
 
+/* Identifiers (after keywords) */
+[a-zA-Z_][a-zA-Z0-9_]*  {yylval.str = strdup(yytext); return IDENTIFIER;}
+
+/* Single character operators */
+"("          {return OPENBRACKET;}
+")"          {return CLOSEDBRACKET;}
+"{"          {return OPENBRACE;}
+"}"          {return CLOSEDBRACE;}
+"["          {return OPENSQUARE;}
+"]"          {return CLOSESQUARE;}
+";"          {return SEMICOLON;}
+","          {return COMMA;}
+"."       {return DOT;}
+"="          {return EQUAL;}
+"-"          {return MINUS;}
+"+"          {return PLUS;}
+"*"          {return MULTIPLY;}
+"/"          {return DIVIDE;}
+"^"          {return POWER;}
+"%"         {return MOD;}
+">"          {return GREATERTHAN;}
+"<"          {return LESSTHAN;}
+
+[\t\n ]      {/* ignore whitespace */}
 
 %%
-
 int yywrap(){
     return 1;
 }

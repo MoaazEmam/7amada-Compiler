@@ -1,3 +1,4 @@
+%verbose
 /* Definitions */
 %{
     #include <stdio.h>
@@ -31,7 +32,6 @@
 %token SEMICOLON
 %token MOD
 %token POWER
-%token ASSIGN
 %token OPENSQUARE
 %token CLOSESQUARE
 %token COMMA   
@@ -39,7 +39,7 @@
 %token INTTYPE
 %token FLOATTYPE
 %token STRINGTYPE
-%token IDENTIFIER
+%token <str> IDENTIFIER
 %token GREATERTHANEQ
 %token LESSTHAN
 %token GREATERTHAN
@@ -80,18 +80,20 @@ code: inner_code | inner_code DOT code ;
 inner_code: assignment
 | declaration
 | Ifstmt
-|whileloop
-|switchstmt
-|function_call
+| whileloop
+| switchstmt
+| function_call
+| forloop
+| repeat
+| function
+
 ;
 datatype: BOOLTYPE
 |INTTYPE
 |FLOATTYPE
-|VOIDTYPE
 |STRINGTYPE
 ;
 
-const_value:INTEGER|BOOLEAN|FLOAT|STRING;
 const_type: datatype CONST;
 declaration: datatype inner_declaration 
 | const_type inner_declaration
@@ -113,7 +115,8 @@ iterator: INTTYPE IDENTIFIER EQUAL EXPR TO EXPR
 inner_declaration: IDENTIFIER 
 | IDENTIFIER  EQUAL IDENTIFIER
 | IDENTIFIER EQUAL EXPR
-| IDENTIFIER EQUAL const_value
+| IDENTIFIER EQUAL BOOLEAN
+| IDENTIFIER EQUAL STRING
 ;
 whileloop: WHILE OPENBRACKET EXPR CLOSEDBRACKET OPENBRACE inner_loop CLOSEDBRACE;
 
@@ -121,17 +124,20 @@ parameters: datatype IDENTIFIER
 | datatype IDENTIFIER COMMA parameters
 ;
 
-function: datatype IDENTIFIER OPENBRACKET parameters CLOSEDBRACKET OPENBRACE code DOT RETURN EXPR DOT | RETURN EXPR DOT code DOT | code DOT RETURN EXPR DOT code DOT
-CLOSEDBRACE
-|
-VOIDTYPE IDENTIFIER OPENBRACKET parameters CLOSEDBRACKET OPENBRACE code DOT RETURN  DOT | RETURN  DOT code DOT | code DOT RETURN DOT code DOT CLOSEDBRACE
+function: datatype IDENTIFIER OPENBRACKET parameters CLOSEDBRACKET OPENBRACE code DOT RETURN EXPR DOT CLOSEDBRACE
+| VOIDTYPE IDENTIFIER OPENBRACKET parameters CLOSEDBRACKET OPENBRACE code DOT RETURN DOT CLOSEDBRACE
 ;
 
 function_call: IDENTIFIER OPENBRACKET list CLOSEDBRACKET;
 list: EXPR | EXPR COMMA list;
 switchstmt: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET OPENBRACE case_structure DEFAULT OPENBRACE code DOT CLOSEDBRACE CLOSEDBRACE;
-case_structure: inner_case | inner_case DOT case_structure
-inner_case: CASE OPENBRACKET const_value CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE
+case_structure: inner_case | inner_case DOT case_structure;
+inner_case: CASE OPENBRACKET BOOLEAN CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE
+| CASE OPENBRACKET INTEGER CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE
+| CASE OPENBRACKET STRING CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE
+| CASE OPENBRACKET FLOAT CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE
+;
+
 condition: condition AND inner_condition 
 | condition OR inner_condition
 | NOT inner_condition|inner_condition
@@ -144,7 +150,7 @@ inner_condition: OPENBRACKET condition CLOSEDBRACKET
 | EXPR LESSTHANEQ EXPR
 | EXPR EQUALITY EXPR
 | EXPR NOTEQUALITY EXPR
-|function_call
+| function_call
 ;
 assignment:IDENTIFIER EQUAL EXPR
 |IDENTIFIER EQUAL STRING
@@ -155,7 +161,6 @@ assignment:IDENTIFIER EQUAL EXPR
 |IDENTIFIER MINUSEQ EXPR
 |IDENTIFIER MULTIPLYEQ EXPR
 |IDENTIFIER DIVIDEEQ EXPR
-|IDENTIFIER EQUAL function_call
 ;
 EXPR: EXPR PLUS T {$$=$1+$3;}
 | EXPR MINUS T {$$=$1-$3;}
@@ -173,6 +178,7 @@ G: OPENBRACKET EXPR CLOSEDBRACKET {$$=$2;}
 |  MINUS G  {$$=-$2;}
 |  INTEGER {$$=(float)$1;}
 |  FLOAT {$$=$1;}
+;
 %%
 
 /* Subroutines */

@@ -54,47 +54,46 @@
      SEMICOLON = 270,
      MOD = 271,
      POWER = 272,
-     ASSIGN = 273,
-     OPENSQUARE = 274,
-     CLOSESQUARE = 275,
-     COMMA = 276,
-     BOOLTYPE = 277,
-     INTTYPE = 278,
-     FLOATTYPE = 279,
-     STRINGTYPE = 280,
-     IDENTIFIER = 281,
-     GREATERTHANEQ = 282,
-     LESSTHAN = 283,
-     GREATERTHAN = 284,
-     LESSTHANEQ = 285,
-     EQUALITY = 286,
-     NOTEQUALITY = 287,
-     INCREMENT = 288,
-     DECREMENT = 289,
-     EQUAL = 290,
-     MINUSEQ = 291,
-     PLUSEQ = 292,
-     MULTIPLYEQ = 293,
-     DIVIDEEQ = 294,
-     AND = 295,
-     OR = 296,
-     NOT = 297,
-     CONST = 298,
-     IF = 299,
-     ELSE = 300,
-     DOT = 301,
-     FOR = 302,
-     TO = 303,
-     REPEAT = 304,
-     UNTIL = 305,
-     BREAK = 306,
-     CONTINUE = 307,
-     WHILE = 308,
-     SWITCH = 309,
-     CASE = 310,
-     DEFAULT = 311,
-     RETURN = 312,
-     VOIDTYPE = 313
+     OPENSQUARE = 273,
+     CLOSESQUARE = 274,
+     COMMA = 275,
+     BOOLTYPE = 276,
+     INTTYPE = 277,
+     FLOATTYPE = 278,
+     STRINGTYPE = 279,
+     IDENTIFIER = 280,
+     GREATERTHANEQ = 281,
+     LESSTHAN = 282,
+     GREATERTHAN = 283,
+     LESSTHANEQ = 284,
+     EQUALITY = 285,
+     NOTEQUALITY = 286,
+     INCREMENT = 287,
+     DECREMENT = 288,
+     EQUAL = 289,
+     MINUSEQ = 290,
+     PLUSEQ = 291,
+     MULTIPLYEQ = 292,
+     DIVIDEEQ = 293,
+     AND = 294,
+     OR = 295,
+     NOT = 296,
+     CONST = 297,
+     IF = 298,
+     ELSE = 299,
+     DOT = 300,
+     FOR = 301,
+     TO = 302,
+     REPEAT = 303,
+     UNTIL = 304,
+     BREAK = 305,
+     CONTINUE = 306,
+     WHILE = 307,
+     SWITCH = 308,
+     CASE = 309,
+     DEFAULT = 310,
+     RETURN = 311,
+     VOIDTYPE = 312
    };
 #endif
 
@@ -105,7 +104,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 12 "Parser.y"
+#line 13 "Parser.y"
 
     int i;
     float f;
@@ -115,7 +114,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 119 "Parser.tab.h"
+#line 118 "Parser.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
