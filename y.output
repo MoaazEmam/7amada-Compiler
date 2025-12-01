@@ -6,9 +6,6 @@ Terminals unused in grammar
    CONTINUE
 
 
-State 14 conflicts: 1 shift/reduce
-
-
 Grammar
 
     0 $accept: Start $end
@@ -16,7 +13,7 @@ Grammar
     1 Start: code
 
     2 code: inner_code
-    3     | inner_code DOT code
+    3     | code DOT inner_code
 
     4 inner_code: assignment
     5           | declaration
@@ -387,6 +384,9 @@ state 12
 state 13
 
     1 Start: code .
+    3 code: code . DOT inner_code
+
+    DOT  shift, and go to state 41
 
     $default  reduce using rule 1 (Start)
 
@@ -394,11 +394,7 @@ state 13
 state 14
 
     2 code: inner_code .
-    3     | inner_code . DOT code
 
-    DOT  shift, and go to state 41
-
-    DOT       [reduce using rule 2 (code)]
     $default  reduce using rule 2 (code)
 
 
@@ -702,7 +698,7 @@ state 40
 
 state 41
 
-    3 code: inner_code DOT . code
+    3 code: code DOT . inner_code
 
     BOOLTYPE    shift, and go to state 1
     INTTYPE     shift, and go to state 2
@@ -716,8 +712,7 @@ state 41
     SWITCH      shift, and go to state 10
     VOIDTYPE    shift, and go to state 11
 
-    code           go to state 78
-    inner_code     go to state 14
+    inner_code     go to state 78
     datatype       go to state 15
     const_type     go to state 16
     declaration    go to state 17
@@ -1082,6 +1077,7 @@ state 72
 
 state 73
 
+    3 code: code . DOT inner_code
    25 inner_loop: code . DOT BREAK DOT code DOT
    26           | code . DOT
 
@@ -1128,7 +1124,7 @@ state 77
 
 state 78
 
-    3 code: inner_code DOT code .
+    3 code: code DOT inner_code .
 
     $default  reduce using rule 3 (code)
 
@@ -1498,12 +1494,37 @@ state 105
 
 state 106
 
+    3 code: code DOT . inner_code
    25 inner_loop: code DOT . BREAK DOT code DOT
    26           | code DOT .
 
-    BREAK  shift, and go to state 139
+    BOOLTYPE    shift, and go to state 1
+    INTTYPE     shift, and go to state 2
+    FLOATTYPE   shift, and go to state 3
+    STRINGTYPE  shift, and go to state 4
+    IDENTIFIER  shift, and go to state 5
+    IF          shift, and go to state 6
+    FOR         shift, and go to state 7
+    REPEAT      shift, and go to state 8
+    BREAK       shift, and go to state 139
+    WHILE       shift, and go to state 9
+    SWITCH      shift, and go to state 10
+    VOIDTYPE    shift, and go to state 11
 
     $default  reduce using rule 26 (inner_loop)
+
+    inner_code     go to state 78
+    datatype       go to state 15
+    const_type     go to state 16
+    declaration    go to state 17
+    Ifstmt         go to state 18
+    repeat         go to state 19
+    forloop        go to state 20
+    whileloop      go to state 21
+    function       go to state 22
+    function_call  go to state 23
+    switchstmt     go to state 24
+    assignment     go to state 25
 
 
 state 107
@@ -1915,6 +1936,7 @@ state 145
 
 state 146
 
+    3 code: code . DOT inner_code
    20 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code . DOT CLOSEDBRACE ELSE IF OPENBRACE code DOT CLOSEDBRACE ELSE OPENBRACE code DOT CLOSEDBRACE
    21       | IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code . DOT CLOSEDBRACE
    22       | IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code . DOT CLOSEDBRACE ELSE IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE
@@ -2118,12 +2140,37 @@ state 158
 
 state 159
 
+    3 code: code DOT . inner_code
    20 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code DOT . CLOSEDBRACE ELSE IF OPENBRACE code DOT CLOSEDBRACE ELSE OPENBRACE code DOT CLOSEDBRACE
    21       | IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code DOT . CLOSEDBRACE
    22       | IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code DOT . CLOSEDBRACE ELSE IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE
    23       | IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code DOT . CLOSEDBRACE ELSE OPENBRACE code DOT CLOSEDBRACE
 
     CLOSEDBRACE  shift, and go to state 172
+    BOOLTYPE     shift, and go to state 1
+    INTTYPE      shift, and go to state 2
+    FLOATTYPE    shift, and go to state 3
+    STRINGTYPE   shift, and go to state 4
+    IDENTIFIER   shift, and go to state 5
+    IF           shift, and go to state 6
+    FOR          shift, and go to state 7
+    REPEAT       shift, and go to state 8
+    WHILE        shift, and go to state 9
+    SWITCH       shift, and go to state 10
+    VOIDTYPE     shift, and go to state 11
+
+    inner_code     go to state 78
+    datatype       go to state 15
+    const_type     go to state 16
+    declaration    go to state 17
+    Ifstmt         go to state 18
+    repeat         go to state 19
+    forloop        go to state 20
+    whileloop      go to state 21
+    function       go to state 22
+    function_call  go to state 23
+    switchstmt     go to state 24
+    assignment     go to state 25
 
 
 state 160
@@ -2186,6 +2233,7 @@ state 162
 
 state 163
 
+    3 code: code . DOT inner_code
    25 inner_loop: code DOT BREAK DOT code . DOT
 
     DOT  shift, and go to state 175
@@ -2248,6 +2296,7 @@ state 169
 
 state 170
 
+    3 code: code . DOT inner_code
    39 function: VOIDTYPE IDENTIFIER OPENBRACKET parameters CLOSEDBRACKET OPENBRACE code . DOT RETURN DOT CLOSEDBRACE
 
     DOT  shift, and go to state 183
@@ -2255,6 +2304,7 @@ state 170
 
 state 171
 
+    3 code: code . DOT inner_code
    38 function: datatype IDENTIFIER OPENBRACKET parameters CLOSEDBRACKET OPENBRACE code . DOT RETURN EXPR DOT CLOSEDBRACE
 
     DOT  shift, and go to state 184
@@ -2286,6 +2336,7 @@ state 173
 
 state 174
 
+    3 code: code . DOT inner_code
    27 forloop: FOR OPENBRACKET iterator COMMA assignment CLOSEDBRACKET OPENBRACE code . DOT CLOSEDBRACE
 
     DOT  shift, and go to state 186
@@ -2293,9 +2344,35 @@ state 174
 
 state 175
 
+    3 code: code DOT . inner_code
    25 inner_loop: code DOT BREAK DOT code DOT .
 
+    BOOLTYPE    shift, and go to state 1
+    INTTYPE     shift, and go to state 2
+    FLOATTYPE   shift, and go to state 3
+    STRINGTYPE  shift, and go to state 4
+    IDENTIFIER  shift, and go to state 5
+    IF          shift, and go to state 6
+    FOR         shift, and go to state 7
+    REPEAT      shift, and go to state 8
+    WHILE       shift, and go to state 9
+    SWITCH      shift, and go to state 10
+    VOIDTYPE    shift, and go to state 11
+
     $default  reduce using rule 25 (inner_loop)
+
+    inner_code     go to state 78
+    datatype       go to state 15
+    const_type     go to state 16
+    declaration    go to state 17
+    Ifstmt         go to state 18
+    repeat         go to state 19
+    forloop        go to state 20
+    whileloop      go to state 21
+    function       go to state 22
+    function_call  go to state 23
+    switchstmt     go to state 24
+    assignment     go to state 25
 
 
 state 176
@@ -2373,16 +2450,66 @@ state 182
 
 state 183
 
+    3 code: code DOT . inner_code
    39 function: VOIDTYPE IDENTIFIER OPENBRACKET parameters CLOSEDBRACKET OPENBRACE code DOT . RETURN DOT CLOSEDBRACE
 
-    RETURN  shift, and go to state 192
+    BOOLTYPE    shift, and go to state 1
+    INTTYPE     shift, and go to state 2
+    FLOATTYPE   shift, and go to state 3
+    STRINGTYPE  shift, and go to state 4
+    IDENTIFIER  shift, and go to state 5
+    IF          shift, and go to state 6
+    FOR         shift, and go to state 7
+    REPEAT      shift, and go to state 8
+    WHILE       shift, and go to state 9
+    SWITCH      shift, and go to state 10
+    RETURN      shift, and go to state 192
+    VOIDTYPE    shift, and go to state 11
+
+    inner_code     go to state 78
+    datatype       go to state 15
+    const_type     go to state 16
+    declaration    go to state 17
+    Ifstmt         go to state 18
+    repeat         go to state 19
+    forloop        go to state 20
+    whileloop      go to state 21
+    function       go to state 22
+    function_call  go to state 23
+    switchstmt     go to state 24
+    assignment     go to state 25
 
 
 state 184
 
+    3 code: code DOT . inner_code
    38 function: datatype IDENTIFIER OPENBRACKET parameters CLOSEDBRACKET OPENBRACE code DOT . RETURN EXPR DOT CLOSEDBRACE
 
-    RETURN  shift, and go to state 193
+    BOOLTYPE    shift, and go to state 1
+    INTTYPE     shift, and go to state 2
+    FLOATTYPE   shift, and go to state 3
+    STRINGTYPE  shift, and go to state 4
+    IDENTIFIER  shift, and go to state 5
+    IF          shift, and go to state 6
+    FOR         shift, and go to state 7
+    REPEAT      shift, and go to state 8
+    WHILE       shift, and go to state 9
+    SWITCH      shift, and go to state 10
+    RETURN      shift, and go to state 193
+    VOIDTYPE    shift, and go to state 11
+
+    inner_code     go to state 78
+    datatype       go to state 15
+    const_type     go to state 16
+    declaration    go to state 17
+    Ifstmt         go to state 18
+    repeat         go to state 19
+    forloop        go to state 20
+    whileloop      go to state 21
+    function       go to state 22
+    function_call  go to state 23
+    switchstmt     go to state 24
+    assignment     go to state 25
 
 
 state 185
@@ -2397,9 +2524,34 @@ state 185
 
 state 186
 
+    3 code: code DOT . inner_code
    27 forloop: FOR OPENBRACKET iterator COMMA assignment CLOSEDBRACKET OPENBRACE code DOT . CLOSEDBRACE
 
     CLOSEDBRACE  shift, and go to state 196
+    BOOLTYPE     shift, and go to state 1
+    INTTYPE      shift, and go to state 2
+    FLOATTYPE    shift, and go to state 3
+    STRINGTYPE   shift, and go to state 4
+    IDENTIFIER   shift, and go to state 5
+    IF           shift, and go to state 6
+    FOR          shift, and go to state 7
+    REPEAT       shift, and go to state 8
+    WHILE        shift, and go to state 9
+    SWITCH       shift, and go to state 10
+    VOIDTYPE     shift, and go to state 11
+
+    inner_code     go to state 78
+    datatype       go to state 15
+    const_type     go to state 16
+    declaration    go to state 17
+    Ifstmt         go to state 18
+    repeat         go to state 19
+    forloop        go to state 20
+    whileloop      go to state 21
+    function       go to state 22
+    function_call  go to state 23
+    switchstmt     go to state 24
+    assignment     go to state 25
 
 
 state 187
@@ -2432,6 +2584,7 @@ state 190
 
 state 191
 
+    3 code: code . DOT inner_code
    43 switchstmt: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET OPENBRACE case_structure DEFAULT OPENBRACE code . DOT CLOSEDBRACE CLOSEDBRACE
 
     DOT  shift, and go to state 201
@@ -2632,9 +2785,34 @@ state 200
 
 state 201
 
+    3 code: code DOT . inner_code
    43 switchstmt: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET OPENBRACE case_structure DEFAULT OPENBRACE code DOT . CLOSEDBRACE CLOSEDBRACE
 
     CLOSEDBRACE  shift, and go to state 211
+    BOOLTYPE     shift, and go to state 1
+    INTTYPE      shift, and go to state 2
+    FLOATTYPE    shift, and go to state 3
+    STRINGTYPE   shift, and go to state 4
+    IDENTIFIER   shift, and go to state 5
+    IF           shift, and go to state 6
+    FOR          shift, and go to state 7
+    REPEAT       shift, and go to state 8
+    WHILE        shift, and go to state 9
+    SWITCH       shift, and go to state 10
+    VOIDTYPE     shift, and go to state 11
+
+    inner_code     go to state 78
+    datatype       go to state 15
+    const_type     go to state 16
+    declaration    go to state 17
+    Ifstmt         go to state 18
+    repeat         go to state 19
+    forloop        go to state 20
+    whileloop      go to state 21
+    function       go to state 22
+    function_call  go to state 23
+    switchstmt     go to state 24
+    assignment     go to state 25
 
 
 state 202
@@ -2657,6 +2835,7 @@ state 203
 
 state 204
 
+    3 code: code . DOT inner_code
    23 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE ELSE OPENBRACE code . DOT CLOSEDBRACE
 
     DOT  shift, and go to state 214
@@ -2715,6 +2894,7 @@ state 206
 
 state 207
 
+    3 code: code . DOT inner_code
    47 inner_case: CASE OPENBRACKET INTEGER CLOSEDBRACKET OPENBRACE code . DOT CLOSEDBRACE
 
     DOT  shift, and go to state 217
@@ -2722,6 +2902,7 @@ state 207
 
 state 208
 
+    3 code: code . DOT inner_code
    48 inner_case: CASE OPENBRACKET STRING CLOSEDBRACKET OPENBRACE code . DOT CLOSEDBRACE
 
     DOT  shift, and go to state 218
@@ -2729,6 +2910,7 @@ state 208
 
 state 209
 
+    3 code: code . DOT inner_code
    49 inner_case: CASE OPENBRACKET FLOAT CLOSEDBRACKET OPENBRACE code . DOT CLOSEDBRACE
 
     DOT  shift, and go to state 219
@@ -2736,6 +2918,7 @@ state 209
 
 state 210
 
+    3 code: code . DOT inner_code
    46 inner_case: CASE OPENBRACKET BOOLEAN CLOSEDBRACKET OPENBRACE code . DOT CLOSEDBRACE
 
     DOT  shift, and go to state 220
@@ -2764,9 +2947,34 @@ state 213
 
 state 214
 
+    3 code: code DOT . inner_code
    23 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE ELSE OPENBRACE code DOT . CLOSEDBRACE
 
     CLOSEDBRACE  shift, and go to state 223
+    BOOLTYPE     shift, and go to state 1
+    INTTYPE      shift, and go to state 2
+    FLOATTYPE    shift, and go to state 3
+    STRINGTYPE   shift, and go to state 4
+    IDENTIFIER   shift, and go to state 5
+    IF           shift, and go to state 6
+    FOR          shift, and go to state 7
+    REPEAT       shift, and go to state 8
+    WHILE        shift, and go to state 9
+    SWITCH       shift, and go to state 10
+    VOIDTYPE     shift, and go to state 11
+
+    inner_code     go to state 78
+    datatype       go to state 15
+    const_type     go to state 16
+    declaration    go to state 17
+    Ifstmt         go to state 18
+    repeat         go to state 19
+    forloop        go to state 20
+    whileloop      go to state 21
+    function       go to state 22
+    function_call  go to state 23
+    switchstmt     go to state 24
+    assignment     go to state 25
 
 
 state 215
@@ -2782,6 +2990,7 @@ state 215
 
 state 216
 
+    3 code: code . DOT inner_code
    20 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE ELSE IF OPENBRACE code . DOT CLOSEDBRACE ELSE OPENBRACE code DOT CLOSEDBRACE
 
     DOT  shift, and go to state 225
@@ -2789,30 +2998,130 @@ state 216
 
 state 217
 
+    3 code: code DOT . inner_code
    47 inner_case: CASE OPENBRACKET INTEGER CLOSEDBRACKET OPENBRACE code DOT . CLOSEDBRACE
 
     CLOSEDBRACE  shift, and go to state 226
+    BOOLTYPE     shift, and go to state 1
+    INTTYPE      shift, and go to state 2
+    FLOATTYPE    shift, and go to state 3
+    STRINGTYPE   shift, and go to state 4
+    IDENTIFIER   shift, and go to state 5
+    IF           shift, and go to state 6
+    FOR          shift, and go to state 7
+    REPEAT       shift, and go to state 8
+    WHILE        shift, and go to state 9
+    SWITCH       shift, and go to state 10
+    VOIDTYPE     shift, and go to state 11
+
+    inner_code     go to state 78
+    datatype       go to state 15
+    const_type     go to state 16
+    declaration    go to state 17
+    Ifstmt         go to state 18
+    repeat         go to state 19
+    forloop        go to state 20
+    whileloop      go to state 21
+    function       go to state 22
+    function_call  go to state 23
+    switchstmt     go to state 24
+    assignment     go to state 25
 
 
 state 218
 
+    3 code: code DOT . inner_code
    48 inner_case: CASE OPENBRACKET STRING CLOSEDBRACKET OPENBRACE code DOT . CLOSEDBRACE
 
     CLOSEDBRACE  shift, and go to state 227
+    BOOLTYPE     shift, and go to state 1
+    INTTYPE      shift, and go to state 2
+    FLOATTYPE    shift, and go to state 3
+    STRINGTYPE   shift, and go to state 4
+    IDENTIFIER   shift, and go to state 5
+    IF           shift, and go to state 6
+    FOR          shift, and go to state 7
+    REPEAT       shift, and go to state 8
+    WHILE        shift, and go to state 9
+    SWITCH       shift, and go to state 10
+    VOIDTYPE     shift, and go to state 11
+
+    inner_code     go to state 78
+    datatype       go to state 15
+    const_type     go to state 16
+    declaration    go to state 17
+    Ifstmt         go to state 18
+    repeat         go to state 19
+    forloop        go to state 20
+    whileloop      go to state 21
+    function       go to state 22
+    function_call  go to state 23
+    switchstmt     go to state 24
+    assignment     go to state 25
 
 
 state 219
 
+    3 code: code DOT . inner_code
    49 inner_case: CASE OPENBRACKET FLOAT CLOSEDBRACKET OPENBRACE code DOT . CLOSEDBRACE
 
     CLOSEDBRACE  shift, and go to state 228
+    BOOLTYPE     shift, and go to state 1
+    INTTYPE      shift, and go to state 2
+    FLOATTYPE    shift, and go to state 3
+    STRINGTYPE   shift, and go to state 4
+    IDENTIFIER   shift, and go to state 5
+    IF           shift, and go to state 6
+    FOR          shift, and go to state 7
+    REPEAT       shift, and go to state 8
+    WHILE        shift, and go to state 9
+    SWITCH       shift, and go to state 10
+    VOIDTYPE     shift, and go to state 11
+
+    inner_code     go to state 78
+    datatype       go to state 15
+    const_type     go to state 16
+    declaration    go to state 17
+    Ifstmt         go to state 18
+    repeat         go to state 19
+    forloop        go to state 20
+    whileloop      go to state 21
+    function       go to state 22
+    function_call  go to state 23
+    switchstmt     go to state 24
+    assignment     go to state 25
 
 
 state 220
 
+    3 code: code DOT . inner_code
    46 inner_case: CASE OPENBRACKET BOOLEAN CLOSEDBRACKET OPENBRACE code DOT . CLOSEDBRACE
 
     CLOSEDBRACE  shift, and go to state 229
+    BOOLTYPE     shift, and go to state 1
+    INTTYPE      shift, and go to state 2
+    FLOATTYPE    shift, and go to state 3
+    STRINGTYPE   shift, and go to state 4
+    IDENTIFIER   shift, and go to state 5
+    IF           shift, and go to state 6
+    FOR          shift, and go to state 7
+    REPEAT       shift, and go to state 8
+    WHILE        shift, and go to state 9
+    SWITCH       shift, and go to state 10
+    VOIDTYPE     shift, and go to state 11
+
+    inner_code     go to state 78
+    datatype       go to state 15
+    const_type     go to state 16
+    declaration    go to state 17
+    Ifstmt         go to state 18
+    repeat         go to state 19
+    forloop        go to state 20
+    whileloop      go to state 21
+    function       go to state 22
+    function_call  go to state 23
+    switchstmt     go to state 24
+    assignment     go to state 25
 
 
 state 221
@@ -2845,9 +3154,34 @@ state 224
 
 state 225
 
+    3 code: code DOT . inner_code
    20 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE ELSE IF OPENBRACE code DOT . CLOSEDBRACE ELSE OPENBRACE code DOT CLOSEDBRACE
 
     CLOSEDBRACE  shift, and go to state 231
+    BOOLTYPE     shift, and go to state 1
+    INTTYPE      shift, and go to state 2
+    FLOATTYPE    shift, and go to state 3
+    STRINGTYPE   shift, and go to state 4
+    IDENTIFIER   shift, and go to state 5
+    IF           shift, and go to state 6
+    FOR          shift, and go to state 7
+    REPEAT       shift, and go to state 8
+    WHILE        shift, and go to state 9
+    SWITCH       shift, and go to state 10
+    VOIDTYPE     shift, and go to state 11
+
+    inner_code     go to state 78
+    datatype       go to state 15
+    const_type     go to state 16
+    declaration    go to state 17
+    Ifstmt         go to state 18
+    repeat         go to state 19
+    forloop        go to state 20
+    whileloop      go to state 21
+    function       go to state 22
+    function_call  go to state 23
+    switchstmt     go to state 24
+    assignment     go to state 25
 
 
 state 226
@@ -2918,6 +3252,7 @@ state 231
 
 state 232
 
+    3 code: code . DOT inner_code
    22 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE ELSE IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code . DOT CLOSEDBRACE
 
     DOT  shift, and go to state 234
@@ -2932,9 +3267,34 @@ state 233
 
 state 234
 
+    3 code: code DOT . inner_code
    22 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE ELSE IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code DOT . CLOSEDBRACE
 
     CLOSEDBRACE  shift, and go to state 236
+    BOOLTYPE     shift, and go to state 1
+    INTTYPE      shift, and go to state 2
+    FLOATTYPE    shift, and go to state 3
+    STRINGTYPE   shift, and go to state 4
+    IDENTIFIER   shift, and go to state 5
+    IF           shift, and go to state 6
+    FOR          shift, and go to state 7
+    REPEAT       shift, and go to state 8
+    WHILE        shift, and go to state 9
+    SWITCH       shift, and go to state 10
+    VOIDTYPE     shift, and go to state 11
+
+    inner_code     go to state 78
+    datatype       go to state 15
+    const_type     go to state 16
+    declaration    go to state 17
+    Ifstmt         go to state 18
+    repeat         go to state 19
+    forloop        go to state 20
+    whileloop      go to state 21
+    function       go to state 22
+    function_call  go to state 23
+    switchstmt     go to state 24
+    assignment     go to state 25
 
 
 state 235
@@ -2977,6 +3337,7 @@ state 236
 
 state 237
 
+    3 code: code . DOT inner_code
    20 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE ELSE IF OPENBRACE code DOT CLOSEDBRACE ELSE OPENBRACE code . DOT CLOSEDBRACE
 
     DOT  shift, and go to state 238
@@ -2984,9 +3345,34 @@ state 237
 
 state 238
 
+    3 code: code DOT . inner_code
    20 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE ELSE IF OPENBRACE code DOT CLOSEDBRACE ELSE OPENBRACE code DOT . CLOSEDBRACE
 
     CLOSEDBRACE  shift, and go to state 239
+    BOOLTYPE     shift, and go to state 1
+    INTTYPE      shift, and go to state 2
+    FLOATTYPE    shift, and go to state 3
+    STRINGTYPE   shift, and go to state 4
+    IDENTIFIER   shift, and go to state 5
+    IF           shift, and go to state 6
+    FOR          shift, and go to state 7
+    REPEAT       shift, and go to state 8
+    WHILE        shift, and go to state 9
+    SWITCH       shift, and go to state 10
+    VOIDTYPE     shift, and go to state 11
+
+    inner_code     go to state 78
+    datatype       go to state 15
+    const_type     go to state 16
+    declaration    go to state 17
+    Ifstmt         go to state 18
+    repeat         go to state 19
+    forloop        go to state 20
+    whileloop      go to state 21
+    function       go to state 22
+    function_call  go to state 23
+    switchstmt     go to state 24
+    assignment     go to state 25
 
 
 state 239

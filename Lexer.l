@@ -5,14 +5,13 @@
     #include <stdbool.h>
     #include "Parser.tab.h"
 %}
-/* Regex Rules*/
+
 %%
 [0-9]+      {yylval.i = atoi(yytext); return INTEGER;}
 ([1-9]+[0-9]*|0)\.[0-9]+  {yylval.f = atof(yytext); return FLOAT;}
 "true"     { yylval.b = true; return BOOLEAN; }
 "false"    { yylval.b = false; return BOOLEAN; }
 
-/* Multi-character operators FIRST (before single-char versions) */
 ">="         {return GREATERTHANEQ;}
 "<="         {return LESSTHANEQ;}
 "=="         {return EQUALITY;}
@@ -24,7 +23,6 @@
 "*="        {return MULTIPLYEQ;}
 "/="        {return DIVIDEEQ;}
 
-/* Keywords */
 "bool"     {return BOOLTYPE;}
 "int"      {return INTTYPE;}
 "float"    {return FLOATTYPE;}
@@ -48,10 +46,8 @@
 "or"         {return OR;}
 "not"      {return NOT;}
 
-/* Identifiers (after keywords) */
 [a-zA-Z_][a-zA-Z0-9_]*  {yylval.str = strdup(yytext); return IDENTIFIER;}
 
-/* Single character operators */
 "("          {return OPENBRACKET;}
 ")"          {return CLOSEDBRACKET;}
 "{"          {return OPENBRACE;}

@@ -76,7 +76,7 @@
 /* Production Rules */
 %%
 Start:code;
-code: inner_code | inner_code DOT code ;
+code: inner_code | code DOT inner_code ;
 inner_code: assignment
 | declaration
 | Ifstmt
@@ -86,7 +86,6 @@ inner_code: assignment
 | forloop
 | repeat
 | function
-
 ;
 datatype: BOOLTYPE
 |INTTYPE
