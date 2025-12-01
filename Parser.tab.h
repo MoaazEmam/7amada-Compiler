@@ -48,13 +48,53 @@
      INTEGER = 264,
      STRING = 265,
      FLOAT = 266,
-     OPENBRACE = 267,
-     CLOSEDBRACE = 268,
-     SEMICOLON = 269,
-     MOD = 270,
-     POWER = 271,
-     ASSIGN = 272,
-     CHAR = 273
+     BOOLEAN = 267,
+     OPENBRACE = 268,
+     CLOSEDBRACE = 269,
+     SEMICOLON = 270,
+     MOD = 271,
+     POWER = 272,
+     ASSIGN = 273,
+     OPENSQUARE = 274,
+     CLOSESQUARE = 275,
+     COMMA = 276,
+     BOOLTYPE = 277,
+     INTTYPE = 278,
+     FLOATTYPE = 279,
+     STRINGTYPE = 280,
+     IDENTIFIER = 281,
+     GREATERTHANEQ = 282,
+     LESSTHAN = 283,
+     GREATERTHAN = 284,
+     LESSTHANEQ = 285,
+     EQUALITY = 286,
+     NOTEQUALITY = 287,
+     INCREMENT = 288,
+     DECREMENT = 289,
+     EQUAL = 290,
+     MINUSEQ = 291,
+     PLUSEQ = 292,
+     MULTIPLYEQ = 293,
+     DIVIDEEQ = 294,
+     AND = 295,
+     OR = 296,
+     NOT = 297,
+     CONST = 298,
+     IF = 299,
+     ELSE = 300,
+     DOT = 301,
+     FOR = 302,
+     TO = 303,
+     REPEAT = 304,
+     UNTIL = 305,
+     BREAK = 306,
+     CONTINUE = 307,
+     WHILE = 308,
+     SWITCH = 309,
+     CASE = 310,
+     DEFAULT = 311,
+     RETURN = 312,
+     VOIDTYPE = 313
    };
 #endif
 
@@ -65,17 +105,17 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 11 "Parser.y"
+#line 12 "Parser.y"
 
     int i;
     float f;
-    char c;
     char * str;
+    _Bool b;
 
 
 
 /* Line 1676 of yacc.c  */
-#line 79 "Parser.tab.h"
+#line 119 "Parser.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
