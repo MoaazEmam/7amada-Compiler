@@ -26,9 +26,9 @@
 "bool"     {return BOOLTYPE;}
 "int"      {return INTTYPE;}
 "float"    {return FLOATTYPE;}
-"walahaga"     {return VOIDTYPE;}
+"wala_haga"     {return VOIDTYPE;}
 "string"   {return STRINGTYPE;}
-"3alawad3o" {return CONST;}
+"3ala_wad3o" {return CONST;}
 "law"        {return IF;}
 "tayeb"      {return ELSE;}
 "karar"     {return FOR;}

@@ -28,7 +28,7 @@ e3mel {
     x++.
     law (x > 645.7465) {
         karar (i = 2 to 4, i++){
-            int 3alawad3o c = 4.
+            int 3ala_wad3o c = 4.
             int x = 7.
             int x = 9.
         }.
@@ -59,3 +59,25 @@ int x .
 d = "ff".
 int d = 0.00007.
 
+int max(int x, int y) {
+    int c.
+    law (x > y) {
+        raga3 x.
+    } tayeb {
+        raga3 y.
+    }.
+}.
+
+wala_haga helw(string d) {
+    d = "fd45gg".
+    raga3.
+}.
+
+int max_int = max(x,c).
+
+string f() {
+    d = jfjf.
+    raga3 d.
+}.
+
+x = f().
