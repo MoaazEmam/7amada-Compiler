@@ -7,6 +7,7 @@
     #include<stdbool.h>
     void yyerror(const char *s);
     int yylex(void);
+    extern FILE *yyin;
     
 %}
 
@@ -75,8 +76,10 @@
 %type<f>  EXPR T G M
 /* Production Rules */
 %%
-Start:code;
-code: inner_code | code DOT inner_code ;
+Start:S;
+S: code DOT {printf("Correct Syntax\n");};
+code: inner_code 
+| code DOT inner_code;
 inner_code: assignment
 | declaration
 | Ifstmt
@@ -104,9 +107,11 @@ Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE EL
 | IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE ELSE OPENBRACE code DOT CLOSEDBRACE
 ;
 repeat: REPEAT OPENBRACE inner_loop CLOSEDBRACE UNTIL OPENBRACKET condition CLOSEDBRACKET;
-inner_loop:code DOT  BREAK DOT code DOT|
-code DOT
+inner_loop:code DOT  BREAK DOT code DOT
+| code DOT BREAK DOT
+| code DOT
 ;
+
 forloop: FOR OPENBRACKET iterator COMMA assignment CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE;
 iterator: INTTYPE IDENTIFIER EQUAL EXPR TO EXPR
 | IDENTIFIER EQUAL EXPR TO EXPR
@@ -182,8 +187,20 @@ G: OPENBRACKET EXPR CLOSEDBRACKET {$$=$2;}
 
 /* Subroutines */
 void yyerror(const char *s) {
-    fprintf(stderr, "Error: %s\n", s);
+    extern char *yytext;  // Current token text
+    fprintf(stderr, "Syntax error at '%s': %s\n", yytext, s);
 }
-int main(void) {
-    return yyparse();
+int main(int argc, char **argv) {
+    if (argc > 1) {
+        yyin = fopen(argv[1], "r");
+        if (!yyin) {
+            perror("Error opening file");
+            return 1;
+        }
+    }
+
+    if (yyparse() == 0) {
+        return 0;
+    }
+    return 1;
 }

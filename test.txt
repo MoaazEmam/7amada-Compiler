@@ -1,0 +1,8 @@
+int x = 9.
+int y = 8.
+karar (int i = 2 to 4, i++){
+    int c = 4.
+    int x = 7.
+}.
+bool t = false.
+int x = x+3.
