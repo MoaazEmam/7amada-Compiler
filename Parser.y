@@ -27,7 +27,7 @@
 %token <i> INTEGER
 %token <str> STRING
 %token <f> FLOAT
-%token<b> BOOLEAN
+%token <b> BOOLEAN
 %token OPENBRACE
 %token CLOSEDBRACE
 %token SEMICOLON

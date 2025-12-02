@@ -53,3 +53,9 @@ tol_ma (x == true) {
         }
     }.
 }.
+
+string x = "jhj".
+int x .
+d = "ff".
+int d = 0.00007.
+
