@@ -6,3 +6,16 @@ karar (int i = 2 to 4, i++){
 }.
 bool t = false.
 int x = x+3.
+c++.
+f += 3.
+bool x = v < 3.
+law (f == 3){
+    int x = h.
+}
+tayeb law (f == v) {
+    x--.
+}
+tayeb {
+    x += f.
+    x /= x^4.
+}.
