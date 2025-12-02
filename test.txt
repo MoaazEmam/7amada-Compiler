@@ -3,6 +3,10 @@ int y = 8.
 karar (int i = 2 to 4, i++){
     int c = 4.
     int x = 7.
+    law (x >= 8) {
+        kefaya_3aleek.
+    }.
+    int x.
 }.
 bool t = false.
 int x = x+3.
