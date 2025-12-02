@@ -84,4 +84,8 @@ string f() {
     raga3 d.
 }.
 
-x = f().
+x = f() + 4.
+
+law (g(x,c) == 8){
+    x++.
+}.

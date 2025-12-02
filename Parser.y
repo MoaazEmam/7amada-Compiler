@@ -160,7 +160,6 @@ inner_condition: OPENBRACKET condition CLOSEDBRACKET
 | EXPR EQUALITY EXPR
 | EXPR NOTEQUALITY BOOLEAN
 | EXPR NOTEQUALITY EXPR
-| function_call
 ;
 assignment:IDENTIFIER EQUAL EXPR
 |IDENTIFIER EQUAL STRING
@@ -189,6 +188,7 @@ G: OPENBRACKET EXPR CLOSEDBRACKET {$$=$2;}
 |  INTEGER {$$=(float)$1;}
 |  FLOAT {$$=$1;}
 |  IDENTIFIER {$$=0;}
+|  function_call {$$=0;}
 ;
 %%
 
