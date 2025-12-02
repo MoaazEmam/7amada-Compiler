@@ -7,11 +7,11 @@
 %}
 
 %%
-[0-9]+      {yylval.i = atoi(yytext); return INTEGER;}
+[1-9]+[0-9]*|0     {yylval.i = atoi(yytext); return INTEGER;}
 ([1-9]+[0-9]*|0)\.[0-9]+  {yylval.f = atof(yytext); return FLOAT;}
 "true"     { yylval.b = true; return BOOLEAN; }
 "false"    { yylval.b = false; return BOOLEAN; }
-
+\"([^\"\\]|\\.)*\    { yylval.str = yytext; return STRING;}  
 ">="         {return GREATERTHANEQ;}
 "<="         {return LESSTHANEQ;}
 "=="         {return EQUALITY;}
