@@ -1,20 +1,22 @@
 #ifndef ENUMS_DEF_H
 #define ENUMS_DEF_H
 
-//enum definitions here
+// enum definitions here
 
-typedef enum{
+typedef enum
+{
     SYM_INT,
     SYM_FLOAT,
     SYM_BOOL,
     SYM_STRING,
     SYM_VOID
-}DATATYPE;
+} DATATYPE;
 
-typedef enum{
+typedef enum
+{
     VAR,
     FUNC,
-    CONST
-}KIND;
+    SYM_CONST
+} KIND;
 
 #endif
