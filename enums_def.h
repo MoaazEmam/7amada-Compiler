@@ -12,9 +12,9 @@ typedef enum{
 }DATATYPE;
 
 typedef enum{
-    SYM_VAR,
-    SYM_FUNC,
-    SYM_CONST
+    VAR,
+    FUNC,
+    CONST
 }KIND;
 
 #endif

@@ -5,10 +5,17 @@
     #include <stdlib.h>
     #include <math.h>
     #include<stdbool.h>
+    #include "symbol_table.h"
+    #include "symbol.h"
+    #include "param.h"
+    #include "enums_def.h"
     void yyerror(const char *s);
     int yylex(void);
     extern FILE *yyin;
-    
+    SymbolTable* current_scope;
+    Symbol* current_function = NULL; 
+    DATATYPE current_type;    
+    KIND current_kind;
 %}
 
 %union {
@@ -74,12 +81,18 @@
 %token RETURN
 %token VOIDTYPE
 %type<f>  EXPR T G M
+%type <i> datatype
+
+
 /* Production Rules */
 %%
 Start:S;
+
 S: code DOT {printf("Correct Syntax\n");};
+
 code: inner_code 
 | code DOT inner_code;
+
 inner_code: assignment
 | declaration
 | Ifstmt
@@ -93,53 +106,244 @@ inner_code: assignment
 | RETURN
 | BREAK
 ;
-datatype: BOOLTYPE
-|INTTYPE
-|FLOATTYPE
-|STRINGTYPE
+
+datatype:
+      INTTYPE     { $$ = SYM_INT; }
+    | FLOATTYPE   { $$ = SYM_FLOAT; }
+    | BOOLTYPE    { $$ = SYM_BOOL; }
+    | STRINGTYPE  { $$ = SYM_STRING; }
+
 ;
 
-const_type: datatype CONST;
-declaration: datatype inner_declaration 
-| const_type inner_declaration
+
+const_type:
+    datatype CONST {
+        current_type = $1;
+        current_kind = CONST;
+    }
 ;
 
-inner_declaration: IDENTIFIER 
-| IDENTIFIER EQUAL EXPR
-| IDENTIFIER EQUAL BOOLEAN
-| IDENTIFIER EQUAL STRING
-| IDENTIFIER EQUAL condition
+
+
+//$n in Bison means: The semantic value of the n-th symbol on the right-hand side of the rule
+//datatype     IDENTIFIER
+//   $1            $2
+declaration:
+    datatype inner_declaration  {
+        current_type = $1;
+        current_kind = VAR;
+    } 
+  | const_type inner_declaration
 ;
 
-Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE ELSE Ifstmt
-| IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE
-| IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE ELSE OPENBRACE code DOT CLOSEDBRACE
-;
-repeat: REPEAT OPENBRACE code DOT CLOSEDBRACE UNTIL OPENBRACKET condition CLOSEDBRACKET;
 
-forloop: FOR OPENBRACKET iterator COMMA assignment CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE;
+inner_declaration:
+ IDENTIFIER { //Multiple declaration check , Symbol insertion
+        if (lookup_current($1, current_scope)) {
+            yyerror("Multiple declaration of variable");
+        } else {
+            Symbol* s = create_symbol($1, current_type, current_kind, false, NULL);
+            insert(s, current_scope);
+        }
+    } 
+|IDENTIFIER EQUAL EXPR {
+        if (lookup_current($1, current_scope)) {
+            yyerror("Multiple declaration of variable");
+        } else {
+            Symbol* s = create_symbol($1, current_type, current_kind, true, NULL);
+            insert(s, current_scope);   
+        }
+    } 
+
+| IDENTIFIER EQUAL BOOLEAN { 
+        if (lookup_current($1, current_scope)) {
+            yyerror("Multiple declaration of variable");
+        } else {
+            Symbol* s = create_symbol($1, current_type, current_kind, true, NULL);
+            insert(s, current_scope);
+        }
+    } 
+| IDENTIFIER EQUAL STRING { 
+        if (lookup_current($1, current_scope)) {
+            yyerror("Multiple declaration of variable");
+        } else {
+            Symbol* s = create_symbol($1, current_type, current_kind, true, NULL);
+            insert(s, current_scope);
+        }
+    } 
+| IDENTIFIER EQUAL condition { //Multiple declaration check , Symbol insertion
+        if (lookup_current($1, current_scope)) {
+            yyerror("Multiple declaration of variable");
+        } else {
+            Symbol* s = create_symbol($1, current_type, current_kind, true, NULL);
+            insert(s, current_scope);
+        }
+    } 
+;
+
+Ifstmt: 
+  IF OPENBRACKET condition CLOSEDBRACKET 
+  OPENBRACE enter_scope 
+  code DOT 
+  CLOSEDBRACE exit_scope 
+  ELSE Ifstmt
+| IF OPENBRACKET condition CLOSEDBRACKET 
+  OPENBRACE enter_scope
+  code DOT
+  CLOSEDBRACE exit_scope
+| IF OPENBRACKET condition CLOSEDBRACKET 
+  OPENBRACE enter_scope 
+  code DOT 
+  CLOSEDBRACE exit_scope 
+  ELSE 
+  OPENBRACE enter_scope
+  code DOT 
+  CLOSEDBRACE exit_scope
+;
+
+repeat:
+    REPEAT OPENBRACE enter_scope
+        code DOT
+    CLOSEDBRACE exit_scope
+    UNTIL OPENBRACKET condition CLOSEDBRACKET
+;
+
+forloop:
+    FOR OPENBRACKET iterator COMMA assignment CLOSEDBRACKET
+    OPENBRACE enter_scope
+        code DOT
+    CLOSEDBRACE exit_scope
+;
+
 iterator: INTTYPE IDENTIFIER EQUAL EXPR TO EXPR
 | IDENTIFIER EQUAL EXPR TO EXPR
 ;
 
-whileloop: WHILE OPENBRACKET condition CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE;
-
-parameters: datatype IDENTIFIER
-| datatype IDENTIFIER COMMA parameters
+whileloop:
+    WHILE OPENBRACKET condition CLOSEDBRACKET 
+    OPENBRACE enter_scope
+        code DOT
+    CLOSEDBRACE exit_scope
 ;
 
-function: datatype IDENTIFIER OPENBRACKET parameters CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE
-| VOIDTYPE IDENTIFIER OPENBRACKET parameters CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE
-| datatype IDENTIFIER OPENBRACKET  CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE
-| VOIDTYPE IDENTIFIER OPENBRACKET  CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE
+
+parameters:
+    datatype IDENTIFIER {
+        current_type = $1;
+        if (lookup_current($2, current_scope)) {
+            fprintf("Duplicate parameter name");
+        } else {
+            Symbol* p = create_symbol($2, current_type, VAR, true, NULL);           
+            insert(p, current_scope);
+            append_param($2, current_function->params);
+        }
+    }
+| datatype IDENTIFIER COMMA parameters {
+        current_type = $1;
+        if (lookup_current($2, current_scope)) {
+            yyerror("Duplicate parameter name");
+        } else {
+            Symbol* p = create_symbol($2, current_type, VAR, true, NULL);
+            insert(p, current_scope);
+            append_param($2, current_function->params);  
+        }
+    }
 ;
 
-function_call: IDENTIFIER OPENBRACKET list CLOSEDBRACKET | IDENTIFIER OPENBRACKET CLOSEDBRACKET;
-list: EXPR | EXPR COMMA list;
-switchstmt: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET OPENBRACE case_structure DEFAULT OPENBRACE code DOT CLOSEDBRACE CLOSEDBRACE
-| SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET OPENBRACE case_structure CLOSEDBRACE;
+function_header: 
+    datatype IDENTIFIER OPENBRACKET{
+          
+            if (lookup_current($2, current_scope))
+                yyerror("Function redeclared");
+            else {
+                ParamList* plist = create_param_list();   
+                Symbol* f = create_symbol($2, $1, FUNC, true, plist);
+                insert(f, current_scope);
+                current_function = f;            
+            }
+        } 
+    |  VOIDTYPE IDENTIFIER OPENBRACKET {
+        if (lookup_current($2, current_scope))
+            yyerror("Function redeclared");
+        else {
+            ParamList* plist = create_param_list();   
+            Symbol* f = create_symbol($2, SYM_VOID, FUNC, true, plist);
+            insert(f, current_scope);
+            current_function = f;   
+        }
+    } ;
+
+function: 
+    function_header enter_scope parameters CLOSEDBRACKET 
+    OPENBRACE  
+    code DOT 
+    CLOSEDBRACE exit_scope
+    
+
+|  function_header CLOSEDBRACKET
+    OPENBRACE enter_scope
+    code DOT 
+    CLOSEDBRACE exit_scope
+;
+
+function_call: 
+    IDENTIFIER OPENBRACKET list CLOSEDBRACKET {
+        Symbol* f = lookup($1, current_scope);
+        if (!f)
+            yyerror("Function not declared");
+        else if (f->kind != FUNC)
+            yyerror("Identifier is not a function");
+        else 
+           f->used=true;
+        }
+  | IDENTIFIER OPENBRACKET CLOSEDBRACKET {
+        Symbol* f = lookup($1, current_scope);
+        if (!f)
+            yyerror("Function not declared");
+        else if (f->kind != FUNC)
+            yyerror("Identifier is not a function");
+        else 
+           f->used=true;
+    }
+;
+
+
+list: EXPR | EXPR COMMA list; //list checking -->> type
+
+switchstmt: 
+    SWITCH OPENBRACKET IDENTIFIER  CLOSEDBRACKET 
+    OPENBRACE enter_scope case_structure 
+    DEFAULT OPENBRACE enter_scope
+    code DOT 
+    CLOSEDBRACE exit_scope
+    CLOSEDBRACE exit_scope  { //net2aked en identifier of type int 3lshan manensash
+        Symbol* s= lookup($3, current_scope);
+        if(!s){
+            fprintf(" %s is not declared", $3);
+        } else {
+            s->used=true;
+        }
+    }
+| SWITCH OPENBRACKET IDENTIFIER  CLOSEDBRACKET 
+  OPENBRACE enter_scope 
+  case_structure 
+  CLOSEDBRACE exit_scope {
+        Symbol* s= lookup($3, current_scope);
+        if(!s){
+            fprintf(" %s is not declared", $3);
+        } else {
+            s->used=true;
+        }
+  }
+;
+
 case_structure: inner_case | inner_case case_structure;
-inner_case: CASE OPENBRACKET INTEGER CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE
+
+inner_case:
+    CASE OPENBRACKET INTEGER CLOSEDBRACKET
+    OPENBRACE enter_scope
+        code DOT
+    CLOSEDBRACE exit_scope
 ;
 
 condition: condition AND inner_condition 
@@ -161,35 +365,135 @@ inner_condition: OPENBRACKET condition CLOSEDBRACKET
 | EXPR NOTEQUALITY BOOLEAN
 | EXPR NOTEQUALITY EXPR
 ;
-assignment:IDENTIFIER EQUAL EXPR
-|IDENTIFIER EQUAL STRING
-|IDENTIFIER EQUAL condition
-|IDENTIFIER INCREMENT
-|IDENTIFIER DECREMENT
-|IDENTIFIER PLUSEQ EXPR
-|IDENTIFIER MINUSEQ EXPR
-|IDENTIFIER MULTIPLYEQ EXPR
-|IDENTIFIER DIVIDEEQ EXPR
+
+assignment:
+    IDENTIFIER EQUAL EXPR {
+        Symbol* s = lookup($1, current_scope);
+        if (!s) {
+            fprintf("Variable  %s  used before declaration", $1);
+        } else {
+            s->initialized = true;
+        }
+    }
+
+  | IDENTIFIER EQUAL STRING {
+        Symbol* s = lookup($1, current_scope);
+        if (!s) {
+            fprintf("Variable  %s used before declaration", $1);
+        } else {
+            s->initialized = true;
+        }
+    }
+
+  | IDENTIFIER EQUAL condition {
+        Symbol* s = lookup($1, current_scope);
+        if (!s) {
+            fprintf("Variable  %s  used before declaration", $1);
+        } else {
+            s->initialized = true;
+        }
+    }
+
+  | IDENTIFIER INCREMENT {
+        Symbol* s = lookup($1, current_scope);
+        if (!s)
+            fprintf("Variable  %s  not declared", $1);
+        else if (!s->initialized)
+            fprintf("Variable  %s used before initialization", $1);
+    }
+
+  | IDENTIFIER DECREMENT {
+        Symbol* s = lookup($1, current_scope);
+        if (!s)
+             fprintf("Variable  %s  not declared", $1);
+        else if (!s->initialized)
+            fprintf("Variable  %s used before initialization", $1);
+    }
+
+  | IDENTIFIER PLUSEQ EXPR {
+        Symbol* s = lookup($1, current_scope);
+        if (!s)
+            fprintf("Variable  %s  not declared", $1);
+        else if (!s->initialized)
+           fprintf("Variable  %s used before initialization", $1);
+       
+    }
+
+  | IDENTIFIER MINUSEQ EXPR {
+         Symbol* s = lookup($1, current_scope);
+        if (!s)
+            fprintf("Variable  %s  not declared", $1);
+        else if (!s->initialized)
+           fprintf("Variable  %s used before initialization", $1);
+       
+    }
+
+  | IDENTIFIER MULTIPLYEQ EXPR {
+         Symbol* s = lookup($1, current_scope);
+        if (!s)
+            fprintf("Variable  %s  not declared", $1);
+        else if (!s->initialized)
+           fprintf("Variable  %s used before initialization", $1);
+   
+    }
+
+  | IDENTIFIER DIVIDEEQ EXPR {
+        Symbol* s = lookup($1, current_scope);
+        if (!s)
+            fprintf("Variable  %s  not declared", $1);
+        else if (!s->initialized)
+           fprintf("Variable  %s used before initialization", $1);
+        
+    }
 ;
+
 EXPR: EXPR PLUS T {$$=$1+$3;}
 | EXPR MINUS T {$$=$1-$3;}
 | T {$$=$1;}
 ;
+
 T:T MULTIPLY M {$$=$1*$3;}
 | T DIVIDE M    {if($3==0){yyerror("Division By zero");}else $$=$1/$3;}
 | T MOD M      {if((int)$3==0){yyerror("Modulo By zero");}else $$=(int)$1 % (int)$3;}
 | M {$$=$1;}
 ;
+
 M: G POWER M {$$=pow($1,$3);}
 |  G   {$$=$1;}
 ;
+
 G: OPENBRACKET EXPR CLOSEDBRACKET {$$=$2;}
 |  MINUS G  {$$=-$2;}
 |  INTEGER {$$=(float)$1;}
 |  FLOAT {$$=$1;}
-|  IDENTIFIER {$$=0;}
+|   IDENTIFIER { //handles use before init.
+        Symbol* s = lookup($1, current_scope);
+        if (!s) {
+            fprintf("Variable  %s  not declared", $1);
+        }
+        else if (!s->initialized) {
+           fprintf("Variable  %s used before initialization", $1);
+        } else {
+            s->used = true;
+        }
+    }
 |  function_call {$$=0;}
 ;
+
+enter_scope:
+    {
+        current_scope = create_table(211, current_scope);
+    }
+;
+
+exit_scope:
+    {
+        SymbolTable* old = current_scope;
+        current_scope = current_scope->parent;
+        free_table(old);
+    }
+;
+
 %%
 
 /* Subroutines */
@@ -197,7 +501,21 @@ void yyerror(const char *s) {
     extern char *yytext;  // Current token text
     fprintf(stderr, "Syntax error at '%s': %s\n", yytext, s);
 }
+void report_unused(SymbolTable* table) {
+    for (int i = 0; i < table->size; i++) {
+        Symbol* s = table->table[i];
+        while (s) {
+            if (!s->used && s->kind == VAR) {
+                printf("Warning: variable '%s' declared but not used\n", s->name);
+            }
+            s = s->next;
+        }
+    }
+}
+
 int main(int argc, char **argv) {
+    current_scope = create_table(211, NULL); // global scope
+    
     if (argc > 1) {
         yyin = fopen(argv[1], "r");
         if (!yyin) {
@@ -207,7 +525,10 @@ int main(int argc, char **argv) {
     }
 
     if (yyparse() == 0) {
+        report_unused(current_scope);
+        free_table(current_scope);
         return 0;
     }
+    
     return 1;
 }
