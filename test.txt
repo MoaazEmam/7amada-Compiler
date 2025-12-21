@@ -28,7 +28,6 @@ tayeb {
 }.
 int x = c + d.
 e3mel {
-    string x.
     x++.
     law (x > 645.7465) {
         karar (i = 2 to 4, i++){

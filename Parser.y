@@ -5,6 +5,7 @@
     #include <stdlib.h>
     #include <math.h>
     #include<stdbool.h>
+    extern int yylineno;
     #include "symbol_table.h"
     #include "symbol.h"
     #include "param.h"
@@ -140,7 +141,7 @@ declaration:
 inner_declaration:
  IDENTIFIER { //Multiple declaration check , Symbol insertion
         if (lookup_current($1, current_scope)) {
-            yyerror("Multiple declaration of variable");
+            fprintf(stderr,"Line %d:Multiple declaration of variable %s\n ",yylineno,$1);
         } else {
             Symbol* s = create_symbol($1, current_type, current_kind, false, NULL);
             insert(s, current_scope);
@@ -148,7 +149,7 @@ inner_declaration:
     } 
 |IDENTIFIER EQUAL EXPR {
         if (lookup_current($1, current_scope)) {
-            yyerror("Multiple declaration of variable");
+            fprintf(stderr,"Line %d:Multiple declaration of variable %s\n",yylineno,$1);
         } else {
             Symbol* s = create_symbol($1, current_type, current_kind, true, NULL);
             insert(s, current_scope);   
@@ -157,7 +158,7 @@ inner_declaration:
 
 | IDENTIFIER EQUAL BOOLEAN { 
         if (lookup_current($1, current_scope)) {
-            yyerror("Multiple declaration of variable");
+            fprintf(stderr,"Line %d:Multiple declaration of variable %s\n ",yylineno,$1);
         } else {
             Symbol* s = create_symbol($1, current_type, current_kind, true, NULL);
             insert(s, current_scope);
@@ -165,7 +166,7 @@ inner_declaration:
     } 
 | IDENTIFIER EQUAL STRING { 
         if (lookup_current($1, current_scope)) {
-            yyerror("Multiple declaration of variable");
+            fprintf(stderr,"Line %d:Multiple declaration of variable %s\n",yylineno,$1);
         } else {
             Symbol* s = create_symbol($1, current_type, current_kind, true, NULL);
             insert(s, current_scope);
@@ -173,7 +174,7 @@ inner_declaration:
     } 
 | IDENTIFIER EQUAL condition { //Multiple declaration check , Symbol insertion
         if (lookup_current($1, current_scope)) {
-            yyerror("Multiple declaration of variable");
+            fprintf(stderr,"Line %d:Multiple declaration of variable %s\n",yylineno,$1);
         } else {
             Symbol* s = create_symbol($1, current_type, current_kind, true, NULL);
             insert(s, current_scope);
@@ -209,14 +210,33 @@ repeat:
 ;
 
 forloop:
-    FOR OPENBRACKET iterator COMMA assignment CLOSEDBRACKET
-    OPENBRACE enter_scope
+    FOR OPENBRACKET enter_scope iterator COMMA assignment CLOSEDBRACKET
+    OPENBRACE 
         code DOT
     CLOSEDBRACE exit_scope
 ;
 
 iterator: INTTYPE IDENTIFIER EQUAL EXPR TO EXPR
-| IDENTIFIER EQUAL EXPR TO EXPR
+    {
+        if (lookup_current($2, current_scope)) {
+            fprintf(stderr,"Line %d:iterator %s has been declared before \n",yylineno,$2);
+        } else {
+            Symbol* s = create_symbol($2, SYM_INT, VAR, true, NULL);
+            insert(s, current_scope);
+            s->used=true;
+        }
+    }
+| IDENTIFIER EQUAL EXPR TO EXPR 
+{
+    Symbol* s = lookup($1, current_scope);
+        if (!s) {
+            fprintf(stderr,"Line %d:Variable %s used before declaration\n",yylineno,$1);
+        } else {
+            s->initialized = true;
+            s->used=true;
+        }
+}
+
 ;
 
 whileloop:
@@ -232,7 +252,7 @@ parameters:
         current_type = $1;
         if (lookup_current($2, current_scope)) 
         {
-            fprintf(stderr,"%s Duplicate parameter name", $2);
+            fprintf(stderr,"Line %d:Duplicate parameter name %s\n",yylineno, $2);
         } else {
             Symbol* p = create_symbol($2, current_type, VAR, true, NULL);           
             insert(p, current_scope);
@@ -242,7 +262,7 @@ parameters:
 | datatype IDENTIFIER COMMA parameters {
         current_type = $1;
         if (lookup_current($2, current_scope)) {
-            yyerror("Duplicate parameter name");
+            fprintf(stderr,"Line %d:Duplicate parameter name  %s\n",yylineno,$2);
         } else {
             Symbol* p = create_symbol($2, current_type, VAR, true, NULL);
             insert(p, current_scope);
@@ -255,7 +275,7 @@ function_header:
     datatype IDENTIFIER OPENBRACKET{
           
             if (lookup_current($2, current_scope))
-                yyerror("Function redeclared");
+                fprintf(stderr,"Line %d:Function  %s redeclared \n",yylineno,$2);
             else {
                 ParamList* plist = create_param_list();   
                 Symbol* f = create_symbol($2, $1, FUNC, true, plist);
@@ -265,7 +285,7 @@ function_header:
         } 
     |  VOIDTYPE IDENTIFIER OPENBRACKET {
         if (lookup_current($2, current_scope))
-            yyerror("Function redeclared");
+            fprintf(stderr,"Line %d:Function  %s redeclared \n",yylineno,$2);
         else {
             ParamList* plist = create_param_list();   
             Symbol* f = create_symbol($2, SYM_VOID, FUNC, true, plist);
@@ -291,18 +311,18 @@ function_call:
     IDENTIFIER OPENBRACKET list CLOSEDBRACKET {
         Symbol* f = lookup($1, current_scope);
         if (!f)
-            yyerror("Function not declared");
+            fprintf( stderr,"Line %d:Function %s not defined \n",yylineno,$1);
         else if (f->kind != FUNC)
-            yyerror("Identifier is not a function");
+            fprintf(stderr,"Line %d:Identifier %s is not a function\n",yylineno,$1);
         else 
            f->used=true;
         }
   | IDENTIFIER OPENBRACKET CLOSEDBRACKET {
         Symbol* f = lookup($1, current_scope);
         if (!f)
-            yyerror("Function not declared");
+            fprintf( stderr,"Line %d:Function %s not defined \n",yylineno,$1);
         else if (f->kind != FUNC)
-            yyerror("Identifier is not a function");
+            fprintf(stderr,"Line %d:Identifier %s is not a function\n",yylineno,$1);
         else 
            f->used=true;
     }
@@ -320,7 +340,7 @@ switchstmt:
     CLOSEDBRACE exit_scope  { //net2aked en identifier of type int 3lshan manensash
         Symbol* s= lookup($3, current_scope);
         if(!s){
-            fprintf(stderr," %s is not declared", $3);
+            fprintf(stderr,"Line %d:%s is not declared\n",yylineno,$3);
         } else {
             s->used=true;
         }
@@ -331,7 +351,7 @@ switchstmt:
   CLOSEDBRACE exit_scope {
         Symbol* s= lookup($3, current_scope);
         if(!s){
-            fprintf(stderr," %s is not declared", $3);
+            fprintf(stderr,"Line %d:%s is not declared\n",yylineno, $3);
         } else {
             s->used=true;
         }
@@ -371,7 +391,7 @@ assignment:
     IDENTIFIER EQUAL EXPR {
         Symbol* s = lookup($1, current_scope);
         if (!s) {
-            fprintf(stderr,"Variable  %s  used before declaration", $1);
+            fprintf(stderr,"Line %d:Variable %s used before declaration\n",yylineno,$1);
         } else {
             s->initialized = true;
         }
@@ -380,7 +400,7 @@ assignment:
   | IDENTIFIER EQUAL STRING {
         Symbol* s = lookup($1, current_scope);
         if (!s) {
-            fprintf(stderr,"Variable  %s used before declaration", $1);
+            fprintf(stderr,"Line %d:Variable  %s used before declaration\n",yylineno, $1);
         } else {
             s->initialized = true;
         }
@@ -389,7 +409,7 @@ assignment:
   | IDENTIFIER EQUAL condition {
         Symbol* s = lookup($1, current_scope);
         if (!s) {
-            fprintf(stderr,"Variable  %s  used before declaration", $1);
+            fprintf(stderr,"Line %d:Variable  %s  used before declaration\n",yylineno,$1);
         } else {
             s->initialized = true;
         }
@@ -398,52 +418,52 @@ assignment:
   | IDENTIFIER INCREMENT {
         Symbol* s = lookup($1, current_scope);
         if (!s)
-            fprintf(stderr,"Variable  %s  not declared", $1);
+            fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
         else if (!s->initialized)
-            fprintf(stderr,"Variable  %s used before initialization", $1);
+            fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
     }
 
   | IDENTIFIER DECREMENT {
         Symbol* s = lookup($1, current_scope);
         if (!s)
-             fprintf(stderr,"Variable  %s  not declared", $1);
+             fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
         else if (!s->initialized)
-            fprintf(stderr,"Variable  %s used before initialization", $1);
+            fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
     }
 
   | IDENTIFIER PLUSEQ EXPR {
         Symbol* s = lookup($1, current_scope);
         if (!s)
-            fprintf(stderr,"Variable  %s  not declared", $1);
+            fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
         else if (!s->initialized)
-           fprintf(stderr,"Variable  %s used before initialization", $1);
+           fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
        
     }
 
   | IDENTIFIER MINUSEQ EXPR {
          Symbol* s = lookup($1, current_scope);
         if (!s)
-            fprintf(stderr,"Variable  %s  not declared", $1);
+            fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
         else if (!s->initialized)
-           fprintf(stderr,"Variable  %s used before initialization", $1);
+           fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
        
     }
 
   | IDENTIFIER MULTIPLYEQ EXPR {
          Symbol* s = lookup($1, current_scope);
         if (!s)
-            fprintf(stderr,"Variable  %s  not declared", $1);
+            fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
         else if (!s->initialized)
-           fprintf(stderr,"Variable  %s used before initialization", $1);
+           fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
    
     }
 
   | IDENTIFIER DIVIDEEQ EXPR {
         Symbol* s = lookup($1, current_scope);
         if (!s)
-            fprintf(stderr,"Variable  %s  not declared", $1);
+            fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
         else if (!s->initialized)
-           fprintf(stderr,"Variable  %s used before initialization", $1);
+           fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
         
     }
 ;
@@ -470,10 +490,10 @@ G: OPENBRACKET EXPR CLOSEDBRACKET {$$=$2;}
 |   IDENTIFIER { //handles use before init.
         Symbol* s = lookup($1, current_scope);
         if (!s) {
-            fprintf(stderr,"Variable  %s  not declared", $1);
+            fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
         }
         else if (!s->initialized) {
-           fprintf(stderr,"Variable  %s used before initialization", $1);
+           fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
         } else {
             s->used = true;
         }
@@ -491,6 +511,8 @@ exit_scope:
     {
         SymbolTable* old = current_scope;
         current_scope = current_scope->parent;
+        report_unused(current_scope);
+        //print_table(current_scope);
         free_table(old);
     }
 ;
@@ -500,7 +522,7 @@ exit_scope:
 /* Subroutines */
 void yyerror(const char *s) {
     extern char *yytext;  // Current token text
-    fprintf(stderr, "Syntax error at '%s': %s\n", yytext, s);
+    fprintf(stderr, "Line %d:Syntax error at '%s': %s\n",yylineno, yytext, s);
 }
 void report_unused(SymbolTable* table) {
     for (int i = 0; i < table->size; i++) {
@@ -526,7 +548,7 @@ int main(int argc, char **argv) {
     }
 
     if (yyparse() == 0) {
-        report_unused(current_scope);
+        //report_unused(current_scope);
         free_table(current_scope);
         return 0;
     }
