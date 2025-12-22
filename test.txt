@@ -1,8 +1,9 @@
-int a = 2.
-int b = 1.
-int c = 3.
 int i.
-
+int a = 0.
 karar (i = 1 to 5, i++) {
     a++.
+    string x = "fhkf".
+    law (a == 3) {
+        x = "ay 7aga".
+    }.
 }.

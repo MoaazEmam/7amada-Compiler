@@ -21,11 +21,15 @@
     KIND current_kind;
 %}
 
+%code requires {
+    #include "quadruple.h"
+}
 %union {
     int i;
     float f;
     char * str;
     _Bool b;
+    Quadruple q;
 }
 
 %token MINUS
@@ -85,7 +89,7 @@
 %token VOIDTYPE
 %type<str>  EXPR T G M condition inner_condition assignment function_call
 %type <i> datatype if_start else_place repeat_start while_start iterator
-
+%type <q> for_loop_start
 
 /* Production Rules */
 %%
@@ -246,14 +250,18 @@ repeat:
         emit("IfFalse",$11,"",label);
     }
 ;
+for_loop_start: {
+    $$ = pop_last();
+}
 forloop:
-    FOR OPENBRACKET enter_scope iterator COMMA assignment CLOSEDBRACKET
+    FOR OPENBRACKET enter_scope iterator COMMA assignment CLOSEDBRACKET for_loop_start
     OPENBRACE 
         code DOT
     CLOSEDBRACE exit_scope {
         if ($4 != -1) {
             char label[20];
             sprintf(label, "%d", $4);
+            addQuad($8);
             emit("goto","","",label);
             addjump($4+1,nextQuad());
         }

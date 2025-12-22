@@ -18,6 +18,7 @@ int  nextQuad();
 void printQuadruples();
 void addjump(int quadIndex, int target);
 Quadruple pop_last();
+void addQuad(Quadruple q);
 
 /* Temporary variable */
 char* newTemp();

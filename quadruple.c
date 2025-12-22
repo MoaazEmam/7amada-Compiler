@@ -31,8 +31,12 @@ void addjump(int quadIndex, int target) {
 }
 
 Quadruple pop_last() {
-    Quadruple last = quadTable[quadCount];
     quadCount--;
+    return quadTable[quadCount];
+}
+
+void addQuad(Quadruple q){
+    emit(q.op,q.arg1,q.arg2,q.result);
 }
 
 /* Emit a new quadruple */
