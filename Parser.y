@@ -20,6 +20,8 @@
     DATATYPE current_type;    
     KIND current_kind;
     char *current_switch_id = NULL;
+    char *current_func_id = NULL;
+    int return_count = 0;
     int cases[100];
     int case_count = 0;
 %}
@@ -91,7 +93,7 @@
 %token RETURN
 %token VOIDTYPE
 %type<str>  EXPR T G M condition inner_condition assignment function_call
-%type <i> datatype if_start else_place repeat_start while_start iterator start_inner_case
+%type <i> datatype if_start else_place repeat_start while_start iterator start_inner_case function_header
 %type <q> for_loop_start
 
 /* Production Rules */
@@ -112,8 +114,22 @@ inner_code: assignment
 | forloop
 | repeat
 | function
-| RETURN EXPR
-| RETURN
+| RETURN EXPR {
+    if (current_func_id) {
+        emit("return",$2,"","");
+        return_count++;
+    } else {
+        yyerror("Return used outside a function");
+    }
+}
+| RETURN {
+    if (current_func_id) {
+        emit("return","","","");
+        return_count++;
+    } else {
+        yyerror("Return used outside a function");
+    }
+}
 | BREAK
 ;
 
@@ -356,7 +372,15 @@ function_header:
                 ParamList* plist = create_param_list();   
                 Symbol* f = create_symbol($2, $1, FUNC, true, plist);
                 insert(f, current_scope);
-                current_function = f;            
+                current_function = f;    
+                $$ = nextQuad();
+                emit("goto","","",""); 
+                emit("func",$2,"","");   
+                if (!current_func_id) {
+                    current_func_id = $2;
+                } else {
+                    yyerror("Nested functions are not allowed");
+                } 
             }
         } 
     |  VOIDTYPE IDENTIFIER OPENBRACKET {
@@ -367,6 +391,15 @@ function_header:
             Symbol* f = create_symbol($2, SYM_VOID, FUNC, true, plist);
             insert(f, current_scope);
             current_function = f;   
+            $$ = nextQuad();
+            emit("goto","","",""); 
+            emit("func",$2,"","");   
+            if (!current_func_id) {
+                current_func_id = $2;
+                return_count++;
+            } else {
+                yyerror("Nested functions are not allowed");
+            } 
         }
     } ;
 
@@ -375,12 +408,31 @@ function:
     OPENBRACE  
     code DOT 
     CLOSEDBRACE exit_scope
-    
+    {
+        if (return_count == 0){
+            fprintf( stderr,"Line %d:Function %s has no return \n",yylineno,current_func_id);
+        } else {
+            emit("endFunc",current_func_id, "","");
+            addjump($1,nextQuad());
+            current_func_id = NULL;
+            return_count = 0;
+        }
+    }
 
-|  function_header CLOSEDBRACKET
+|   function_header CLOSEDBRACKET
     OPENBRACE enter_scope
     code DOT 
     CLOSEDBRACE exit_scope
+    {
+        if (return_count == 0){
+            fprintf( stderr,"Line %d:Function %s has no return \n",yylineno,current_func_id);
+        } else {
+            emit("endFunc",current_func_id, "","");
+            addjump($1,nextQuad());
+            current_func_id = NULL;
+            return_count = 0;
+        }
+    }
 ;
 
 function_call: 
