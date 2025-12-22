@@ -84,7 +84,7 @@
 %token RETURN
 %token VOIDTYPE
 %type<str>  EXPR T G M condition inner_condition assignment function_call
-%type <i> datatype if_start else_place
+%type <i> datatype if_start else_place repeat_start
 
 
 /* Production Rules */
@@ -232,11 +232,19 @@ else_stmt:
     }
 ;
 
+repeat_start: {
+    $$ = nextQuad();
+}
+
 repeat:
-    REPEAT OPENBRACE enter_scope
+    REPEAT OPENBRACE enter_scope repeat_start
         code DOT
     CLOSEDBRACE exit_scope
-    UNTIL OPENBRACKET condition CLOSEDBRACKET
+    UNTIL OPENBRACKET condition CLOSEDBRACKET {
+        char label[20];
+        sprintf(label, "%d", $4); 
+        emit("IfFalse",$11,"",label);
+    }
 ;
 
 forloop:
