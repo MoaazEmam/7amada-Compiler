@@ -1,14 +1,13 @@
-int x = 3.
-string y.
-y = x / 3.
-x++.
+int x1 = 3.
+string y = "kjk".
+x1++.
+string z = "fhfg".
 
-int max(int x, int y){
-    law (x > y) {
-        raga3 x.
-    } tayeb {
-        raga3 y.
-    }.
+y = z.
+
+string max(string x, string y){
+    x = "ghj".
+    raga3 x.
 }.
 
-int z = max(3,2).
+z = max("yes","no").

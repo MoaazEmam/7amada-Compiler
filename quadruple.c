@@ -56,7 +56,7 @@ void emit(char *op, char *arg1, char *arg2, char *result) {
 
         quadTable = temp;
     }
-    if (strcmp(arg1, "error") == 0 || strcmp(arg2, "error") == 0 || strcmp(result, "error") == 0) {
+    if (!arg1 || !arg2 || !result || !op || strcmp(arg1, "error") == 0 || strcmp(arg2, "error") == 0 || strcmp(result, "error") == 0) {
        return;
     }
 
