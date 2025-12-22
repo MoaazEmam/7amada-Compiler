@@ -11,23 +11,28 @@ extern int yylineno;
 #include "param.h"
 #include "enums_def.h"
 #include "type_checks.h"
-    #include "quadruple.h"
-    void yyerror(const char *s);
-    void report_unused(SymbolTable* table);
-    int yylex(void);
-    extern FILE *yyin;
-    SymbolTable *current_scope;
-    Symbol *current_function = NULL;
-    Param *current_param = NULL;
-    int arg_count = 0;
-    bool param_error = false;
-    DATATYPE current_type;
-    KIND current_kind;
-    char *current_switch_id = NULL;
-    char *current_func_id = NULL;
-    int return_count = 0;
-    int cases[100];
-    int case_count = 0;
+#include "quadruple.h"
+void yyerror(const char *s);
+void report_unused(SymbolTable* table);
+int yylex(void);
+extern FILE *yyin;
+SymbolTable *current_scope;
+Symbol *current_function = NULL;
+Param *current_param = NULL;
+int arg_count = 0;
+bool param_error = false;
+DATATYPE current_type;
+KIND current_kind;
+char *current_switch_id = NULL;
+char *current_func_id = NULL;
+int return_count = 0;
+int cases[100];
+int case_count = 0;
+typedef struct {
+    DATATYPE type;   // For YOUR type checking
+    char* place;     // For HER code gen (variable name or temp register)
+    int quad_idx;    // For HER control flow (jumps/labels) if needed
+} ExprInfo;
 %}
 
 %code requires {
@@ -40,6 +45,7 @@ extern int yylineno;
     _Bool b;
     DATATYPE dtype;
     Quadruple q;
+    ExprInfo info;
 }
 
 %token MINUS 
@@ -97,10 +103,11 @@ extern int yylineno;
 %token DEFAULT
 %token RETURN
 %token VOIDTYPE
-%type<str>  EXPR T G M condition inner_condition assignment function_call
-%type <i> datatype 
+%type <dtype> datatype
+%type<info>  EXPR T G M condition inner_condition assignment function_call
 %type <i> if_start else_place repeat_start while_start iterator start_inner_case function_header
 %type <q> for_loop_start
+%type <b> list
 
 /* Production Rules */
 %%
@@ -121,7 +128,13 @@ inner_code: assignment
 | function
 | RETURN EXPR {
     if (current_func_id) {
-        emit("return",$2,"","");
+        /* --- ADDED TYPE CHECK --- */
+        if (!type_compatible(current_function->type, $2.type)) {
+            fprintf(stderr, "Line %d: Return type mismatch. Function %s returns %s, but returning %s\n",
+                    yylineno, current_func_id, type_name(current_function->type), type_name($2.type));
+        }
+
+        emit("return", $2.place, "", "");
         return_count++;
     } else {
         yyerror("Return used outside a function");
@@ -129,13 +142,18 @@ inner_code: assignment
 }
 | RETURN {
     if (current_func_id) {
-        emit("return","","","");
+        /* --- ADDED TYPE CHECK --- */
+        if (current_function->type != SYM_VOID) {
+            fprintf(stderr, "Line %d: Function '%s' should return %s, but returned nothing\n",
+                    yylineno, current_func_id, type_name(current_function->type));
+        }
+
+        emit("return", "", "", "");
         return_count++;
     } else {
         yyerror("Return used outside a function");
     }
 }
-| BREAK
 ;
 
 datatype:
@@ -218,8 +236,13 @@ inner_declaration:
 
 if_start: IF OPENBRACKET condition CLOSEDBRACKET 
 {
+    /* --- ADDED TYPE CHECK --- */
+    if ($3.type != SYM_BOOL) {
+         fprintf(stderr, "Line %d: If condition must be boolean\n", yylineno);
+    }
+
     $$ = nextQuad();
-    emit("IfFalse", $3, "", "");
+    emit("IfFalse", $3.place, "", "");
 }
 
 Ifstmt: 
@@ -269,9 +292,12 @@ repeat:
         code DOT
     CLOSEDBRACE exit_scope
     UNTIL OPENBRACKET condition CLOSEDBRACKET {
+        if ($11.type != SYM_BOOL) {
+             fprintf(stderr, "Line %d: Until condition must be boolean\n", yylineno);
+        }
         char label[20];
         sprintf(label, "%d", $4); 
-        emit("IfFalse",$11,"",label);
+        emit("IfFalse",$11.place,"",label);
     }
 ;
 for_loop_start: {
@@ -293,42 +319,55 @@ forloop:
 ;
 
 iterator: INTTYPE IDENTIFIER EQUAL EXPR TO EXPR
-    {
-        if (lookup_current($2, current_scope)) {
-            fprintf(stderr,"Line %d:iterator %s has been declared before \n",yylineno,$2);
-            $$ = -1;
-        } else {
-            Symbol* s = create_symbol($2, SYM_INT, VAR, true, NULL);
-            insert(s, current_scope);
-            s->used=true;
-            emit("=",$2,"",$4);
-            $$ = nextQuad();
-            char *t = newTemp();
-            emit(">",$2,$6,t);
-            emit("IfTrue",t,"","");
-        }
+{
+    /* --- ADDED TYPE CHECK --- */
+    if ($4.type != SYM_INT || $6.type != SYM_INT) {
+        fprintf(stderr, "Line %d: For loop range must be Integers\n", yylineno);
     }
+
+    if (lookup_current($2, current_scope)) {
+        fprintf(stderr,"Line %d:iterator %s has been declared before \n",yylineno,$2);
+        $$ = -1;
+    } else {
+        Symbol* s = create_symbol($2, SYM_INT, VAR, true, NULL);
+        insert(s, current_scope);
+        s->used=true;
+        emit("=",$2,"",$4.place); // Use .place
+        $$ = nextQuad();
+        char *t = newTemp();
+        emit(">",$2,$6.place,t); // Use .place
+        emit("IfTrue",t,"","");
+    }
+}
 | IDENTIFIER EQUAL EXPR TO EXPR 
 {
+    /* --- ADDED TYPE CHECK --- */
+    if ($3.type != SYM_INT || $5.type != SYM_INT) {
+        fprintf(stderr, "Line %d: For loop range must be Integers\n", yylineno);
+    }
+
     Symbol* s = lookup($1, current_scope);
-        if (!s) {
-            fprintf(stderr,"Line %d:Variable %s used before declaration\n",yylineno,$1);
-            $$ = -1;
-        } else {
-            s->initialized = true;
-            s->used=true;
-            emit("=",$1,"",$3);
-            $$ = nextQuad();
-            char *t = newTemp();
-            emit(">",$1,$5,t);
-            emit("IfTrue",t,"","");
-        }
+    if (!s) {
+        fprintf(stderr,"Line %d:Variable %s used before declaration\n",yylineno,$1);
+        $$ = -1;
+    } else {
+        s->initialized = true;
+        s->used=true;
+        emit("=",$1,"",$3.place); // Use .place
+        $$ = nextQuad();
+        char *t = newTemp();
+        emit(">",$1,$5.place,t); // Use .place
+        emit("IfTrue",t,"","");
+    }
 }
 ;
 
 while_start: WHILE OPENBRACKET condition CLOSEDBRACKET {
+    if ($3.type != SYM_BOOL) {
+         fprintf(stderr, "Line %d: While condition must be boolean\n", yylineno);
+    }
     $$ = nextQuad();
-    emit("IfFalse",$3,"","");
+    emit("IfFalse",$3.place,"","");
 }
 
 whileloop:
@@ -501,10 +540,15 @@ switch_start: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET {
     } 
     else if (!s->initialized) {
         fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $3);
-    } 
+    }
+    /* --- ADDED TYPE CHECK --- */
+    else if (s->type != SYM_INT) {
+        fprintf(stderr, "Line %d: Switch variable %s must be integer\n", yylineno, $3);
+    }
+
     if (!current_switch_id) {
         current_switch_id = $3;
-        s->used=true;
+        if(s) s->used=true;
     } else {
         yyerror("Nested swtiches are not allowed");
     }
@@ -561,96 +605,249 @@ inner_case:
     }
 ;
 
-condition: condition AND inner_condition 
-{
-    char *t = newTemp();
-    emit("and", $1, $3, t);
-    $$ = t;
+condition: 
+condition AND inner_condition {
+    /* --- YOUR LOGIC: Type Checking --- */
+    if ($1.type != SYM_BOOL || $3.type != SYM_BOOL) {
+        fprintf(stderr, "Line %d: Type mismatch. AND operator requires boolean operands.\n", yylineno);
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+    else {
+        $$.type = SYM_BOOL;
+        
+        /* --- HER LOGIC: Code Gen --- */
+        char *t = newTemp();
+        emit("and", $1.place, $3.place, t);
+        $$.place = t;
+    }
 }
-| condition OR inner_condition
-{
-    char *t = newTemp();
-    emit("or", $1, $3, t);
-    $$ = t;
+| condition OR inner_condition {
+    /* --- YOUR LOGIC --- */
+    if ($1.type != SYM_BOOL || $3.type != SYM_BOOL) {
+        fprintf(stderr, "Line %d: Type mismatch. OR operator requires boolean operands.\n", yylineno);
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+    else {
+        $$.type = SYM_BOOL;
+        
+        /* --- HER LOGIC --- */
+        char *t = newTemp();
+        emit("or", $1.place, $3.place, t);
+        $$.place = t;
+    }
 }
-| NOT inner_condition
-{
-    char *t = newTemp();
-    emit("not", $2, "", t);
-    $$ = t;
+| NOT inner_condition {
+    /* --- YOUR LOGIC --- */
+    if ($2.type != SYM_BOOL) {
+        fprintf(stderr, "Line %d: Type mismatch. NOT operator requires boolean operand.\n", yylineno);
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+    else {
+        $$.type = SYM_BOOL;
+        
+        /* --- HER LOGIC --- */
+        char *t = newTemp();
+        emit("not", $2.place, "", t);
+        $$.place = t;
+    }
 }
 | inner_condition
 {
-    $$ = $1;
+   $$.type = $1.type;
+   $$.place = $1.place;
 }
-| condition AND EXPR
-{
-    char *t = newTemp();
-    emit("and", $1, $3, t);
-    $$ = t;
+| condition AND EXPR {
+    if ($1.type == SYM_ERROR || $3.type == SYM_ERROR) {
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+    else if ($1.type != SYM_BOOL || $3.type != SYM_BOOL) {
+        fprintf(stderr, "Line %d: Type mismatch. AND operator requires boolean operands.\n", yylineno);
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+    else {
+        $$.type = SYM_BOOL;
+        char *t = newTemp();
+        emit("and", $1.place, $3.place, t);
+        $$.place = t;
+    }
 }
-| condition OR EXPR
-{
-    char *t = newTemp();
-    emit("or", $1, $3, t);
-    $$ = t;
+| condition OR EXPR {
+    if ($1.type == SYM_ERROR || $3.type == SYM_ERROR) {
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+    else if ($1.type != SYM_BOOL || $3.type != SYM_BOOL) {
+        fprintf(stderr, "Line %d: Type mismatch. OR operator requires boolean operands.\n", yylineno);
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+    else {
+        $$.type = SYM_BOOL;
+        char *t = newTemp();
+        emit("or", $1.place, $3.place, t);
+        $$.place = t;
+    }
 }
-| NOT EXPR
-{
-    char *t = newTemp();
-    emit("not", $2, "", t);
-    $$ = t;
+| NOT EXPR {
+    if ($2.type == SYM_ERROR) {
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+    else if ($2.type != SYM_BOOL) {
+        fprintf(stderr, "Line %d: Type mismatch. NOT operator requires boolean operand.\n", yylineno);
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+    else {
+        $$.type = SYM_BOOL;
+        char *t = newTemp();
+        emit("not", $2.place, "", t);
+        $$.place = t;
+    }
 }
 ;
 
 inner_condition: OPENBRACKET condition CLOSEDBRACKET {$$=$2;}
-| EXPR GREATERTHAN EXPR
-{
-    char *t = newTemp();
-    emit(">", $1, $3, t);
-    $$ = t;
+| EXPR GREATERTHAN EXPR {
+    /* Check Numerics */
+    if (($1.type == SYM_INT || $1.type == SYM_FLOAT) && 
+        ($3.type == SYM_INT || $3.type == SYM_FLOAT)) {
+            
+        $$.type = SYM_BOOL;
+        
+        char *t = newTemp();
+        emit(">", $1.place, $3.place, t);
+        $$.place = t;
+    }
+    else {
+        fprintf(stderr, "Line %d: Invalid comparison. Cannot compare %s to %s\n", 
+                yylineno, type_name($1.type), type_name($3.type));
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
 }
-| EXPR GREATERTHANEQ EXPR
-{
-    char *t = newTemp();
-    emit(">=", $1, $3, t);
-    $$ = t;
+| EXPR GREATERTHANEQ EXPR {
+    if (($1.type == SYM_INT || $1.type == SYM_FLOAT) && 
+        ($3.type == SYM_INT || $3.type == SYM_FLOAT)) {
+            
+        $$.type = SYM_BOOL;
+        
+        char *t = newTemp();
+        emit(">=", $1.place, $3.place, t);
+        $$.place = t;
+    }
+    else {
+        fprintf(stderr, "Line %d: Invalid comparison. Cannot compare %s to %s\n", 
+                yylineno, type_name($1.type), type_name($3.type));
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
 }
-| EXPR LESSTHAN EXPR
-{
-    char *t = newTemp();
-    emit("<", $1, $3, t);
-    $$ = t;
+| EXPR LESSTHAN EXPR {
+    if (($1.type == SYM_INT || $1.type == SYM_FLOAT) && 
+        ($3.type == SYM_INT || $3.type == SYM_FLOAT)) {
+            
+        $$.type = SYM_BOOL;
+        
+        char *t = newTemp();
+        emit("<", $1.place, $3.place, t);
+        $$.place = t;
+    }
+    else {
+        fprintf(stderr, "Line %d: Invalid comparison. Cannot compare %s to %s\n", 
+                yylineno, type_name($1.type), type_name($3.type));
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
 }
-| EXPR LESSTHANEQ EXPR
-{
-    char *t = newTemp();
-    emit("<=", $1, $3, t);
-    $$ = t;
+| EXPR LESSTHANEQ EXPR {
+    if (($1.type == SYM_INT || $1.type == SYM_FLOAT) && 
+        ($3.type == SYM_INT || $3.type == SYM_FLOAT)) {
+            
+        $$.type = SYM_BOOL;
+        
+        char *t = newTemp();
+        emit("<=", $1.place, $3.place, t);
+        $$.place = t;
+    }
+    else {
+        fprintf(stderr, "Line %d: Invalid comparison. Cannot compare %s to %s\n", 
+                yylineno, type_name($1.type), type_name($3.type));
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
 }
-| EXPR EQUALITY BOOLEAN
-{
-    char *t = newTemp();
-    emit("==", $1, $3, t);
-    $$ = t;
+| EXPR EQUALITY BOOLEAN {
+    /* Special Case: Checking equality against a boolean literal */
+    if ($1.type == SYM_BOOL) {
+        $$.type = SYM_BOOL;
+        
+        char *t = newTemp();
+        /* Note: $3 is a boolean token, usually <str> if you updated the token def */
+        /* If $3 is boolean literal (true/false), we assume it's passed as a string */
+        emit("==", $1.place, ($3 ? "true" : "false"), t); 
+        $$.place = t;
+    }
+    else {
+        fprintf(stderr, "Line %d: Invalid comparison. Cannot compare %s to boolean\n", 
+                yylineno, type_name($1.type));
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
 }
-| EXPR EQUALITY EXPR
-{
-    char *t = newTemp();
-    emit("==", $1, $3, t);
-    $$ = t;
+| EXPR EQUALITY EXPR {
+    /* Allow: (Num == Num) OR (Bool == Bool) */
+    if ( (($1.type == SYM_INT || $1.type == SYM_FLOAT) && ($3.type == SYM_INT || $3.type == SYM_FLOAT)) ||
+         ($1.type == SYM_BOOL && $3.type == SYM_BOOL) ) {
+             
+        $$.type = SYM_BOOL;
+        
+        char *t = newTemp();
+        emit("==", $1.place, $3.place, t);
+        $$.place = t;
+    }
+    else {
+        fprintf(stderr, "Line %d: Invalid comparison. Cannot compare %s to %s\n", 
+                yylineno, type_name($1.type), type_name($3.type));
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
 }
-| EXPR NOTEQUALITY BOOLEAN
-{
-    char *t = newTemp();
-    emit("!=", $1, $3, t);
-    $$ = t;
+| EXPR NOTEQUALITY BOOLEAN {
+    if ($1.type == SYM_BOOL) {
+        $$.type = SYM_BOOL;
+        char *t = newTemp();
+        emit("!=", $1.place, ($3 ? "true" : "false"), t);
+        $$.place = t;
+    }
+    else {
+        fprintf(stderr, "Line %d: Invalid comparison. Cannot compare %s to boolean\n", 
+                yylineno, type_name($1.type));
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
 }
-| EXPR NOTEQUALITY EXPR
-{
-    char *t = newTemp();
-    emit("!=", $1, $3, t);
-    $$ = t;
+
+| EXPR NOTEQUALITY EXPR {
+    if ( (($1.type == SYM_INT || $1.type == SYM_FLOAT) && ($3.type == SYM_INT || $3.type == SYM_FLOAT)) ||
+         ($1.type == SYM_BOOL && $3.type == SYM_BOOL) ) {
+             
+        $$.type = SYM_BOOL;
+        char *t = newTemp();
+        emit("!=", $1.place, $3.place, t);
+        $$.place = t;
+    }
+    else {
+        fprintf(stderr, "Line %d: Invalid comparison. Cannot compare %s to %s\n", 
+                yylineno, type_name($1.type), type_name($3.type));
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
 }
 ;
 
@@ -659,23 +856,52 @@ assignment:
         Symbol* s = lookup($1, current_scope);
         if (!s) {
             fprintf(stderr,"Line %d:Variable %s used before declaration\n",yylineno,$1);
-            $$ = "error";
-        } else {
+            $$.type = SYM_ERROR;
+            $$.place = NULL;
+        } 
+        else if (s->kind == SYM_CONST) {
+            fprintf(stderr, "Line %d:Cannot assign to const variable %s\n", yylineno, $1);
+            $$.type = SYM_ERROR;
+            $$.place = NULL;
+        }
+        else if (!type_compatible(s->type, $3.type)) {
+            fprintf(stderr, "Line %d:Type mismatch: cannot assign %s to %s\n", 
+                    yylineno, type_name($3.type), type_name(s->type));
+            $$.type = SYM_ERROR;
+            $$.place = NULL;
+        } 
+        else {
+            /* --- HER LOGIC: Code Generation --- */
             s->initialized = true;
-            emit("=", $3, "", $1);
-            $$ = $1;
+            
+            // $1 is the variable name, $3.place is the source temp/var
+            emit("=", $3.place, "", $1); 
+            
+            /* --- PASS UP --- */
+            $$.type = s->type;
+            $$.place = $1;
         }
     }
 
   | IDENTIFIER EQUAL STRING {
-        Symbol* s = lookup($1, current_scope);
-        if (!s) {
-            fprintf(stderr,"Line %d:Variable  %s used before declaration\n",yylineno, $1);
-            $$ = "error";
-        } else {
+       if (!s) {
+            fprintf(stderr,"Line %d:Variable %s used before declaration\n",yylineno,$1);
+            $$.type = SYM_ERROR;
+        } 
+        else if (s->kind == SYM_CONST) {
+             fprintf(stderr, "Line %d:Cannot assign to const variable %s\n", yylineno, $1);
+             $$.type = SYM_ERROR;
+        }
+        else if (!type_compatible(s->type, SYM_STRING)) {
+            fprintf(stderr, "Line %d:Type mismatch: cannot assign string to %s\n", 
+                    yylineno, type_name(s->type));
+            $$.type = SYM_ERROR;
+        } 
+        else {
             s->initialized = true;
             emit("=", $3, "", $1);
-            $$ = $1;
+            $$.type = s->type;
+            $$.place = $1;
         }
     }
 
@@ -684,58 +910,99 @@ assignment:
         if (!s) {
             fprintf(stderr,"Line %d:Variable  %s  used before declaration\n",yylineno,$1);
             $$ = "error";
-        } else {
+        }
+        else if (!type_compatible(s->type, $3.type)) {
+            fprintf(stderr, "Line %d:Type mismatch: cannot assign %s to %s\n", 
+                    yylineno, type_name($3.type), type_name(s->type));
+            $$.type = SYM_ERROR;
+            $$.place = NULL;
+        } 
+        else {
             s->initialized = true;
-            emit("=", $3, "", $1);
-            $$ = $1;
+            emit("=", $3.place, "", $1);
+            $$.place = $1;
         }
     }
 
   | IDENTIFIER INCREMENT {
         Symbol* s = lookup($1, current_scope);
         if (!s) {
-            fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
-            $$ = "error";
+             fprintf(stderr,"Line %d:Variable %s not declared\n",yylineno, $1);
+             $$.type = SYM_ERROR;
         }
         else if (!s->initialized) {
-            fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
-            $$ = "error";
+             fprintf(stderr,"Line %d:Variable %s used before initialization\n",yylineno, $1);
+             $$.type = SYM_ERROR;
+        }
+        else if (s->kind == SYM_CONST) {
+             fprintf(stderr, "Line %d:Cannot assign to const variable %s\n", yylineno, $1);
+             $$.type = SYM_ERROR;
+        }
+        else if (s->type != SYM_INT && s->type != SYM_FLOAT) {
+             fprintf(stderr, "Line %d: Increment applied to non-numeric type %s\n", 
+                     yylineno, type_name(s->type));
+             $$.type = SYM_ERROR;
         }
         else {
-            emit("++", $1, "", $1);
-            $$ = $1;
+             /* Code Gen */
+             emit("++", $1, "", $1);
+             $$.type = s->type;
+             $$.place = $1;
         }
     }
 
   | IDENTIFIER DECREMENT {
         Symbol* s = lookup($1, current_scope);
         if (!s) {
-            fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
-            $$ = "error";
+             fprintf(stderr,"Line %d:Variable %s not declared\n",yylineno, $1);
+             $$.type = SYM_ERROR;
         }
         else if (!s->initialized) {
-            fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
-            $$ = "error";
+             fprintf(stderr,"Line %d:Variable %s used before initialization\n",yylineno, $1);
+             $$.type = SYM_ERROR;
+        }
+        else if (s->kind == SYM_CONST) {
+             fprintf(stderr, "Line %d:Cannot assign to const variable %s\n", yylineno, $1);
+             $$.type = SYM_ERROR;
+        }
+        else if (s->type != SYM_INT && s->type != SYM_FLOAT) {
+             fprintf(stderr, "Line %d: Decrement applied to non-numeric type %s\n", 
+                     yylineno, type_name(s->type));
+             $$.type = SYM_ERROR;
         }
         else {
-            emit("--", $1, "", $1);
-            $$ = $1;
+             /* Code Gen */
+             emit("--", $1, "", $1);
+             $$.type = s->type;
+             $$.place = $1;
         }
     }
 
   | IDENTIFIER PLUSEQ EXPR {
         Symbol* s = lookup($1, current_scope);
         if (!s) {
-            fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
-            $$ = "error";
+            fprintf(stderr,"Line %d:Variable %s used before declaration\n",yylineno,$1);
+            $$.type = SYM_ERROR;
+            $$.place = NULL;
+        } 
+        else if (s->kind == SYM_CONST) {
+            fprintf(stderr, "Line %d:Cannot assign to const variable %s\n", yylineno, $1);
+            $$.type = SYM_ERROR;
+            $$.place = NULL;
         }
-        else if (!s->initialized) {
-            fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
-            $$ = "error";
-        }
+        else if ((s->type != SYM_INT && s->type != SYM_FLOAT) || ($3.type != SYM_INT && $3.type != SYM_FLOAT)) {
+             fprintf(stderr, "Line %d: Addition applied to non-numeric type %s",yylineno, type_name(s->type));
+            $$.type = SYM_ERROR;
+            $$.place = NULL;
+        } 
         else {
-            emit("+", $1, $3, $1);
-            $$ = $1;
+            /* --- HER LOGIC: Code Generation --- */
+           // s->initialized = true;
+            // $1 is the variable name, $3.place is the source temp/var
+            emit("+", $1, $3.place, $1); 
+            /* --- PASS UP --- */
+            $$.type = s->type;
+            $$.place = $1;
         }
        
     }
@@ -743,118 +1010,302 @@ assignment:
   | IDENTIFIER MINUSEQ EXPR {
         Symbol* s = lookup($1, current_scope);
         if (!s) {
-            fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
-            $$ = "error";
+            fprintf(stderr,"Line %d:Variable %s used before declaration\n",yylineno,$1);
+            $$.type = SYM_ERROR;
+            $$.place = NULL;
+        } 
+        else if (s->kind == SYM_CONST) {
+            fprintf(stderr, "Line %d:Cannot assign to const variable %s\n", yylineno, $1);
+            $$.type = SYM_ERROR;
+            $$.place = NULL;
         }
-        else if (!s->initialized) {
-            fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
-            $$ = "error";
-        }
+        else if ((s->type != SYM_INT && s->type != SYM_FLOAT) || ($3.type != SYM_INT && $3.type != SYM_FLOAT)) {
+             fprintf(stderr, "Line %d: Addition applied to non-numeric type %s",yylineno, type_name(s->type));
+            $$.type = SYM_ERROR;
+            $$.place = NULL;
+        } 
         else {
-            emit("-", $1, $3, $1);
-            $$ = $1;
+            /* --- HER LOGIC: Code Generation --- */
+           // s->initialized = true;
+            // $1 is the variable name, $3.place is the source temp/var
+            emit("-", $1, $3.place, $1); 
+            /* --- PASS UP --- */
+            $$.type = s->type;
+            $$.place = $1;
         }
        
     }
 
   | IDENTIFIER MULTIPLYEQ EXPR {
-         Symbol* s = lookup($1, current_scope);
+        Symbol* s = lookup($1, current_scope);
         if (!s) {
-            fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
-            $$ = "error";
+            fprintf(stderr,"Line %d:Variable %s used before declaration\n",yylineno,$1);
+            $$.type = SYM_ERROR;
+            $$.place = NULL;
+        } 
+        else if (s->kind == SYM_CONST) {
+            fprintf(stderr, "Line %d:Cannot assign to const variable %s\n", yylineno, $1);
+            $$.type = SYM_ERROR;
+            $$.place = NULL;
         }
-        else if (!s->initialized) {
-            fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
-            $$ = "error";
-        }
+        else if ((s->type != SYM_INT && s->type != SYM_FLOAT) || ($3.type != SYM_INT && $3.type != SYM_FLOAT)) {
+             fprintf(stderr, "Line %d: Addition applied to non-numeric type %s",yylineno, type_name(s->type));
+            $$.type = SYM_ERROR;
+            $$.place = NULL;
+        } 
         else {
-            emit("*", $1, $3, $1);
-            $$ = $1;
+            /* --- HER LOGIC: Code Generation --- */
+           // s->initialized = true;
+            // $1 is the variable name, $3.place is the source temp/var
+            emit("*", $1, $3.place, $1); 
+            /* --- PASS UP --- */
+            $$.type = s->type;
+            $$.place = $1;
         }
    
     }
 
   | IDENTIFIER DIVIDEEQ EXPR {
         Symbol* s = lookup($1, current_scope);
-        if (!s) {
-            fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
-            $$ = "error";
+       if (!s) {
+            fprintf(stderr,"Line %d:Variable %s used before declaration\n",yylineno,$1);
+            $$.type = SYM_ERROR;
+            $$.place = NULL;
+        } 
+        else if (s->kind == SYM_CONST) {
+            fprintf(stderr, "Line %d:Cannot assign to const variable %s\n", yylineno, $1);
+            $$.type = SYM_ERROR;
+            $$.place = NULL;
         }
-        else if (!s->initialized) {
-           fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
-           $$ = "error";
-        }
+        else if ((s->type != SYM_INT && s->type != SYM_FLOAT) || ($3.type != SYM_INT && $3.type != SYM_FLOAT)) {
+             fprintf(stderr, "Line %d: Addition applied to non-numeric type %s",yylineno, type_name(s->type));
+            $$.type = SYM_ERROR;
+            $$.place = NULL;
+        } 
         else {
-            emit("/", $1, $3, $1);
-            $$ = $1;
+            /* --- HER LOGIC: Code Generation --- */
+           // s->initialized = true;
+            // $1 is the variable name, $3.place is the source temp/var
+            emit("/", $1, $3.place, $1); 
+            /* --- PASS UP --- */
+            $$.type = s->type;
+            $$.place = $1;
         }
     }
 ;
 
 EXPR: EXPR PLUS T {
-    char *t = newTemp();
-    emit("+", $1, $3, t);
-    $$ = t;
+    /* --- YOUR LOGIC: Type Checking --- */
+    if ($1.type == SYM_ERROR || $3.type == SYM_ERROR) {
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+    else if (($1.type != SYM_INT && $1.type != SYM_FLOAT) || 
+             ($3.type != SYM_INT && $3.type != SYM_FLOAT)) {
+        fprintf(stderr, "Line %d: Cannot add non-numeric types\n", yylineno);
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+    else {
+        /* Determine Result Type (Float takes precedence) */
+        if ($1.type == SYM_FLOAT || $3.type == SYM_FLOAT) 
+            $$.type = SYM_FLOAT;
+        else 
+            $$.type = SYM_INT;
+
+        /* --- HER LOGIC: Code Generation --- */
+        char *t = newTemp();
+        emit("+", $1.place, $3.place, t);
+        $$.place = t;
+    }
 }
 | EXPR MINUS T {
-    char *t = newTemp();
-    emit("-", $1, $3, t);
-    $$ = t;
+    /* --- YOUR LOGIC: Type Checking --- */
+    if ($1.type == SYM_ERROR || $3.type == SYM_ERROR) {
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+    else if (($1.type != SYM_INT && $1.type != SYM_FLOAT) || 
+             ($3.type != SYM_INT && $3.type != SYM_FLOAT)) {
+        fprintf(stderr, "Line %d: Cannot subtract non-numeric types\n", yylineno);
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+    else {
+        /* Determine Result Type (Float takes precedence) */
+        if ($1.type == SYM_FLOAT || $3.type == SYM_FLOAT) 
+            $$.type = SYM_FLOAT;
+        else 
+            $$.type = SYM_INT;
+
+        /* --- HER LOGIC: Code Generation --- */
+        char *t = newTemp();
+        emit("-", $1.place, $3.place, t);
+        $$.place = t;
+    }
 }
-| T {$$=$1;}
+| T { 
+    /* Pass through both fields */
+    $$.type = $1.type;
+    $$.place = $1.place;
+}
 ;
 
 T:T MULTIPLY M {
-    char *t = newTemp();
-    emit("*", $1, $3, t);
-    $$ = t;
+    if ($1.type == SYM_ERROR || $3.type == SYM_ERROR) {
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+    else if (($1.type != SYM_INT && $1.type != SYM_FLOAT) || 
+             ($3.type != SYM_INT && $3.type != SYM_FLOAT)) {
+        fprintf(stderr, "Line %d: Cannot multiply non-numeric types\n", yylineno);
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+    else {
+        if ($1.type == SYM_FLOAT || $3.type == SYM_FLOAT) 
+            $$.type = SYM_FLOAT;
+        else 
+            $$.type = SYM_INT;
+
+        char *t = newTemp();
+        emit("*", $1.place, $3.place, t);
+        $$.place = t;
+    }
 }
-| T DIVIDE M    {
-    char *t = newTemp();
-    emit("/", $1, $3, t);
-    $$ = t;
+|T DIVIDE M {
+    if ($1.type == SYM_ERROR || $3.type == SYM_ERROR) {
+        $$.type = SYM_ERROR; 
+        $$.place = NULL;
+    }
+    else {
+        if ($1.type == SYM_FLOAT || $3.type == SYM_FLOAT) 
+            $$.type = SYM_FLOAT;
+        else 
+            $$.type = SYM_INT;
+
+        char *t = newTemp();
+        emit("/", $1.place, $3.place, t);
+        $$.place = t;
+    }
 }
 | T MOD M      {
-    char *t = newTemp();
-    emit("%%", $1, $3, t);
-    $$ = t;
+    if ($1.type == SYM_ERROR || $3.type == SYM_ERROR) {
+        $$.type = SYM_ERROR; 
+        $$.place = NULL;
+    }
+    else {
+        if ($1.type == SYM_FLOAT || $3.type == SYM_FLOAT) 
+            $$.type = SYM_FLOAT;
+        else 
+            $$.type = SYM_INT;
+
+        char *t = newTemp();
+        emit("%%", $1.place, $3.place, t);
+        $$.place = t;
+    }
 }
-| M {$$=$1;}
+| M { $$.type = $1.type;
+    $$.place = $1.place;}
 ;
 
 M: G POWER M {
-    char *t = newTemp();
-    emit("^", $1, $3, t);
-    $$ = t;
-}
-|  G   {$$=$1;}
-;
-
-G: OPENBRACKET EXPR CLOSEDBRACKET {$$=$2;}
-|  MINUS G  {
-    char *t = newTemp();
-    emit("negative", $2, "", t);
-    $$ = t;
-}
-|  INTEGER {$$=$1;}
-|  FLOAT {$$=$1;}
-|   IDENTIFIER { //handles use before init.
-        Symbol* s = lookup($1, current_scope);
-        if (!s) {
-            fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
-            $$ = "error";    
-        }
-        else if (!s->initialized) {
-            fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
-            $$ = "error";
-        } else {
-            s->used = true;
-            $$ = $1;
-        }
+    if ($1.type == SYM_ERROR || $3.type == SYM_ERROR) {
+        $$.type = SYM_ERROR; 
+        $$.place = NULL;
     }
-|  function_call {$$=$1;}
+    else {
+        if ($1.type == SYM_FLOAT || $3.type == SYM_FLOAT) 
+            $$.type = SYM_FLOAT;
+        else 
+            $$.type = SYM_INT;
+
+        char *t = newTemp();
+        emit("%%", $1.place, $3.place, t);
+        $$.place = t;
+    }
+}
+|  G   { $$.type = $1.type;
+    $$.place = $1.place;}
 ;
 
+G: OPENBRACKET EXPR CLOSEDBRACKET { 
+    /* Pass through both Type and Place from the inner expression */
+    $$ = $2; 
+}
+| MINUS G {
+    /* --- YOUR LOGIC: Type Checking --- */
+    if ($2.type == SYM_ERROR) {
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+    else if ($2.type == SYM_INT || $2.type == SYM_FLOAT) {
+        /* Valid numeric type, propagate the type up */
+        $$.type = $2.type;
+        
+        /* --- HER LOGIC: Code Generation --- */
+        char *t = newTemp();
+        emit("negative", $2.place, "", t);
+        $$.place = t;
+    }
+    else {
+        fprintf(stderr, "Line %d: Unary minus applied to non-numeric type %s\n", 
+                yylineno, type_name($2.type));
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+}
+| INTEGER { 
+    $$.type = SYM_INT;    // For your Type Checking
+    $$.place = $1;        // For her Code Gen (The string value "5", "10", etc.)
+}
+| FLOAT { 
+    $$.type = SYM_FLOAT;  // For your Type Checking
+    $$.place = $1;        // For her Code Gen (The string value "3.14", etc.)
+}
+| IDENTIFIER { 
+    Symbol* s = lookup($1, current_scope);
+    
+    /* --- YOUR LOGIC: Type Checking --- */
+    if (!s) {
+        fprintf(stderr,"Line %d:Variable %s not declared\n", yylineno, $1);
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+    else if (s->type != SYM_INT && s->type != SYM_FLOAT && s->type != SYM_BOOL) {
+        fprintf(stderr, "Line %d: Unsupported type in expression: %s\n", yylineno, $1);
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+    else {
+        if (!s->initialized) {
+            fprintf(stderr,"Line %d:Variable %s used before initialization\n", yylineno, $1);
+            // Note: We flag the error but usually continue to avoid cascading errors, 
+            // or you can set SYM_ERROR here if you want to stop compilation.
+            // For now, I will allow it to proceed with code gen to catch other errors:
+        }
+        
+        s->used = true;
+        
+        /* --- MERGED OUTPUT --- */
+        $$.type = s->type;  // Pass the type up
+        $$.place = $1;      // Pass the variable name ("x", "count") up
+    }
+}
+| function_call {
+    /* --- YOUR LOGIC: Type Checking --- */
+    if ($1.type == SYM_VOID) {
+        fprintf(stderr, "Line %d: Void function used in expression\n", yylineno);
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+    else {
+        /* Pass through the result from function_call */
+        $$.type = $1.type;
+        $$.place = $1.place;
+    }
+}
+;
 enter_scope:
 {
     current_scope = create_table(211, current_scope);
