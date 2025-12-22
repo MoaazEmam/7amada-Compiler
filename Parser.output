@@ -86,73 +86,70 @@ Grammar
    53          | condition OR inner_condition
    54          | NOT inner_condition
    55          | inner_condition
-   56          | condition AND EXPR
-   57          | condition OR EXPR
-   58          | NOT EXPR
 
-   59 inner_condition: OPENBRACKET condition CLOSEDBRACKET
-   60                | EXPR GREATERTHAN EXPR
-   61                | EXPR GREATERTHANEQ EXPR
-   62                | EXPR LESSTHAN EXPR
-   63                | EXPR LESSTHANEQ EXPR
-   64                | EXPR EQUALITY BOOLEAN
-   65                | EXPR EQUALITY EXPR
-   66                | EXPR NOTEQUALITY BOOLEAN
-   67                | EXPR NOTEQUALITY EXPR
+   56 inner_condition: OPENBRACKET condition CLOSEDBRACKET
+   57                | EXPR GREATERTHAN EXPR
+   58                | EXPR GREATERTHANEQ EXPR
+   59                | EXPR LESSTHAN EXPR
+   60                | EXPR LESSTHANEQ EXPR
+   61                | EXPR EQUALITY BOOLEAN
+   62                | EXPR EQUALITY EXPR
+   63                | EXPR NOTEQUALITY BOOLEAN
+   64                | EXPR NOTEQUALITY EXPR
 
-   68 assignment: IDENTIFIER EQUAL EXPR
-   69           | IDENTIFIER EQUAL STRING
-   70           | IDENTIFIER EQUAL condition
-   71           | IDENTIFIER INCREMENT
-   72           | IDENTIFIER DECREMENT
-   73           | IDENTIFIER PLUSEQ EXPR
-   74           | IDENTIFIER MINUSEQ EXPR
-   75           | IDENTIFIER MULTIPLYEQ EXPR
-   76           | IDENTIFIER DIVIDEEQ EXPR
+   65 assignment: IDENTIFIER EQUAL EXPR
+   66           | IDENTIFIER EQUAL STRING
+   67           | IDENTIFIER EQUAL condition
+   68           | IDENTIFIER INCREMENT
+   69           | IDENTIFIER DECREMENT
+   70           | IDENTIFIER PLUSEQ EXPR
+   71           | IDENTIFIER MINUSEQ EXPR
+   72           | IDENTIFIER MULTIPLYEQ EXPR
+   73           | IDENTIFIER DIVIDEEQ EXPR
 
-   77 EXPR: EXPR PLUS T
-   78     | EXPR MINUS T
-   79     | T
+   74 EXPR: EXPR PLUS T
+   75     | EXPR MINUS T
+   76     | T
 
-   80 T: T MULTIPLY M
-   81  | T DIVIDE M
-   82  | T MOD M
-   83  | M
+   77 T: T MULTIPLY M
+   78  | T DIVIDE M
+   79  | T MOD M
+   80  | M
 
-   84 M: G POWER M
-   85  | G
+   81 M: G POWER M
+   82  | G
 
-   86 G: OPENBRACKET EXPR CLOSEDBRACKET
-   87  | MINUS G
-   88  | INTEGER
-   89  | FLOAT
-   90  | IDENTIFIER
-   91  | function_call
+   83 G: OPENBRACKET EXPR CLOSEDBRACKET
+   84  | MINUS G
+   85  | INTEGER
+   86  | FLOAT
+   87  | IDENTIFIER
+   88  | function_call
 
-   92 enter_scope: /* empty */
+   89 enter_scope: /* empty */
 
-   93 exit_scope: /* empty */
+   90 exit_scope: /* empty */
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
 error (256)
-MINUS (258) 78 87
-PLUS (259) 77
-MULTIPLY (260) 80
-DIVIDE (261) 81
-OPENBRACKET (262) 29 30 31 32 33 36 39 40 43 44 47 48 51 59 86
-CLOSEDBRACKET (263) 29 30 31 32 33 36 41 42 43 44 47 48 51 59 86
-INTEGER (264) 51 88
-STRING (265) 27 69
-FLOAT (266) 89
-BOOLEAN (267) 26 64 66
+MINUS (258) 75 84
+PLUS (259) 74
+MULTIPLY (260) 77
+DIVIDE (261) 78
+OPENBRACKET (262) 29 30 31 32 33 36 39 40 43 44 47 48 51 56 83
+CLOSEDBRACKET (263) 29 30 31 32 33 36 41 42 43 44 47 48 51 56 83
+INTEGER (264) 51 85
+STRING (265) 27 66
+FLOAT (266) 86
+BOOLEAN (267) 26 61 63
 OPENBRACE (268) 29 30 31 32 33 36 41 42 47 48 51
 CLOSEDBRACE (269) 29 30 31 32 33 36 41 42 47 48 51
 SEMICOLON (270)
-MOD (271) 82
-POWER (272) 84
+MOD (271) 79
+POWER (272) 81
 OPENSQUARE (273)
 CLOSESQUARE (274)
 COMMA (275) 33 38 46
@@ -160,24 +157,24 @@ BOOLTYPE (276) 19
 INTTYPE (277) 17 34
 FLOATTYPE (278) 18
 STRINGTYPE (279) 20
-IDENTIFIER (280) 24 25 26 27 28 34 35 37 38 39 40 43 44 47 48 68 69
-    70 71 72 73 74 75 76 90
-GREATERTHANEQ (281) 61
-LESSTHAN (282) 62
-GREATERTHAN (283) 60
-LESSTHANEQ (284) 63
-EQUALITY (285) 64 65
-NOTEQUALITY (286) 66 67
-INCREMENT (287) 71
-DECREMENT (288) 72
-EQUAL (289) 25 26 27 28 34 35 68 69 70
-MINUSEQ (290) 74
-PLUSEQ (291) 73
-MULTIPLYEQ (292) 75
-DIVIDEEQ (293) 76
-AND (294) 52 56
-OR (295) 53 57
-NOT (296) 54 58
+IDENTIFIER (280) 24 25 26 27 28 34 35 37 38 39 40 43 44 47 48 65 66
+    67 68 69 70 71 72 73 87
+GREATERTHANEQ (281) 58
+LESSTHAN (282) 59
+GREATERTHAN (283) 57
+LESSTHANEQ (284) 60
+EQUALITY (285) 61 62
+NOTEQUALITY (286) 63 64
+INCREMENT (287) 68
+DECREMENT (288) 69
+EQUAL (289) 25 26 27 28 34 35 65 66 67
+MINUSEQ (290) 71
+PLUSEQ (291) 70
+MULTIPLYEQ (292) 72
+DIVIDEEQ (293) 73
+AND (294) 52
+OR (295) 53
+NOT (296) 54
 CONST (297) 21
 IF (298) 29 30 31
 ELSE (299) 29 31
@@ -233,7 +230,7 @@ function_header (73)
 function (74)
     on left: 41 42, on right: 13
 function_call (75)
-    on left: 43 44, on right: 10 91
+    on left: 43 44, on right: 10 88
 list (76)
     on left: 45 46, on right: 43 46
 switchstmt (77)
@@ -243,25 +240,24 @@ case_structure (78)
 inner_case (79)
     on left: 51, on right: 49 50
 condition (80)
-    on left: 52 53 54 55 56 57 58, on right: 28 29 30 31 32 36 52 53
-    56 57 59 70
+    on left: 52 53 54 55, on right: 28 29 30 31 32 36 52 53 56 67
 inner_condition (81)
-    on left: 59 60 61 62 63 64 65 66 67, on right: 52 53 54 55
+    on left: 56 57 58 59 60 61 62 63 64, on right: 52 53 54 55
 assignment (82)
-    on left: 68 69 70 71 72 73 74 75 76, on right: 5 33
+    on left: 65 66 67 68 69 70 71 72 73, on right: 5 33
 EXPR (83)
-    on left: 77 78 79, on right: 14 25 34 35 45 46 56 57 58 60 61 62
-    63 64 65 66 67 68 73 74 75 76 77 78 86
+    on left: 74 75 76, on right: 14 25 34 35 45 46 57 58 59 60 61 62
+    63 64 65 70 71 72 73 74 75 83
 T (84)
-    on left: 80 81 82 83, on right: 77 78 79 80 81 82
+    on left: 77 78 79 80, on right: 74 75 76 77 78 79
 M (85)
-    on left: 84 85, on right: 80 81 82 83 84
+    on left: 81 82, on right: 77 78 79 80 81
 G (86)
-    on left: 86 87 88 89 90 91, on right: 84 85 87
+    on left: 83 84 85 86 87 88, on right: 81 82 84
 enter_scope (87)
-    on left: 92, on right: 29 30 31 32 33 36 41 42 47 48 51
+    on left: 89, on right: 29 30 31 32 33 36 41 42 47 48 51
 exit_scope (88)
-    on left: 93, on right: 29 30 31 32 33 36 41 42 47 48 51
+    on left: 90, on right: 29 30 31 32 33 36 41 42 47 48 51
 
 
 state 0
@@ -332,15 +328,15 @@ state 5
 
    43 function_call: IDENTIFIER . OPENBRACKET list CLOSEDBRACKET
    44              | IDENTIFIER . OPENBRACKET CLOSEDBRACKET
-   68 assignment: IDENTIFIER . EQUAL EXPR
-   69           | IDENTIFIER . EQUAL STRING
-   70           | IDENTIFIER . EQUAL condition
-   71           | IDENTIFIER . INCREMENT
-   72           | IDENTIFIER . DECREMENT
-   73           | IDENTIFIER . PLUSEQ EXPR
-   74           | IDENTIFIER . MINUSEQ EXPR
-   75           | IDENTIFIER . MULTIPLYEQ EXPR
-   76           | IDENTIFIER . DIVIDEEQ EXPR
+   65 assignment: IDENTIFIER . EQUAL EXPR
+   66           | IDENTIFIER . EQUAL STRING
+   67           | IDENTIFIER . EQUAL condition
+   68           | IDENTIFIER . INCREMENT
+   69           | IDENTIFIER . DECREMENT
+   70           | IDENTIFIER . PLUSEQ EXPR
+   71           | IDENTIFIER . MINUSEQ EXPR
+   72           | IDENTIFIER . MULTIPLYEQ EXPR
+   73           | IDENTIFIER . DIVIDEEQ EXPR
 
     OPENBRACKET  shift, and go to state 30
     INCREMENT    shift, and go to state 31
@@ -516,7 +512,7 @@ state 25
 
     CLOSEDBRACKET  shift, and go to state 61
 
-    $default  reduce using rule 92 (enter_scope)
+    $default  reduce using rule 89 (enter_scope)
 
     enter_scope  go to state 62
 
@@ -571,23 +567,23 @@ state 30
 
 state 31
 
-   71 assignment: IDENTIFIER INCREMENT .
+   68 assignment: IDENTIFIER INCREMENT .
 
-    $default  reduce using rule 71 (assignment)
+    $default  reduce using rule 68 (assignment)
 
 
 state 32
 
-   72 assignment: IDENTIFIER DECREMENT .
+   69 assignment: IDENTIFIER DECREMENT .
 
-    $default  reduce using rule 72 (assignment)
+    $default  reduce using rule 69 (assignment)
 
 
 state 33
 
-   68 assignment: IDENTIFIER EQUAL . EXPR
-   69           | IDENTIFIER EQUAL . STRING
-   70           | IDENTIFIER EQUAL . condition
+   65 assignment: IDENTIFIER EQUAL . EXPR
+   66           | IDENTIFIER EQUAL . STRING
+   67           | IDENTIFIER EQUAL . condition
 
     MINUS        shift, and go to state 43
     OPENBRACKET  shift, and go to state 66
@@ -608,7 +604,7 @@ state 33
 
 state 34
 
-   74 assignment: IDENTIFIER MINUSEQ . EXPR
+   71 assignment: IDENTIFIER MINUSEQ . EXPR
 
     MINUS        shift, and go to state 43
     OPENBRACKET  shift, and go to state 44
@@ -625,7 +621,7 @@ state 34
 
 state 35
 
-   73 assignment: IDENTIFIER PLUSEQ . EXPR
+   70 assignment: IDENTIFIER PLUSEQ . EXPR
 
     MINUS        shift, and go to state 43
     OPENBRACKET  shift, and go to state 44
@@ -642,7 +638,7 @@ state 35
 
 state 36
 
-   75 assignment: IDENTIFIER MULTIPLYEQ . EXPR
+   72 assignment: IDENTIFIER MULTIPLYEQ . EXPR
 
     MINUS        shift, and go to state 43
     OPENBRACKET  shift, and go to state 44
@@ -659,7 +655,7 @@ state 36
 
 state 37
 
-   76 assignment: IDENTIFIER DIVIDEEQ . EXPR
+   73 assignment: IDENTIFIER DIVIDEEQ . EXPR
 
     MINUS        shift, and go to state 43
     OPENBRACKET  shift, and go to state 44
@@ -700,7 +696,7 @@ state 39
 
    33 forloop: FOR OPENBRACKET . enter_scope iterator COMMA assignment CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE exit_scope
 
-    $default  reduce using rule 92 (enter_scope)
+    $default  reduce using rule 89 (enter_scope)
 
     enter_scope  go to state 78
 
@@ -709,7 +705,7 @@ state 40
 
    32 repeat: REPEAT OPENBRACE . enter_scope code DOT CLOSEDBRACE exit_scope UNTIL OPENBRACKET condition CLOSEDBRACKET
 
-    $default  reduce using rule 92 (enter_scope)
+    $default  reduce using rule 89 (enter_scope)
 
     enter_scope  go to state 79
 
@@ -744,7 +740,7 @@ state 42
 
 state 43
 
-   87 G: MINUS . G
+   84 G: MINUS . G
 
     MINUS        shift, and go to state 43
     OPENBRACKET  shift, and go to state 44
@@ -758,7 +754,7 @@ state 43
 
 state 44
 
-   86 G: OPENBRACKET . EXPR CLOSEDBRACKET
+   83 G: OPENBRACKET . EXPR CLOSEDBRACKET
 
     MINUS        shift, and go to state 43
     OPENBRACKET  shift, and go to state 44
@@ -775,41 +771,41 @@ state 44
 
 state 45
 
-   88 G: INTEGER .
+   85 G: INTEGER .
 
-    $default  reduce using rule 88 (G)
+    $default  reduce using rule 85 (G)
 
 
 state 46
 
-   89 G: FLOAT .
+   86 G: FLOAT .
 
-    $default  reduce using rule 89 (G)
+    $default  reduce using rule 86 (G)
 
 
 state 47
 
    43 function_call: IDENTIFIER . OPENBRACKET list CLOSEDBRACKET
    44              | IDENTIFIER . OPENBRACKET CLOSEDBRACKET
-   90 G: IDENTIFIER .
+   87 G: IDENTIFIER .
 
     OPENBRACKET  shift, and go to state 30
 
-    $default  reduce using rule 90 (G)
+    $default  reduce using rule 87 (G)
 
 
 state 48
 
-   91 G: function_call .
+   88 G: function_call .
 
-    $default  reduce using rule 91 (G)
+    $default  reduce using rule 88 (G)
 
 
 state 49
 
    14 inner_code: RETURN EXPR .
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
+   74 EXPR: EXPR . PLUS T
+   75     | EXPR . MINUS T
 
     MINUS  shift, and go to state 84
     PLUS   shift, and go to state 85
@@ -819,33 +815,33 @@ state 49
 
 state 50
 
-   79 EXPR: T .
-   80 T: T . MULTIPLY M
-   81  | T . DIVIDE M
-   82  | T . MOD M
+   76 EXPR: T .
+   77 T: T . MULTIPLY M
+   78  | T . DIVIDE M
+   79  | T . MOD M
 
     MULTIPLY  shift, and go to state 86
     DIVIDE    shift, and go to state 87
     MOD       shift, and go to state 88
 
-    $default  reduce using rule 79 (EXPR)
+    $default  reduce using rule 76 (EXPR)
 
 
 state 51
 
-   83 T: M .
+   80 T: M .
 
-    $default  reduce using rule 83 (T)
+    $default  reduce using rule 80 (T)
 
 
 state 52
 
-   84 M: G . POWER M
-   85  | G .
+   81 M: G . POWER M
+   82  | G .
 
     POWER  shift, and go to state 89
 
-    $default  reduce using rule 85 (M)
+    $default  reduce using rule 82 (M)
 
 
 state 53
@@ -985,8 +981,8 @@ state 65
 
    45 list: EXPR .
    46     | EXPR . COMMA list
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
+   74 EXPR: EXPR . PLUS T
+   75     | EXPR . MINUS T
 
     MINUS  shift, and go to state 84
     PLUS   shift, and go to state 85
@@ -997,8 +993,8 @@ state 65
 
 state 66
 
-   59 inner_condition: OPENBRACKET . condition CLOSEDBRACKET
-   86 G: OPENBRACKET . EXPR CLOSEDBRACKET
+   56 inner_condition: OPENBRACKET . condition CLOSEDBRACKET
+   83 G: OPENBRACKET . EXPR CLOSEDBRACKET
 
     MINUS        shift, and go to state 43
     OPENBRACKET  shift, and go to state 66
@@ -1018,15 +1014,14 @@ state 66
 
 state 67
 
-   69 assignment: IDENTIFIER EQUAL STRING .
+   66 assignment: IDENTIFIER EQUAL STRING .
 
-    $default  reduce using rule 69 (assignment)
+    $default  reduce using rule 66 (assignment)
 
 
 state 68
 
    54 condition: NOT . inner_condition
-   58          | NOT . EXPR
 
     MINUS        shift, and go to state 43
     OPENBRACKET  shift, and go to state 66
@@ -1036,7 +1031,7 @@ state 68
 
     function_call    go to state 48
     inner_condition  go to state 101
-    EXPR             go to state 102
+    EXPR             go to state 77
     T                go to state 50
     M                go to state 51
     G                go to state 52
@@ -1046,14 +1041,12 @@ state 69
 
    52 condition: condition . AND inner_condition
    53          | condition . OR inner_condition
-   56          | condition . AND EXPR
-   57          | condition . OR EXPR
-   70 assignment: IDENTIFIER EQUAL condition .
+   67 assignment: IDENTIFIER EQUAL condition .
 
-    AND  shift, and go to state 103
-    OR   shift, and go to state 104
+    AND  shift, and go to state 102
+    OR   shift, and go to state 103
 
-    $default  reduce using rule 70 (assignment)
+    $default  reduce using rule 67 (assignment)
 
 
 state 70
@@ -1065,76 +1058,76 @@ state 70
 
 state 71
 
-   60 inner_condition: EXPR . GREATERTHAN EXPR
-   61                | EXPR . GREATERTHANEQ EXPR
-   62                | EXPR . LESSTHAN EXPR
-   63                | EXPR . LESSTHANEQ EXPR
-   64                | EXPR . EQUALITY BOOLEAN
-   65                | EXPR . EQUALITY EXPR
-   66                | EXPR . NOTEQUALITY BOOLEAN
-   67                | EXPR . NOTEQUALITY EXPR
-   68 assignment: IDENTIFIER EQUAL EXPR .
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
+   57 inner_condition: EXPR . GREATERTHAN EXPR
+   58                | EXPR . GREATERTHANEQ EXPR
+   59                | EXPR . LESSTHAN EXPR
+   60                | EXPR . LESSTHANEQ EXPR
+   61                | EXPR . EQUALITY BOOLEAN
+   62                | EXPR . EQUALITY EXPR
+   63                | EXPR . NOTEQUALITY BOOLEAN
+   64                | EXPR . NOTEQUALITY EXPR
+   65 assignment: IDENTIFIER EQUAL EXPR .
+   74 EXPR: EXPR . PLUS T
+   75     | EXPR . MINUS T
 
     MINUS          shift, and go to state 84
     PLUS           shift, and go to state 85
-    GREATERTHANEQ  shift, and go to state 105
-    LESSTHAN       shift, and go to state 106
-    GREATERTHAN    shift, and go to state 107
-    LESSTHANEQ     shift, and go to state 108
-    EQUALITY       shift, and go to state 109
-    NOTEQUALITY    shift, and go to state 110
+    GREATERTHANEQ  shift, and go to state 104
+    LESSTHAN       shift, and go to state 105
+    GREATERTHAN    shift, and go to state 106
+    LESSTHANEQ     shift, and go to state 107
+    EQUALITY       shift, and go to state 108
+    NOTEQUALITY    shift, and go to state 109
 
-    $default  reduce using rule 68 (assignment)
+    $default  reduce using rule 65 (assignment)
 
 
 state 72
 
-   74 assignment: IDENTIFIER MINUSEQ EXPR .
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
+   71 assignment: IDENTIFIER MINUSEQ EXPR .
+   74 EXPR: EXPR . PLUS T
+   75     | EXPR . MINUS T
 
     MINUS  shift, and go to state 84
     PLUS   shift, and go to state 85
 
-    $default  reduce using rule 74 (assignment)
+    $default  reduce using rule 71 (assignment)
 
 
 state 73
 
-   73 assignment: IDENTIFIER PLUSEQ EXPR .
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
+   70 assignment: IDENTIFIER PLUSEQ EXPR .
+   74 EXPR: EXPR . PLUS T
+   75     | EXPR . MINUS T
+
+    MINUS  shift, and go to state 84
+    PLUS   shift, and go to state 85
+
+    $default  reduce using rule 70 (assignment)
+
+
+state 74
+
+   72 assignment: IDENTIFIER MULTIPLYEQ EXPR .
+   74 EXPR: EXPR . PLUS T
+   75     | EXPR . MINUS T
+
+    MINUS  shift, and go to state 84
+    PLUS   shift, and go to state 85
+
+    $default  reduce using rule 72 (assignment)
+
+
+state 75
+
+   73 assignment: IDENTIFIER DIVIDEEQ EXPR .
+   74 EXPR: EXPR . PLUS T
+   75     | EXPR . MINUS T
 
     MINUS  shift, and go to state 84
     PLUS   shift, and go to state 85
 
     $default  reduce using rule 73 (assignment)
-
-
-state 74
-
-   75 assignment: IDENTIFIER MULTIPLYEQ EXPR .
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
-
-    MINUS  shift, and go to state 84
-    PLUS   shift, and go to state 85
-
-    $default  reduce using rule 75 (assignment)
-
-
-state 75
-
-   76 assignment: IDENTIFIER DIVIDEEQ EXPR .
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
-
-    MINUS  shift, and go to state 84
-    PLUS   shift, and go to state 85
-
-    $default  reduce using rule 76 (assignment)
 
 
 state 76
@@ -1144,45 +1137,43 @@ state 76
    31       | IF OPENBRACKET condition . CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope ELSE OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope
    52 condition: condition . AND inner_condition
    53          | condition . OR inner_condition
-   56          | condition . AND EXPR
-   57          | condition . OR EXPR
 
-    CLOSEDBRACKET  shift, and go to state 111
-    AND            shift, and go to state 103
-    OR             shift, and go to state 104
+    CLOSEDBRACKET  shift, and go to state 110
+    AND            shift, and go to state 102
+    OR             shift, and go to state 103
 
 
 state 77
 
-   60 inner_condition: EXPR . GREATERTHAN EXPR
-   61                | EXPR . GREATERTHANEQ EXPR
-   62                | EXPR . LESSTHAN EXPR
-   63                | EXPR . LESSTHANEQ EXPR
-   64                | EXPR . EQUALITY BOOLEAN
-   65                | EXPR . EQUALITY EXPR
-   66                | EXPR . NOTEQUALITY BOOLEAN
-   67                | EXPR . NOTEQUALITY EXPR
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
+   57 inner_condition: EXPR . GREATERTHAN EXPR
+   58                | EXPR . GREATERTHANEQ EXPR
+   59                | EXPR . LESSTHAN EXPR
+   60                | EXPR . LESSTHANEQ EXPR
+   61                | EXPR . EQUALITY BOOLEAN
+   62                | EXPR . EQUALITY EXPR
+   63                | EXPR . NOTEQUALITY BOOLEAN
+   64                | EXPR . NOTEQUALITY EXPR
+   74 EXPR: EXPR . PLUS T
+   75     | EXPR . MINUS T
 
     MINUS          shift, and go to state 84
     PLUS           shift, and go to state 85
-    GREATERTHANEQ  shift, and go to state 105
-    LESSTHAN       shift, and go to state 106
-    GREATERTHAN    shift, and go to state 107
-    LESSTHANEQ     shift, and go to state 108
-    EQUALITY       shift, and go to state 109
-    NOTEQUALITY    shift, and go to state 110
+    GREATERTHANEQ  shift, and go to state 104
+    LESSTHAN       shift, and go to state 105
+    GREATERTHAN    shift, and go to state 106
+    LESSTHANEQ     shift, and go to state 107
+    EQUALITY       shift, and go to state 108
+    NOTEQUALITY    shift, and go to state 109
 
 
 state 78
 
    33 forloop: FOR OPENBRACKET enter_scope . iterator COMMA assignment CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE exit_scope
 
-    INTTYPE     shift, and go to state 112
-    IDENTIFIER  shift, and go to state 113
+    INTTYPE     shift, and go to state 111
+    IDENTIFIER  shift, and go to state 112
 
-    iterator  go to state 114
+    iterator  go to state 113
 
 
 state 79
@@ -1203,7 +1194,7 @@ state 79
     RETURN      shift, and go to state 12
     VOIDTYPE    shift, and go to state 13
 
-    code             go to state 115
+    code             go to state 114
     inner_code       go to state 17
     datatype         go to state 18
     const_type       go to state 19
@@ -1224,12 +1215,10 @@ state 80
    36 whileloop: WHILE OPENBRACKET condition . CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope
    52 condition: condition . AND inner_condition
    53          | condition . OR inner_condition
-   56          | condition . AND EXPR
-   57          | condition . OR EXPR
 
-    CLOSEDBRACKET  shift, and go to state 116
-    AND            shift, and go to state 103
-    OR             shift, and go to state 104
+    CLOSEDBRACKET  shift, and go to state 115
+    AND            shift, and go to state 102
+    OR             shift, and go to state 103
 
 
 state 81
@@ -1237,30 +1226,46 @@ state 81
    47 switchstmt: SWITCH OPENBRACKET IDENTIFIER . CLOSEDBRACKET OPENBRACE enter_scope case_structure DEFAULT OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope CLOSEDBRACE exit_scope
    48           | SWITCH OPENBRACKET IDENTIFIER . CLOSEDBRACKET OPENBRACE enter_scope case_structure CLOSEDBRACE exit_scope
 
-    CLOSEDBRACKET  shift, and go to state 117
+    CLOSEDBRACKET  shift, and go to state 116
 
 
 state 82
 
-   87 G: MINUS G .
+   84 G: MINUS G .
 
-    $default  reduce using rule 87 (G)
+    $default  reduce using rule 84 (G)
 
 
 state 83
 
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
-   86 G: OPENBRACKET EXPR . CLOSEDBRACKET
+   74 EXPR: EXPR . PLUS T
+   75     | EXPR . MINUS T
+   83 G: OPENBRACKET EXPR . CLOSEDBRACKET
 
     MINUS          shift, and go to state 84
     PLUS           shift, and go to state 85
-    CLOSEDBRACKET  shift, and go to state 118
+    CLOSEDBRACKET  shift, and go to state 117
 
 
 state 84
 
-   78 EXPR: EXPR MINUS . T
+   75 EXPR: EXPR MINUS . T
+
+    MINUS        shift, and go to state 43
+    OPENBRACKET  shift, and go to state 44
+    INTEGER      shift, and go to state 45
+    FLOAT        shift, and go to state 46
+    IDENTIFIER   shift, and go to state 47
+
+    function_call  go to state 48
+    T              go to state 118
+    M              go to state 51
+    G              go to state 52
+
+
+state 85
+
+   74 EXPR: EXPR PLUS . T
 
     MINUS        shift, and go to state 43
     OPENBRACKET  shift, and go to state 44
@@ -1274,9 +1279,9 @@ state 84
     G              go to state 52
 
 
-state 85
+state 86
 
-   77 EXPR: EXPR PLUS . T
+   77 T: T MULTIPLY . M
 
     MINUS        shift, and go to state 43
     OPENBRACKET  shift, and go to state 44
@@ -1285,14 +1290,13 @@ state 85
     IDENTIFIER   shift, and go to state 47
 
     function_call  go to state 48
-    T              go to state 120
-    M              go to state 51
+    M              go to state 120
     G              go to state 52
 
 
-state 86
+state 87
 
-   80 T: T MULTIPLY . M
+   78 T: T DIVIDE . M
 
     MINUS        shift, and go to state 43
     OPENBRACKET  shift, and go to state 44
@@ -1305,9 +1309,9 @@ state 86
     G              go to state 52
 
 
-state 87
+state 88
 
-   81 T: T DIVIDE . M
+   79 T: T MOD . M
 
     MINUS        shift, and go to state 43
     OPENBRACKET  shift, and go to state 44
@@ -1320,9 +1324,9 @@ state 87
     G              go to state 52
 
 
-state 88
+state 89
 
-   82 T: T MOD . M
+   81 M: G POWER . M
 
     MINUS        shift, and go to state 43
     OPENBRACKET  shift, and go to state 44
@@ -1332,21 +1336,6 @@ state 88
 
     function_call  go to state 48
     M              go to state 123
-    G              go to state 52
-
-
-state 89
-
-   84 M: G POWER . M
-
-    MINUS        shift, and go to state 43
-    OPENBRACKET  shift, and go to state 44
-    INTEGER      shift, and go to state 45
-    FLOAT        shift, and go to state 46
-    IDENTIFIER   shift, and go to state 47
-
-    function_call  go to state 48
-    M              go to state 124
     G              go to state 52
 
 
@@ -1381,16 +1370,16 @@ state 93
     MINUS        shift, and go to state 43
     OPENBRACKET  shift, and go to state 66
     INTEGER      shift, and go to state 45
-    STRING       shift, and go to state 125
+    STRING       shift, and go to state 124
     FLOAT        shift, and go to state 46
-    BOOLEAN      shift, and go to state 126
+    BOOLEAN      shift, and go to state 125
     IDENTIFIER   shift, and go to state 47
     NOT          shift, and go to state 68
 
     function_call    go to state 48
-    condition        go to state 127
+    condition        go to state 126
     inner_condition  go to state 70
-    EXPR             go to state 128
+    EXPR             go to state 127
     T                go to state 50
     M                go to state 51
     G                go to state 52
@@ -1400,9 +1389,9 @@ state 94
 
    42 function: function_header CLOSEDBRACKET OPENBRACE . enter_scope code DOT CLOSEDBRACE exit_scope
 
-    $default  reduce using rule 92 (enter_scope)
+    $default  reduce using rule 89 (enter_scope)
 
-    enter_scope  go to state 129
+    enter_scope  go to state 128
 
 
 state 95
@@ -1410,14 +1399,14 @@ state 95
    37 parameters: datatype . IDENTIFIER
    38           | datatype . IDENTIFIER COMMA parameters
 
-    IDENTIFIER  shift, and go to state 130
+    IDENTIFIER  shift, and go to state 129
 
 
 state 96
 
    41 function: function_header enter_scope parameters . CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE exit_scope
 
-    CLOSEDBRACKET  shift, and go to state 131
+    CLOSEDBRACKET  shift, and go to state 130
 
 
 state 97
@@ -1438,7 +1427,7 @@ state 98
     IDENTIFIER   shift, and go to state 47
 
     function_call  go to state 48
-    list           go to state 132
+    list           go to state 131
     EXPR           go to state 65
     T              go to state 50
     M              go to state 51
@@ -1449,38 +1438,36 @@ state 99
 
    52 condition: condition . AND inner_condition
    53          | condition . OR inner_condition
-   56          | condition . AND EXPR
-   57          | condition . OR EXPR
-   59 inner_condition: OPENBRACKET condition . CLOSEDBRACKET
+   56 inner_condition: OPENBRACKET condition . CLOSEDBRACKET
 
-    CLOSEDBRACKET  shift, and go to state 133
-    AND            shift, and go to state 103
-    OR             shift, and go to state 104
+    CLOSEDBRACKET  shift, and go to state 132
+    AND            shift, and go to state 102
+    OR             shift, and go to state 103
 
 
 state 100
 
-   60 inner_condition: EXPR . GREATERTHAN EXPR
-   61                | EXPR . GREATERTHANEQ EXPR
-   62                | EXPR . LESSTHAN EXPR
-   63                | EXPR . LESSTHANEQ EXPR
-   64                | EXPR . EQUALITY BOOLEAN
-   65                | EXPR . EQUALITY EXPR
-   66                | EXPR . NOTEQUALITY BOOLEAN
-   67                | EXPR . NOTEQUALITY EXPR
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
-   86 G: OPENBRACKET EXPR . CLOSEDBRACKET
+   57 inner_condition: EXPR . GREATERTHAN EXPR
+   58                | EXPR . GREATERTHANEQ EXPR
+   59                | EXPR . LESSTHAN EXPR
+   60                | EXPR . LESSTHANEQ EXPR
+   61                | EXPR . EQUALITY BOOLEAN
+   62                | EXPR . EQUALITY EXPR
+   63                | EXPR . NOTEQUALITY BOOLEAN
+   64                | EXPR . NOTEQUALITY EXPR
+   74 EXPR: EXPR . PLUS T
+   75     | EXPR . MINUS T
+   83 G: OPENBRACKET EXPR . CLOSEDBRACKET
 
     MINUS          shift, and go to state 84
     PLUS           shift, and go to state 85
-    CLOSEDBRACKET  shift, and go to state 118
-    GREATERTHANEQ  shift, and go to state 105
-    LESSTHAN       shift, and go to state 106
-    GREATERTHAN    shift, and go to state 107
-    LESSTHANEQ     shift, and go to state 108
-    EQUALITY       shift, and go to state 109
-    NOTEQUALITY    shift, and go to state 110
+    CLOSEDBRACKET  shift, and go to state 117
+    GREATERTHANEQ  shift, and go to state 104
+    LESSTHAN       shift, and go to state 105
+    GREATERTHAN    shift, and go to state 106
+    LESSTHANEQ     shift, and go to state 107
+    EQUALITY       shift, and go to state 108
+    NOTEQUALITY    shift, and go to state 109
 
 
 state 101
@@ -1492,34 +1479,25 @@ state 101
 
 state 102
 
-   58 condition: NOT EXPR .
-   60 inner_condition: EXPR . GREATERTHAN EXPR
-   61                | EXPR . GREATERTHANEQ EXPR
-   62                | EXPR . LESSTHAN EXPR
-   63                | EXPR . LESSTHANEQ EXPR
-   64                | EXPR . EQUALITY BOOLEAN
-   65                | EXPR . EQUALITY EXPR
-   66                | EXPR . NOTEQUALITY BOOLEAN
-   67                | EXPR . NOTEQUALITY EXPR
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
+   52 condition: condition AND . inner_condition
 
-    MINUS          shift, and go to state 84
-    PLUS           shift, and go to state 85
-    GREATERTHANEQ  shift, and go to state 105
-    LESSTHAN       shift, and go to state 106
-    GREATERTHAN    shift, and go to state 107
-    LESSTHANEQ     shift, and go to state 108
-    EQUALITY       shift, and go to state 109
-    NOTEQUALITY    shift, and go to state 110
+    MINUS        shift, and go to state 43
+    OPENBRACKET  shift, and go to state 66
+    INTEGER      shift, and go to state 45
+    FLOAT        shift, and go to state 46
+    IDENTIFIER   shift, and go to state 47
 
-    $default  reduce using rule 58 (condition)
+    function_call    go to state 48
+    inner_condition  go to state 133
+    EXPR             go to state 77
+    T                go to state 50
+    M                go to state 51
+    G                go to state 52
 
 
 state 103
 
-   52 condition: condition AND . inner_condition
-   56          | condition AND . EXPR
+   53 condition: condition OR . inner_condition
 
     MINUS        shift, and go to state 43
     OPENBRACKET  shift, and go to state 66
@@ -1529,7 +1507,7 @@ state 103
 
     function_call    go to state 48
     inner_condition  go to state 134
-    EXPR             go to state 135
+    EXPR             go to state 77
     T                go to state 50
     M                go to state 51
     G                go to state 52
@@ -1537,26 +1515,58 @@ state 103
 
 state 104
 
-   53 condition: condition OR . inner_condition
-   57          | condition OR . EXPR
+   58 inner_condition: EXPR GREATERTHANEQ . EXPR
 
     MINUS        shift, and go to state 43
-    OPENBRACKET  shift, and go to state 66
+    OPENBRACKET  shift, and go to state 44
     INTEGER      shift, and go to state 45
     FLOAT        shift, and go to state 46
     IDENTIFIER   shift, and go to state 47
 
-    function_call    go to state 48
-    inner_condition  go to state 136
-    EXPR             go to state 137
-    T                go to state 50
-    M                go to state 51
-    G                go to state 52
+    function_call  go to state 48
+    EXPR           go to state 135
+    T              go to state 50
+    M              go to state 51
+    G              go to state 52
 
 
 state 105
 
-   61 inner_condition: EXPR GREATERTHANEQ . EXPR
+   59 inner_condition: EXPR LESSTHAN . EXPR
+
+    MINUS        shift, and go to state 43
+    OPENBRACKET  shift, and go to state 44
+    INTEGER      shift, and go to state 45
+    FLOAT        shift, and go to state 46
+    IDENTIFIER   shift, and go to state 47
+
+    function_call  go to state 48
+    EXPR           go to state 136
+    T              go to state 50
+    M              go to state 51
+    G              go to state 52
+
+
+state 106
+
+   57 inner_condition: EXPR GREATERTHAN . EXPR
+
+    MINUS        shift, and go to state 43
+    OPENBRACKET  shift, and go to state 44
+    INTEGER      shift, and go to state 45
+    FLOAT        shift, and go to state 46
+    IDENTIFIER   shift, and go to state 47
+
+    function_call  go to state 48
+    EXPR           go to state 137
+    T              go to state 50
+    M              go to state 51
+    G              go to state 52
+
+
+state 107
+
+   60 inner_condition: EXPR LESSTHANEQ . EXPR
 
     MINUS        shift, and go to state 43
     OPENBRACKET  shift, and go to state 44
@@ -1571,31 +1581,16 @@ state 105
     G              go to state 52
 
 
-state 106
+state 108
 
-   62 inner_condition: EXPR LESSTHAN . EXPR
-
-    MINUS        shift, and go to state 43
-    OPENBRACKET  shift, and go to state 44
-    INTEGER      shift, and go to state 45
-    FLOAT        shift, and go to state 46
-    IDENTIFIER   shift, and go to state 47
-
-    function_call  go to state 48
-    EXPR           go to state 139
-    T              go to state 50
-    M              go to state 51
-    G              go to state 52
-
-
-state 107
-
-   60 inner_condition: EXPR GREATERTHAN . EXPR
+   61 inner_condition: EXPR EQUALITY . BOOLEAN
+   62                | EXPR EQUALITY . EXPR
 
     MINUS        shift, and go to state 43
     OPENBRACKET  shift, and go to state 44
     INTEGER      shift, and go to state 45
     FLOAT        shift, and go to state 46
+    BOOLEAN      shift, and go to state 139
     IDENTIFIER   shift, and go to state 47
 
     function_call  go to state 48
@@ -1605,37 +1600,20 @@ state 107
     G              go to state 52
 
 
-state 108
-
-   63 inner_condition: EXPR LESSTHANEQ . EXPR
-
-    MINUS        shift, and go to state 43
-    OPENBRACKET  shift, and go to state 44
-    INTEGER      shift, and go to state 45
-    FLOAT        shift, and go to state 46
-    IDENTIFIER   shift, and go to state 47
-
-    function_call  go to state 48
-    EXPR           go to state 141
-    T              go to state 50
-    M              go to state 51
-    G              go to state 52
-
-
 state 109
 
-   64 inner_condition: EXPR EQUALITY . BOOLEAN
-   65                | EXPR EQUALITY . EXPR
+   63 inner_condition: EXPR NOTEQUALITY . BOOLEAN
+   64                | EXPR NOTEQUALITY . EXPR
 
     MINUS        shift, and go to state 43
     OPENBRACKET  shift, and go to state 44
     INTEGER      shift, and go to state 45
     FLOAT        shift, and go to state 46
-    BOOLEAN      shift, and go to state 142
+    BOOLEAN      shift, and go to state 141
     IDENTIFIER   shift, and go to state 47
 
     function_call  go to state 48
-    EXPR           go to state 143
+    EXPR           go to state 142
     T              go to state 50
     M              go to state 51
     G              go to state 52
@@ -1643,194 +1621,173 @@ state 109
 
 state 110
 
-   66 inner_condition: EXPR NOTEQUALITY . BOOLEAN
-   67                | EXPR NOTEQUALITY . EXPR
-
-    MINUS        shift, and go to state 43
-    OPENBRACKET  shift, and go to state 44
-    INTEGER      shift, and go to state 45
-    FLOAT        shift, and go to state 46
-    BOOLEAN      shift, and go to state 144
-    IDENTIFIER   shift, and go to state 47
-
-    function_call  go to state 48
-    EXPR           go to state 145
-    T              go to state 50
-    M              go to state 51
-    G              go to state 52
-
-
-state 111
-
    29 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET . OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope ELSE Ifstmt
    30       | IF OPENBRACKET condition CLOSEDBRACKET . OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope
    31       | IF OPENBRACKET condition CLOSEDBRACKET . OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope ELSE OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope
 
-    OPENBRACE  shift, and go to state 146
+    OPENBRACE  shift, and go to state 143
+
+
+state 111
+
+   34 iterator: INTTYPE . IDENTIFIER EQUAL EXPR TO EXPR
+
+    IDENTIFIER  shift, and go to state 144
 
 
 state 112
 
-   34 iterator: INTTYPE . IDENTIFIER EQUAL EXPR TO EXPR
+   35 iterator: IDENTIFIER . EQUAL EXPR TO EXPR
 
-    IDENTIFIER  shift, and go to state 147
+    EQUAL  shift, and go to state 145
 
 
 state 113
 
-   35 iterator: IDENTIFIER . EQUAL EXPR TO EXPR
+   33 forloop: FOR OPENBRACKET enter_scope iterator . COMMA assignment CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE exit_scope
 
-    EQUAL  shift, and go to state 148
+    COMMA  shift, and go to state 146
 
 
 state 114
 
-   33 forloop: FOR OPENBRACKET enter_scope iterator . COMMA assignment CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE exit_scope
+    4 code: code . DOT inner_code
+   32 repeat: REPEAT OPENBRACE enter_scope code . DOT CLOSEDBRACE exit_scope UNTIL OPENBRACKET condition CLOSEDBRACKET
 
-    COMMA  shift, and go to state 149
+    DOT  shift, and go to state 147
 
 
 state 115
 
-    4 code: code . DOT inner_code
-   32 repeat: REPEAT OPENBRACE enter_scope code . DOT CLOSEDBRACE exit_scope UNTIL OPENBRACKET condition CLOSEDBRACKET
+   36 whileloop: WHILE OPENBRACKET condition CLOSEDBRACKET . OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope
 
-    DOT  shift, and go to state 150
+    OPENBRACE  shift, and go to state 148
 
 
 state 116
 
-   36 whileloop: WHILE OPENBRACKET condition CLOSEDBRACKET . OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope
+   47 switchstmt: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET . OPENBRACE enter_scope case_structure DEFAULT OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope CLOSEDBRACE exit_scope
+   48           | SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET . OPENBRACE enter_scope case_structure CLOSEDBRACE exit_scope
 
-    OPENBRACE  shift, and go to state 151
+    OPENBRACE  shift, and go to state 149
 
 
 state 117
 
-   47 switchstmt: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET . OPENBRACE enter_scope case_structure DEFAULT OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope CLOSEDBRACE exit_scope
-   48           | SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET . OPENBRACE enter_scope case_structure CLOSEDBRACE exit_scope
+   83 G: OPENBRACKET EXPR CLOSEDBRACKET .
 
-    OPENBRACE  shift, and go to state 152
+    $default  reduce using rule 83 (G)
 
 
 state 118
 
-   86 G: OPENBRACKET EXPR CLOSEDBRACKET .
+   75 EXPR: EXPR MINUS T .
+   77 T: T . MULTIPLY M
+   78  | T . DIVIDE M
+   79  | T . MOD M
 
-    $default  reduce using rule 86 (G)
+    MULTIPLY  shift, and go to state 86
+    DIVIDE    shift, and go to state 87
+    MOD       shift, and go to state 88
+
+    $default  reduce using rule 75 (EXPR)
 
 
 state 119
 
-   78 EXPR: EXPR MINUS T .
-   80 T: T . MULTIPLY M
-   81  | T . DIVIDE M
-   82  | T . MOD M
+   74 EXPR: EXPR PLUS T .
+   77 T: T . MULTIPLY M
+   78  | T . DIVIDE M
+   79  | T . MOD M
 
     MULTIPLY  shift, and go to state 86
     DIVIDE    shift, and go to state 87
     MOD       shift, and go to state 88
 
-    $default  reduce using rule 78 (EXPR)
+    $default  reduce using rule 74 (EXPR)
 
 
 state 120
 
-   77 EXPR: EXPR PLUS T .
-   80 T: T . MULTIPLY M
-   81  | T . DIVIDE M
-   82  | T . MOD M
+   77 T: T MULTIPLY M .
 
-    MULTIPLY  shift, and go to state 86
-    DIVIDE    shift, and go to state 87
-    MOD       shift, and go to state 88
-
-    $default  reduce using rule 77 (EXPR)
+    $default  reduce using rule 77 (T)
 
 
 state 121
 
-   80 T: T MULTIPLY M .
+   78 T: T DIVIDE M .
 
-    $default  reduce using rule 80 (T)
+    $default  reduce using rule 78 (T)
 
 
 state 122
 
-   81 T: T DIVIDE M .
+   79 T: T MOD M .
 
-    $default  reduce using rule 81 (T)
+    $default  reduce using rule 79 (T)
 
 
 state 123
 
-   82 T: T MOD M .
+   81 M: G POWER M .
 
-    $default  reduce using rule 82 (T)
+    $default  reduce using rule 81 (M)
 
 
 state 124
-
-   84 M: G POWER M .
-
-    $default  reduce using rule 84 (M)
-
-
-state 125
 
    27 inner_declaration: IDENTIFIER EQUAL STRING .
 
     $default  reduce using rule 27 (inner_declaration)
 
 
-state 126
+state 125
 
    26 inner_declaration: IDENTIFIER EQUAL BOOLEAN .
 
     $default  reduce using rule 26 (inner_declaration)
 
 
-state 127
+state 126
 
    28 inner_declaration: IDENTIFIER EQUAL condition .
    52 condition: condition . AND inner_condition
    53          | condition . OR inner_condition
-   56          | condition . AND EXPR
-   57          | condition . OR EXPR
 
-    AND  shift, and go to state 103
-    OR   shift, and go to state 104
+    AND  shift, and go to state 102
+    OR   shift, and go to state 103
 
     $default  reduce using rule 28 (inner_declaration)
 
 
-state 128
+state 127
 
    25 inner_declaration: IDENTIFIER EQUAL EXPR .
-   60 inner_condition: EXPR . GREATERTHAN EXPR
-   61                | EXPR . GREATERTHANEQ EXPR
-   62                | EXPR . LESSTHAN EXPR
-   63                | EXPR . LESSTHANEQ EXPR
-   64                | EXPR . EQUALITY BOOLEAN
-   65                | EXPR . EQUALITY EXPR
-   66                | EXPR . NOTEQUALITY BOOLEAN
-   67                | EXPR . NOTEQUALITY EXPR
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
+   57 inner_condition: EXPR . GREATERTHAN EXPR
+   58                | EXPR . GREATERTHANEQ EXPR
+   59                | EXPR . LESSTHAN EXPR
+   60                | EXPR . LESSTHANEQ EXPR
+   61                | EXPR . EQUALITY BOOLEAN
+   62                | EXPR . EQUALITY EXPR
+   63                | EXPR . NOTEQUALITY BOOLEAN
+   64                | EXPR . NOTEQUALITY EXPR
+   74 EXPR: EXPR . PLUS T
+   75     | EXPR . MINUS T
 
     MINUS          shift, and go to state 84
     PLUS           shift, and go to state 85
-    GREATERTHANEQ  shift, and go to state 105
-    LESSTHAN       shift, and go to state 106
-    GREATERTHAN    shift, and go to state 107
-    LESSTHANEQ     shift, and go to state 108
-    EQUALITY       shift, and go to state 109
-    NOTEQUALITY    shift, and go to state 110
+    GREATERTHANEQ  shift, and go to state 104
+    LESSTHAN       shift, and go to state 105
+    GREATERTHAN    shift, and go to state 106
+    LESSTHANEQ     shift, and go to state 107
+    EQUALITY       shift, and go to state 108
+    NOTEQUALITY    shift, and go to state 109
 
     $default  reduce using rule 25 (inner_declaration)
 
 
-state 129
+state 128
 
    42 function: function_header CLOSEDBRACKET OPENBRACE enter_scope . code DOT CLOSEDBRACE exit_scope
 
@@ -1848,7 +1805,7 @@ state 129
     RETURN      shift, and go to state 12
     VOIDTYPE    shift, and go to state 13
 
-    code             go to state 153
+    code             go to state 150
     inner_code       go to state 17
     datatype         go to state 18
     const_type       go to state 19
@@ -1864,132 +1821,92 @@ state 129
     assignment       go to state 29
 
 
-state 130
+state 129
 
    37 parameters: datatype IDENTIFIER .
    38           | datatype IDENTIFIER . COMMA parameters
 
-    COMMA  shift, and go to state 154
+    COMMA  shift, and go to state 151
 
     $default  reduce using rule 37 (parameters)
 
 
-state 131
+state 130
 
    41 function: function_header enter_scope parameters CLOSEDBRACKET . OPENBRACE code DOT CLOSEDBRACE exit_scope
 
-    OPENBRACE  shift, and go to state 155
+    OPENBRACE  shift, and go to state 152
 
 
-state 132
+state 131
 
    46 list: EXPR COMMA list .
 
     $default  reduce using rule 46 (list)
 
 
+state 132
+
+   56 inner_condition: OPENBRACKET condition CLOSEDBRACKET .
+
+    $default  reduce using rule 56 (inner_condition)
+
+
 state 133
-
-   59 inner_condition: OPENBRACKET condition CLOSEDBRACKET .
-
-    $default  reduce using rule 59 (inner_condition)
-
-
-state 134
 
    52 condition: condition AND inner_condition .
 
     $default  reduce using rule 52 (condition)
 
 
-state 135
-
-   56 condition: condition AND EXPR .
-   60 inner_condition: EXPR . GREATERTHAN EXPR
-   61                | EXPR . GREATERTHANEQ EXPR
-   62                | EXPR . LESSTHAN EXPR
-   63                | EXPR . LESSTHANEQ EXPR
-   64                | EXPR . EQUALITY BOOLEAN
-   65                | EXPR . EQUALITY EXPR
-   66                | EXPR . NOTEQUALITY BOOLEAN
-   67                | EXPR . NOTEQUALITY EXPR
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
-
-    MINUS          shift, and go to state 84
-    PLUS           shift, and go to state 85
-    GREATERTHANEQ  shift, and go to state 105
-    LESSTHAN       shift, and go to state 106
-    GREATERTHAN    shift, and go to state 107
-    LESSTHANEQ     shift, and go to state 108
-    EQUALITY       shift, and go to state 109
-    NOTEQUALITY    shift, and go to state 110
-
-    $default  reduce using rule 56 (condition)
-
-
-state 136
+state 134
 
    53 condition: condition OR inner_condition .
 
     $default  reduce using rule 53 (condition)
 
 
+state 135
+
+   58 inner_condition: EXPR GREATERTHANEQ EXPR .
+   74 EXPR: EXPR . PLUS T
+   75     | EXPR . MINUS T
+
+    MINUS  shift, and go to state 84
+    PLUS   shift, and go to state 85
+
+    $default  reduce using rule 58 (inner_condition)
+
+
+state 136
+
+   59 inner_condition: EXPR LESSTHAN EXPR .
+   74 EXPR: EXPR . PLUS T
+   75     | EXPR . MINUS T
+
+    MINUS  shift, and go to state 84
+    PLUS   shift, and go to state 85
+
+    $default  reduce using rule 59 (inner_condition)
+
+
 state 137
 
-   57 condition: condition OR EXPR .
-   60 inner_condition: EXPR . GREATERTHAN EXPR
-   61                | EXPR . GREATERTHANEQ EXPR
-   62                | EXPR . LESSTHAN EXPR
-   63                | EXPR . LESSTHANEQ EXPR
-   64                | EXPR . EQUALITY BOOLEAN
-   65                | EXPR . EQUALITY EXPR
-   66                | EXPR . NOTEQUALITY BOOLEAN
-   67                | EXPR . NOTEQUALITY EXPR
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
+   57 inner_condition: EXPR GREATERTHAN EXPR .
+   74 EXPR: EXPR . PLUS T
+   75     | EXPR . MINUS T
 
-    MINUS          shift, and go to state 84
-    PLUS           shift, and go to state 85
-    GREATERTHANEQ  shift, and go to state 105
-    LESSTHAN       shift, and go to state 106
-    GREATERTHAN    shift, and go to state 107
-    LESSTHANEQ     shift, and go to state 108
-    EQUALITY       shift, and go to state 109
-    NOTEQUALITY    shift, and go to state 110
+    MINUS  shift, and go to state 84
+    PLUS   shift, and go to state 85
 
-    $default  reduce using rule 57 (condition)
+    $default  reduce using rule 57 (inner_condition)
 
 
 state 138
 
-   61 inner_condition: EXPR GREATERTHANEQ EXPR .
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
-
-    MINUS  shift, and go to state 84
-    PLUS   shift, and go to state 85
-
-    $default  reduce using rule 61 (inner_condition)
-
-
-state 139
-
-   62 inner_condition: EXPR LESSTHAN EXPR .
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
-
-    MINUS  shift, and go to state 84
-    PLUS   shift, and go to state 85
-
-    $default  reduce using rule 62 (inner_condition)
-
-
-state 140
-
-   60 inner_condition: EXPR GREATERTHAN EXPR .
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
+   60 inner_condition: EXPR LESSTHANEQ EXPR .
+   74 EXPR: EXPR . PLUS T
+   75     | EXPR . MINUS T
 
     MINUS  shift, and go to state 84
     PLUS   shift, and go to state 85
@@ -1997,75 +1914,63 @@ state 140
     $default  reduce using rule 60 (inner_condition)
 
 
-state 141
+state 139
 
-   63 inner_condition: EXPR LESSTHANEQ EXPR .
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
+   61 inner_condition: EXPR EQUALITY BOOLEAN .
+
+    $default  reduce using rule 61 (inner_condition)
+
+
+state 140
+
+   62 inner_condition: EXPR EQUALITY EXPR .
+   74 EXPR: EXPR . PLUS T
+   75     | EXPR . MINUS T
 
     MINUS  shift, and go to state 84
     PLUS   shift, and go to state 85
+
+    $default  reduce using rule 62 (inner_condition)
+
+
+state 141
+
+   63 inner_condition: EXPR NOTEQUALITY BOOLEAN .
 
     $default  reduce using rule 63 (inner_condition)
 
 
 state 142
 
-   64 inner_condition: EXPR EQUALITY BOOLEAN .
+   64 inner_condition: EXPR NOTEQUALITY EXPR .
+   74 EXPR: EXPR . PLUS T
+   75     | EXPR . MINUS T
+
+    MINUS  shift, and go to state 84
+    PLUS   shift, and go to state 85
 
     $default  reduce using rule 64 (inner_condition)
 
 
 state 143
 
-   65 inner_condition: EXPR EQUALITY EXPR .
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
-
-    MINUS  shift, and go to state 84
-    PLUS   shift, and go to state 85
-
-    $default  reduce using rule 65 (inner_condition)
-
-
-state 144
-
-   66 inner_condition: EXPR NOTEQUALITY BOOLEAN .
-
-    $default  reduce using rule 66 (inner_condition)
-
-
-state 145
-
-   67 inner_condition: EXPR NOTEQUALITY EXPR .
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
-
-    MINUS  shift, and go to state 84
-    PLUS   shift, and go to state 85
-
-    $default  reduce using rule 67 (inner_condition)
-
-
-state 146
-
    29 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE . enter_scope code DOT CLOSEDBRACE exit_scope ELSE Ifstmt
    30       | IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE . enter_scope code DOT CLOSEDBRACE exit_scope
    31       | IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE . enter_scope code DOT CLOSEDBRACE exit_scope ELSE OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope
 
-    $default  reduce using rule 92 (enter_scope)
+    $default  reduce using rule 89 (enter_scope)
 
-    enter_scope  go to state 156
+    enter_scope  go to state 153
 
 
-state 147
+state 144
 
    34 iterator: INTTYPE IDENTIFIER . EQUAL EXPR TO EXPR
 
-    EQUAL  shift, and go to state 157
+    EQUAL  shift, and go to state 154
 
 
-state 148
+state 145
 
    35 iterator: IDENTIFIER EQUAL . EXPR TO EXPR
 
@@ -2076,27 +1981,27 @@ state 148
     IDENTIFIER   shift, and go to state 47
 
     function_call  go to state 48
-    EXPR           go to state 158
+    EXPR           go to state 155
     T              go to state 50
     M              go to state 51
     G              go to state 52
 
 
-state 149
+state 146
 
    33 forloop: FOR OPENBRACKET enter_scope iterator COMMA . assignment CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE exit_scope
 
-    IDENTIFIER  shift, and go to state 159
+    IDENTIFIER  shift, and go to state 156
 
-    assignment  go to state 160
+    assignment  go to state 157
 
 
-state 150
+state 147
 
     4 code: code DOT . inner_code
    32 repeat: REPEAT OPENBRACE enter_scope code DOT . CLOSEDBRACE exit_scope UNTIL OPENBRACKET condition CLOSEDBRACKET
 
-    CLOSEDBRACE  shift, and go to state 161
+    CLOSEDBRACE  shift, and go to state 158
     BOOLTYPE     shift, and go to state 1
     INTTYPE      shift, and go to state 2
     FLOATTYPE    shift, and go to state 3
@@ -2126,34 +2031,34 @@ state 150
     assignment       go to state 29
 
 
-state 151
+state 148
 
    36 whileloop: WHILE OPENBRACKET condition CLOSEDBRACKET OPENBRACE . enter_scope code DOT CLOSEDBRACE exit_scope
 
-    $default  reduce using rule 92 (enter_scope)
+    $default  reduce using rule 89 (enter_scope)
 
-    enter_scope  go to state 162
+    enter_scope  go to state 159
 
 
-state 152
+state 149
 
    47 switchstmt: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET OPENBRACE . enter_scope case_structure DEFAULT OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope CLOSEDBRACE exit_scope
    48           | SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET OPENBRACE . enter_scope case_structure CLOSEDBRACE exit_scope
 
-    $default  reduce using rule 92 (enter_scope)
+    $default  reduce using rule 89 (enter_scope)
 
-    enter_scope  go to state 163
+    enter_scope  go to state 160
 
 
-state 153
+state 150
 
     4 code: code . DOT inner_code
    42 function: function_header CLOSEDBRACKET OPENBRACE enter_scope code . DOT CLOSEDBRACE exit_scope
 
-    DOT  shift, and go to state 164
+    DOT  shift, and go to state 161
 
 
-state 154
+state 151
 
    38 parameters: datatype IDENTIFIER COMMA . parameters
 
@@ -2163,10 +2068,10 @@ state 154
     STRINGTYPE  shift, and go to state 4
 
     datatype    go to state 95
-    parameters  go to state 165
+    parameters  go to state 162
 
 
-state 155
+state 152
 
    41 function: function_header enter_scope parameters CLOSEDBRACKET OPENBRACE . code DOT CLOSEDBRACE exit_scope
 
@@ -2184,7 +2089,7 @@ state 155
     RETURN      shift, and go to state 12
     VOIDTYPE    shift, and go to state 13
 
-    code             go to state 166
+    code             go to state 163
     inner_code       go to state 17
     datatype         go to state 18
     const_type       go to state 19
@@ -2200,7 +2105,7 @@ state 155
     assignment       go to state 29
 
 
-state 156
+state 153
 
    29 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope . code DOT CLOSEDBRACE exit_scope ELSE Ifstmt
    30       | IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope . code DOT CLOSEDBRACE exit_scope
@@ -2220,7 +2125,7 @@ state 156
     RETURN      shift, and go to state 12
     VOIDTYPE    shift, and go to state 13
 
-    code             go to state 167
+    code             go to state 164
     inner_code       go to state 17
     datatype         go to state 18
     const_type       go to state 19
@@ -2236,7 +2141,7 @@ state 156
     assignment       go to state 29
 
 
-state 157
+state 154
 
    34 iterator: INTTYPE IDENTIFIER EQUAL . EXPR TO EXPR
 
@@ -2247,34 +2152,34 @@ state 157
     IDENTIFIER   shift, and go to state 47
 
     function_call  go to state 48
-    EXPR           go to state 168
+    EXPR           go to state 165
     T              go to state 50
     M              go to state 51
     G              go to state 52
 
 
-state 158
+state 155
 
    35 iterator: IDENTIFIER EQUAL EXPR . TO EXPR
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
+   74 EXPR: EXPR . PLUS T
+   75     | EXPR . MINUS T
 
     MINUS  shift, and go to state 84
     PLUS   shift, and go to state 85
-    TO     shift, and go to state 169
+    TO     shift, and go to state 166
 
 
-state 159
+state 156
 
-   68 assignment: IDENTIFIER . EQUAL EXPR
-   69           | IDENTIFIER . EQUAL STRING
-   70           | IDENTIFIER . EQUAL condition
-   71           | IDENTIFIER . INCREMENT
-   72           | IDENTIFIER . DECREMENT
-   73           | IDENTIFIER . PLUSEQ EXPR
-   74           | IDENTIFIER . MINUSEQ EXPR
-   75           | IDENTIFIER . MULTIPLYEQ EXPR
-   76           | IDENTIFIER . DIVIDEEQ EXPR
+   65 assignment: IDENTIFIER . EQUAL EXPR
+   66           | IDENTIFIER . EQUAL STRING
+   67           | IDENTIFIER . EQUAL condition
+   68           | IDENTIFIER . INCREMENT
+   69           | IDENTIFIER . DECREMENT
+   70           | IDENTIFIER . PLUSEQ EXPR
+   71           | IDENTIFIER . MINUSEQ EXPR
+   72           | IDENTIFIER . MULTIPLYEQ EXPR
+   73           | IDENTIFIER . DIVIDEEQ EXPR
 
     INCREMENT   shift, and go to state 31
     DECREMENT   shift, and go to state 32
@@ -2285,23 +2190,23 @@ state 159
     DIVIDEEQ    shift, and go to state 37
 
 
-state 160
+state 157
 
    33 forloop: FOR OPENBRACKET enter_scope iterator COMMA assignment . CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE exit_scope
 
-    CLOSEDBRACKET  shift, and go to state 170
+    CLOSEDBRACKET  shift, and go to state 167
 
 
-state 161
+state 158
 
    32 repeat: REPEAT OPENBRACE enter_scope code DOT CLOSEDBRACE . exit_scope UNTIL OPENBRACKET condition CLOSEDBRACKET
 
-    $default  reduce using rule 93 (exit_scope)
+    $default  reduce using rule 90 (exit_scope)
 
-    exit_scope  go to state 171
+    exit_scope  go to state 168
 
 
-state 162
+state 159
 
    36 whileloop: WHILE OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope . code DOT CLOSEDBRACE exit_scope
 
@@ -2319,7 +2224,7 @@ state 162
     RETURN      shift, and go to state 12
     VOIDTYPE    shift, and go to state 13
 
-    code             go to state 172
+    code             go to state 169
     inner_code       go to state 17
     datatype         go to state 18
     const_type       go to state 19
@@ -2335,23 +2240,23 @@ state 162
     assignment       go to state 29
 
 
-state 163
+state 160
 
    47 switchstmt: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET OPENBRACE enter_scope . case_structure DEFAULT OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope CLOSEDBRACE exit_scope
    48           | SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET OPENBRACE enter_scope . case_structure CLOSEDBRACE exit_scope
 
-    CASE  shift, and go to state 173
+    CASE  shift, and go to state 170
 
-    case_structure  go to state 174
-    inner_case      go to state 175
+    case_structure  go to state 171
+    inner_case      go to state 172
 
 
-state 164
+state 161
 
     4 code: code DOT . inner_code
    42 function: function_header CLOSEDBRACKET OPENBRACE enter_scope code DOT . CLOSEDBRACE exit_scope
 
-    CLOSEDBRACE  shift, and go to state 176
+    CLOSEDBRACE  shift, and go to state 173
     BOOLTYPE     shift, and go to state 1
     INTTYPE      shift, and go to state 2
     FLOATTYPE    shift, and go to state 3
@@ -2381,43 +2286,43 @@ state 164
     assignment       go to state 29
 
 
-state 165
+state 162
 
    38 parameters: datatype IDENTIFIER COMMA parameters .
 
     $default  reduce using rule 38 (parameters)
 
 
-state 166
+state 163
 
     4 code: code . DOT inner_code
    41 function: function_header enter_scope parameters CLOSEDBRACKET OPENBRACE code . DOT CLOSEDBRACE exit_scope
 
-    DOT  shift, and go to state 177
+    DOT  shift, and go to state 174
 
 
-state 167
+state 164
 
     4 code: code . DOT inner_code
    29 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code . DOT CLOSEDBRACE exit_scope ELSE Ifstmt
    30       | IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code . DOT CLOSEDBRACE exit_scope
    31       | IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code . DOT CLOSEDBRACE exit_scope ELSE OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope
 
-    DOT  shift, and go to state 178
+    DOT  shift, and go to state 175
 
 
-state 168
+state 165
 
    34 iterator: INTTYPE IDENTIFIER EQUAL EXPR . TO EXPR
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
+   74 EXPR: EXPR . PLUS T
+   75     | EXPR . MINUS T
 
     MINUS  shift, and go to state 84
     PLUS   shift, and go to state 85
-    TO     shift, and go to state 179
+    TO     shift, and go to state 176
 
 
-state 169
+state 166
 
    35 iterator: IDENTIFIER EQUAL EXPR TO . EXPR
 
@@ -2428,78 +2333,78 @@ state 169
     IDENTIFIER   shift, and go to state 47
 
     function_call  go to state 48
-    EXPR           go to state 180
+    EXPR           go to state 177
     T              go to state 50
     M              go to state 51
     G              go to state 52
 
 
-state 170
+state 167
 
    33 forloop: FOR OPENBRACKET enter_scope iterator COMMA assignment CLOSEDBRACKET . OPENBRACE code DOT CLOSEDBRACE exit_scope
 
-    OPENBRACE  shift, and go to state 181
+    OPENBRACE  shift, and go to state 178
 
 
-state 171
+state 168
 
    32 repeat: REPEAT OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope . UNTIL OPENBRACKET condition CLOSEDBRACKET
 
-    UNTIL  shift, and go to state 182
+    UNTIL  shift, and go to state 179
 
 
-state 172
+state 169
 
     4 code: code . DOT inner_code
    36 whileloop: WHILE OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code . DOT CLOSEDBRACE exit_scope
 
-    DOT  shift, and go to state 183
+    DOT  shift, and go to state 180
 
 
-state 173
+state 170
 
    51 inner_case: CASE . OPENBRACKET INTEGER CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope
 
-    OPENBRACKET  shift, and go to state 184
+    OPENBRACKET  shift, and go to state 181
 
 
-state 174
+state 171
 
    47 switchstmt: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET OPENBRACE enter_scope case_structure . DEFAULT OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope CLOSEDBRACE exit_scope
    48           | SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET OPENBRACE enter_scope case_structure . CLOSEDBRACE exit_scope
 
-    CLOSEDBRACE  shift, and go to state 185
-    DEFAULT      shift, and go to state 186
+    CLOSEDBRACE  shift, and go to state 182
+    DEFAULT      shift, and go to state 183
 
 
-state 175
+state 172
 
    49 case_structure: inner_case .
    50               | inner_case . case_structure
 
-    CASE  shift, and go to state 173
+    CASE  shift, and go to state 170
 
     $default  reduce using rule 49 (case_structure)
 
-    case_structure  go to state 187
-    inner_case      go to state 175
+    case_structure  go to state 184
+    inner_case      go to state 172
 
 
-state 176
+state 173
 
    42 function: function_header CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE . exit_scope
 
-    $default  reduce using rule 93 (exit_scope)
+    $default  reduce using rule 90 (exit_scope)
 
-    exit_scope  go to state 188
+    exit_scope  go to state 185
 
 
-state 177
+state 174
 
     4 code: code DOT . inner_code
    41 function: function_header enter_scope parameters CLOSEDBRACKET OPENBRACE code DOT . CLOSEDBRACE exit_scope
 
-    CLOSEDBRACE  shift, and go to state 189
+    CLOSEDBRACE  shift, and go to state 186
     BOOLTYPE     shift, and go to state 1
     INTTYPE      shift, and go to state 2
     FLOATTYPE    shift, and go to state 3
@@ -2529,14 +2434,14 @@ state 177
     assignment       go to state 29
 
 
-state 178
+state 175
 
     4 code: code DOT . inner_code
    29 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code DOT . CLOSEDBRACE exit_scope ELSE Ifstmt
    30       | IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code DOT . CLOSEDBRACE exit_scope
    31       | IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code DOT . CLOSEDBRACE exit_scope ELSE OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope
 
-    CLOSEDBRACE  shift, and go to state 190
+    CLOSEDBRACE  shift, and go to state 187
     BOOLTYPE     shift, and go to state 1
     INTTYPE      shift, and go to state 2
     FLOATTYPE    shift, and go to state 3
@@ -2566,7 +2471,7 @@ state 178
     assignment       go to state 29
 
 
-state 179
+state 176
 
    34 iterator: INTTYPE IDENTIFIER EQUAL EXPR TO . EXPR
 
@@ -2577,17 +2482,17 @@ state 179
     IDENTIFIER   shift, and go to state 47
 
     function_call  go to state 48
-    EXPR           go to state 191
+    EXPR           go to state 188
     T              go to state 50
     M              go to state 51
     G              go to state 52
 
 
-state 180
+state 177
 
    35 iterator: IDENTIFIER EQUAL EXPR TO EXPR .
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
+   74 EXPR: EXPR . PLUS T
+   75     | EXPR . MINUS T
 
     MINUS  shift, and go to state 84
     PLUS   shift, and go to state 85
@@ -2595,7 +2500,7 @@ state 180
     $default  reduce using rule 35 (iterator)
 
 
-state 181
+state 178
 
    33 forloop: FOR OPENBRACKET enter_scope iterator COMMA assignment CLOSEDBRACKET OPENBRACE . code DOT CLOSEDBRACE exit_scope
 
@@ -2613,7 +2518,7 @@ state 181
     RETURN      shift, and go to state 12
     VOIDTYPE    shift, and go to state 13
 
-    code             go to state 192
+    code             go to state 189
     inner_code       go to state 17
     datatype         go to state 18
     const_type       go to state 19
@@ -2629,19 +2534,19 @@ state 181
     assignment       go to state 29
 
 
-state 182
+state 179
 
    32 repeat: REPEAT OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope UNTIL . OPENBRACKET condition CLOSEDBRACKET
 
-    OPENBRACKET  shift, and go to state 193
+    OPENBRACKET  shift, and go to state 190
 
 
-state 183
+state 180
 
     4 code: code DOT . inner_code
    36 whileloop: WHILE OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code DOT . CLOSEDBRACE exit_scope
 
-    CLOSEDBRACE  shift, and go to state 194
+    CLOSEDBRACE  shift, and go to state 191
     BOOLTYPE     shift, and go to state 1
     INTTYPE      shift, and go to state 2
     FLOATTYPE    shift, and go to state 3
@@ -2671,68 +2576,68 @@ state 183
     assignment       go to state 29
 
 
-state 184
+state 181
 
    51 inner_case: CASE OPENBRACKET . INTEGER CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope
 
-    INTEGER  shift, and go to state 195
+    INTEGER  shift, and go to state 192
 
 
-state 185
+state 182
 
    48 switchstmt: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET OPENBRACE enter_scope case_structure CLOSEDBRACE . exit_scope
 
-    $default  reduce using rule 93 (exit_scope)
+    $default  reduce using rule 90 (exit_scope)
 
-    exit_scope  go to state 196
+    exit_scope  go to state 193
 
 
-state 186
+state 183
 
    47 switchstmt: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET OPENBRACE enter_scope case_structure DEFAULT . OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope CLOSEDBRACE exit_scope
 
-    OPENBRACE  shift, and go to state 197
+    OPENBRACE  shift, and go to state 194
 
 
-state 187
+state 184
 
    50 case_structure: inner_case case_structure .
 
     $default  reduce using rule 50 (case_structure)
 
 
-state 188
+state 185
 
    42 function: function_header CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope .
 
     $default  reduce using rule 42 (function)
 
 
-state 189
+state 186
 
    41 function: function_header enter_scope parameters CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE . exit_scope
 
-    $default  reduce using rule 93 (exit_scope)
+    $default  reduce using rule 90 (exit_scope)
 
-    exit_scope  go to state 198
+    exit_scope  go to state 195
 
 
-state 190
+state 187
 
    29 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE . exit_scope ELSE Ifstmt
    30       | IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE . exit_scope
    31       | IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE . exit_scope ELSE OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope
 
-    $default  reduce using rule 93 (exit_scope)
+    $default  reduce using rule 90 (exit_scope)
 
-    exit_scope  go to state 199
+    exit_scope  go to state 196
 
 
-state 191
+state 188
 
    34 iterator: INTTYPE IDENTIFIER EQUAL EXPR TO EXPR .
-   77 EXPR: EXPR . PLUS T
-   78     | EXPR . MINUS T
+   74 EXPR: EXPR . PLUS T
+   75     | EXPR . MINUS T
 
     MINUS  shift, and go to state 84
     PLUS   shift, and go to state 85
@@ -2740,15 +2645,15 @@ state 191
     $default  reduce using rule 34 (iterator)
 
 
-state 192
+state 189
 
     4 code: code . DOT inner_code
    33 forloop: FOR OPENBRACKET enter_scope iterator COMMA assignment CLOSEDBRACKET OPENBRACE code . DOT CLOSEDBRACE exit_scope
 
-    DOT  shift, and go to state 200
+    DOT  shift, and go to state 197
 
 
-state 193
+state 190
 
    32 repeat: REPEAT OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope UNTIL OPENBRACKET . condition CLOSEDBRACKET
 
@@ -2760,7 +2665,7 @@ state 193
     NOT          shift, and go to state 68
 
     function_call    go to state 48
-    condition        go to state 201
+    condition        go to state 198
     inner_condition  go to state 70
     EXPR             go to state 77
     T                go to state 50
@@ -2768,62 +2673,62 @@ state 193
     G                go to state 52
 
 
-state 194
+state 191
 
    36 whileloop: WHILE OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE . exit_scope
 
-    $default  reduce using rule 93 (exit_scope)
+    $default  reduce using rule 90 (exit_scope)
 
-    exit_scope  go to state 202
+    exit_scope  go to state 199
 
 
-state 195
+state 192
 
    51 inner_case: CASE OPENBRACKET INTEGER . CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope
 
-    CLOSEDBRACKET  shift, and go to state 203
+    CLOSEDBRACKET  shift, and go to state 200
 
 
-state 196
+state 193
 
    48 switchstmt: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET OPENBRACE enter_scope case_structure CLOSEDBRACE exit_scope .
 
     $default  reduce using rule 48 (switchstmt)
 
 
-state 197
+state 194
 
    47 switchstmt: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET OPENBRACE enter_scope case_structure DEFAULT OPENBRACE . enter_scope code DOT CLOSEDBRACE exit_scope CLOSEDBRACE exit_scope
 
-    $default  reduce using rule 92 (enter_scope)
+    $default  reduce using rule 89 (enter_scope)
 
-    enter_scope  go to state 204
+    enter_scope  go to state 201
 
 
-state 198
+state 195
 
    41 function: function_header enter_scope parameters CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE exit_scope .
 
     $default  reduce using rule 41 (function)
 
 
-state 199
+state 196
 
    29 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope . ELSE Ifstmt
    30       | IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope .
    31       | IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope . ELSE OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope
 
-    ELSE  shift, and go to state 205
+    ELSE  shift, and go to state 202
 
     $default  reduce using rule 30 (Ifstmt)
 
 
-state 200
+state 197
 
     4 code: code DOT . inner_code
    33 forloop: FOR OPENBRACKET enter_scope iterator COMMA assignment CLOSEDBRACKET OPENBRACE code DOT . CLOSEDBRACE exit_scope
 
-    CLOSEDBRACE  shift, and go to state 206
+    CLOSEDBRACE  shift, and go to state 203
     BOOLTYPE     shift, and go to state 1
     INTTYPE      shift, and go to state 2
     FLOATTYPE    shift, and go to state 3
@@ -2853,34 +2758,32 @@ state 200
     assignment       go to state 29
 
 
-state 201
+state 198
 
    32 repeat: REPEAT OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope UNTIL OPENBRACKET condition . CLOSEDBRACKET
    52 condition: condition . AND inner_condition
    53          | condition . OR inner_condition
-   56          | condition . AND EXPR
-   57          | condition . OR EXPR
 
-    CLOSEDBRACKET  shift, and go to state 207
-    AND            shift, and go to state 103
-    OR             shift, and go to state 104
+    CLOSEDBRACKET  shift, and go to state 204
+    AND            shift, and go to state 102
+    OR             shift, and go to state 103
 
 
-state 202
+state 199
 
    36 whileloop: WHILE OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope .
 
     $default  reduce using rule 36 (whileloop)
 
 
-state 203
+state 200
 
    51 inner_case: CASE OPENBRACKET INTEGER CLOSEDBRACKET . OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope
 
-    OPENBRACE  shift, and go to state 208
+    OPENBRACE  shift, and go to state 205
 
 
-state 204
+state 201
 
    47 switchstmt: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET OPENBRACE enter_scope case_structure DEFAULT OPENBRACE enter_scope . code DOT CLOSEDBRACE exit_scope CLOSEDBRACE exit_scope
 
@@ -2898,7 +2801,7 @@ state 204
     RETURN      shift, and go to state 12
     VOIDTYPE    shift, and go to state 13
 
-    code             go to state 209
+    code             go to state 206
     inner_code       go to state 17
     datatype         go to state 18
     const_type       go to state 19
@@ -2914,74 +2817,74 @@ state 204
     assignment       go to state 29
 
 
-state 205
+state 202
 
    29 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope ELSE . Ifstmt
    31       | IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope ELSE . OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope
 
-    OPENBRACE  shift, and go to state 210
+    OPENBRACE  shift, and go to state 207
     IF         shift, and go to state 6
 
-    Ifstmt  go to state 211
+    Ifstmt  go to state 208
 
 
-state 206
+state 203
 
    33 forloop: FOR OPENBRACKET enter_scope iterator COMMA assignment CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE . exit_scope
 
-    $default  reduce using rule 93 (exit_scope)
+    $default  reduce using rule 90 (exit_scope)
 
-    exit_scope  go to state 212
+    exit_scope  go to state 209
 
 
-state 207
+state 204
 
    32 repeat: REPEAT OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope UNTIL OPENBRACKET condition CLOSEDBRACKET .
 
     $default  reduce using rule 32 (repeat)
 
 
-state 208
+state 205
 
    51 inner_case: CASE OPENBRACKET INTEGER CLOSEDBRACKET OPENBRACE . enter_scope code DOT CLOSEDBRACE exit_scope
 
-    $default  reduce using rule 92 (enter_scope)
+    $default  reduce using rule 89 (enter_scope)
 
-    enter_scope  go to state 213
+    enter_scope  go to state 210
 
 
-state 209
+state 206
 
     4 code: code . DOT inner_code
    47 switchstmt: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET OPENBRACE enter_scope case_structure DEFAULT OPENBRACE enter_scope code . DOT CLOSEDBRACE exit_scope CLOSEDBRACE exit_scope
 
-    DOT  shift, and go to state 214
+    DOT  shift, and go to state 211
 
 
-state 210
+state 207
 
    31 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope ELSE OPENBRACE . enter_scope code DOT CLOSEDBRACE exit_scope
 
-    $default  reduce using rule 92 (enter_scope)
+    $default  reduce using rule 89 (enter_scope)
 
-    enter_scope  go to state 215
+    enter_scope  go to state 212
 
 
-state 211
+state 208
 
    29 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope ELSE Ifstmt .
 
     $default  reduce using rule 29 (Ifstmt)
 
 
-state 212
+state 209
 
    33 forloop: FOR OPENBRACKET enter_scope iterator COMMA assignment CLOSEDBRACKET OPENBRACE code DOT CLOSEDBRACE exit_scope .
 
     $default  reduce using rule 33 (forloop)
 
 
-state 213
+state 210
 
    51 inner_case: CASE OPENBRACKET INTEGER CLOSEDBRACKET OPENBRACE enter_scope . code DOT CLOSEDBRACE exit_scope
 
@@ -2999,7 +2902,7 @@ state 213
     RETURN      shift, and go to state 12
     VOIDTYPE    shift, and go to state 13
 
-    code             go to state 216
+    code             go to state 213
     inner_code       go to state 17
     datatype         go to state 18
     const_type       go to state 19
@@ -3015,12 +2918,12 @@ state 213
     assignment       go to state 29
 
 
-state 214
+state 211
 
     4 code: code DOT . inner_code
    47 switchstmt: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET OPENBRACE enter_scope case_structure DEFAULT OPENBRACE enter_scope code DOT . CLOSEDBRACE exit_scope CLOSEDBRACE exit_scope
 
-    CLOSEDBRACE  shift, and go to state 217
+    CLOSEDBRACE  shift, and go to state 214
     BOOLTYPE     shift, and go to state 1
     INTTYPE      shift, and go to state 2
     FLOATTYPE    shift, and go to state 3
@@ -3050,7 +2953,7 @@ state 214
     assignment       go to state 29
 
 
-state 215
+state 212
 
    31 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope ELSE OPENBRACE enter_scope . code DOT CLOSEDBRACE exit_scope
 
@@ -3068,7 +2971,7 @@ state 215
     RETURN      shift, and go to state 12
     VOIDTYPE    shift, and go to state 13
 
-    code             go to state 218
+    code             go to state 215
     inner_code       go to state 17
     datatype         go to state 18
     const_type       go to state 19
@@ -3084,37 +2987,37 @@ state 215
     assignment       go to state 29
 
 
-state 216
+state 213
 
     4 code: code . DOT inner_code
    51 inner_case: CASE OPENBRACKET INTEGER CLOSEDBRACKET OPENBRACE enter_scope code . DOT CLOSEDBRACE exit_scope
 
-    DOT  shift, and go to state 219
+    DOT  shift, and go to state 216
 
 
-state 217
+state 214
 
    47 switchstmt: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET OPENBRACE enter_scope case_structure DEFAULT OPENBRACE enter_scope code DOT CLOSEDBRACE . exit_scope CLOSEDBRACE exit_scope
 
-    $default  reduce using rule 93 (exit_scope)
+    $default  reduce using rule 90 (exit_scope)
 
-    exit_scope  go to state 220
+    exit_scope  go to state 217
 
 
-state 218
+state 215
 
     4 code: code . DOT inner_code
    31 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope ELSE OPENBRACE enter_scope code . DOT CLOSEDBRACE exit_scope
 
-    DOT  shift, and go to state 221
+    DOT  shift, and go to state 218
 
 
-state 219
+state 216
 
     4 code: code DOT . inner_code
    51 inner_case: CASE OPENBRACKET INTEGER CLOSEDBRACKET OPENBRACE enter_scope code DOT . CLOSEDBRACE exit_scope
 
-    CLOSEDBRACE  shift, and go to state 222
+    CLOSEDBRACE  shift, and go to state 219
     BOOLTYPE     shift, and go to state 1
     INTTYPE      shift, and go to state 2
     FLOATTYPE    shift, and go to state 3
@@ -3144,19 +3047,19 @@ state 219
     assignment       go to state 29
 
 
-state 220
+state 217
 
    47 switchstmt: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET OPENBRACE enter_scope case_structure DEFAULT OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope . CLOSEDBRACE exit_scope
 
-    CLOSEDBRACE  shift, and go to state 223
+    CLOSEDBRACE  shift, and go to state 220
 
 
-state 221
+state 218
 
     4 code: code DOT . inner_code
    31 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope ELSE OPENBRACE enter_scope code DOT . CLOSEDBRACE exit_scope
 
-    CLOSEDBRACE  shift, and go to state 224
+    CLOSEDBRACE  shift, and go to state 221
     BOOLTYPE     shift, and go to state 1
     INTTYPE      shift, and go to state 2
     FLOATTYPE    shift, and go to state 3
@@ -3186,48 +3089,48 @@ state 221
     assignment       go to state 29
 
 
-state 222
+state 219
 
    51 inner_case: CASE OPENBRACKET INTEGER CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE . exit_scope
 
-    $default  reduce using rule 93 (exit_scope)
+    $default  reduce using rule 90 (exit_scope)
 
-    exit_scope  go to state 225
+    exit_scope  go to state 222
 
 
-state 223
+state 220
 
    47 switchstmt: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET OPENBRACE enter_scope case_structure DEFAULT OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope CLOSEDBRACE . exit_scope
 
-    $default  reduce using rule 93 (exit_scope)
+    $default  reduce using rule 90 (exit_scope)
 
-    exit_scope  go to state 226
+    exit_scope  go to state 223
 
 
-state 224
+state 221
 
    31 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope ELSE OPENBRACE enter_scope code DOT CLOSEDBRACE . exit_scope
 
-    $default  reduce using rule 93 (exit_scope)
+    $default  reduce using rule 90 (exit_scope)
 
-    exit_scope  go to state 227
+    exit_scope  go to state 224
 
 
-state 225
+state 222
 
    51 inner_case: CASE OPENBRACKET INTEGER CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope .
 
     $default  reduce using rule 51 (inner_case)
 
 
-state 226
+state 223
 
    47 switchstmt: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET OPENBRACE enter_scope case_structure DEFAULT OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope CLOSEDBRACE exit_scope .
 
     $default  reduce using rule 47 (switchstmt)
 
 
-state 227
+state 224
 
    31 Ifstmt: IF OPENBRACKET condition CLOSEDBRACKET OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope ELSE OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope .
 

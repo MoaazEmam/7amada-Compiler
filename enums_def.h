@@ -9,7 +9,8 @@ typedef enum
     SYM_FLOAT,
     SYM_BOOL,
     SYM_STRING,
-    SYM_VOID
+    SYM_VOID,
+    SYM_ERROR
 } DATATYPE;
 
 typedef enum

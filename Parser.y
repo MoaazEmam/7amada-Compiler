@@ -10,6 +10,7 @@
     #include "symbol.h"
     #include "param.h"
     #include "enums_def.h"
+    #include "type_checks.h"
     void yyerror(const char *s);
     int yylex(void);
     extern FILE *yyin;
@@ -17,6 +18,7 @@
     Symbol* current_function = NULL; 
     DATATYPE current_type;    
     KIND current_kind;
+    
 %}
 
 %union {
@@ -81,7 +83,8 @@
 %token DEFAULT
 %token RETURN
 %token VOIDTYPE
-%type<f>  EXPR T G M
+%type<i>  EXPR T G M 
+%type <i> condition inner_condition
 %type <i> datatype
 
 
@@ -104,7 +107,31 @@ inner_code: assignment
 | repeat
 | function
 | RETURN EXPR
+{
+    if(!current_function )
+    {
+        fprintf(stderr,"Line %d:Return Statement not inside a function\n",yylineno)
+    }
+    else if(!type_compatible(current_function->type,$2))
+    {
+        fprintf("Line %d: Return type mismatch. Function %s returns %s, but returning %s\n",
+        yylineno,
+        current_function->name,
+        type_name(current_function->type),
+        type_name($2)
+        );
+    }
+}
 | RETURN
+{
+    if (!current_function) {
+        fprintf(stderr, "Line %d: Return statement not inside a function\n", yylineno);
+    } else if (current_function->type != SYM_VOID) {
+        fprintf(stderr, "Line %d: Function '%s' should return %s\n",
+                yylineno, current_function->name,
+                type_name(current_function->type));
+    }
+}
 | BREAK
 ;
 
@@ -142,7 +169,8 @@ inner_declaration:
  IDENTIFIER { //Multiple declaration check , Symbol insertion
         if (lookup_current($1, current_scope)) {
             fprintf(stderr,"Line %d:Multiple declaration of variable %s\n ",yylineno,$1);
-        } else {
+        } 
+        else {
             Symbol* s = create_symbol($1, current_type, current_kind, false, NULL);
             insert(s, current_scope);
         }
@@ -150,7 +178,12 @@ inner_declaration:
 |IDENTIFIER EQUAL EXPR {
         if (lookup_current($1, current_scope)) {
             fprintf(stderr,"Line %d:Multiple declaration of variable %s\n",yylineno,$1);
-        } else {
+        } 
+        else if (!type_compatible(current_type,$3))
+        {
+            fprintf(stderr,"Line %d:Type mismatch: cannot assign %s to %s\n",yylineno,type_name($3),type_name(current_type));
+        }
+        else {
             Symbol* s = create_symbol($1, current_type, current_kind, true, NULL);
             insert(s, current_scope);   
         }
@@ -159,7 +192,12 @@ inner_declaration:
 | IDENTIFIER EQUAL BOOLEAN { 
         if (lookup_current($1, current_scope)) {
             fprintf(stderr,"Line %d:Multiple declaration of variable %s\n ",yylineno,$1);
-        } else {
+        } 
+        else if (!type_compatible(current_type,$3))
+        {
+            fprintf(stderr,"Line %d:Type mismatch: cannot assign %s to %s\n",yylineno,type_name($3),type_name(current_type));
+        }
+        else {
             Symbol* s = create_symbol($1, current_type, current_kind, true, NULL);
             insert(s, current_scope);
         }
@@ -167,7 +205,12 @@ inner_declaration:
 | IDENTIFIER EQUAL STRING { 
         if (lookup_current($1, current_scope)) {
             fprintf(stderr,"Line %d:Multiple declaration of variable %s\n",yylineno,$1);
-        } else {
+        } 
+        else if (!type_compatible(current_type,$3))
+        {
+            fprintf(stderr,"Line %d:Type mismatch: cannot assign %s to %s\n",yylineno,type_name($3),type_name(current_type));
+        }
+        else {
             Symbol* s = create_symbol($1, current_type, current_kind, true, NULL);
             insert(s, current_scope);
         }
@@ -175,7 +218,12 @@ inner_declaration:
 | IDENTIFIER EQUAL condition { //Multiple declaration check , Symbol insertion
         if (lookup_current($1, current_scope)) {
             fprintf(stderr,"Line %d:Multiple declaration of variable %s\n",yylineno,$1);
-        } else {
+        } 
+        else if (!type_compatible(current_type,$3))
+        {
+            fprintf(stderr,"Line %d:Type mismatch: cannot assign %s to %s\n",yylineno,type_name($3),type_name(current_type));
+        }
+        else {
             Symbol* s = create_symbol($1, current_type, current_kind, true, NULL);
             insert(s, current_scope);
         }
@@ -368,23 +416,45 @@ inner_case:
 ;
 
 condition: condition AND inner_condition 
+{
+    if($1 != SYM_BOOL || $3 !=SYM_BOOL)
+        fprintf(stderr,"Line %d: %s is not a boolean operand\n",yylineno,$1);
+    
+    $$= SYM_BOOL;
+        
+}
 | condition OR inner_condition
+{
+    if($1 != SYM_BOOL || $3!=SYM_BOOL)
+        fprintf(stderr,"Line %d: %s is not a boolean operand\n",yylineno,$1);
+    $$= SYM_BOOL;
+        
+}
 | NOT inner_condition
-| inner_condition
+{
+    if($2 != SYM_BOOL)
+        fprintf(stderr,"Line %d: %s is not a boolean operand\n",yylineno,$2);
+    $$= SYM_BOOL  ; 
+}
+| inner_condition 
+{
+    $$=SYM_BOOL;
+}
+
 | condition AND EXPR
 | condition OR EXPR
 | NOT EXPR
 ;
 
-inner_condition: OPENBRACKET condition CLOSEDBRACKET
-| EXPR GREATERTHAN EXPR
-| EXPR GREATERTHANEQ EXPR
-| EXPR LESSTHAN EXPR
-| EXPR LESSTHANEQ EXPR
-| EXPR EQUALITY BOOLEAN
-| EXPR EQUALITY EXPR
-| EXPR NOTEQUALITY BOOLEAN
-| EXPR NOTEQUALITY EXPR
+inner_condition: OPENBRACKET condition CLOSEDBRACKET {$$=SYM_BOOL}
+| EXPR GREATERTHAN EXPR {$$ =SYM_BOOL;}
+| EXPR GREATERTHANEQ EXPR {$$ =SYM_BOOL;}
+| EXPR LESSTHAN EXPR {$$ =SYM_BOOL;}
+| EXPR LESSTHANEQ EXPR {$$ =SYM_BOOL;}
+// | EXPR EQUALITY BOOLEAN {$$ =SYM_BOOL;}
+| EXPR EQUALITY EXPR {$$ =SYM_BOOL;}
+// | EXPR NOTEQUALITY BOOLEAN {$$ =SYM_BOOL;}
+| EXPR NOTEQUALITY EXPR {$$ =SYM_BOOL;}
 ;
 
 assignment:
@@ -392,26 +462,54 @@ assignment:
         Symbol* s = lookup($1, current_scope);
         if (!s) {
             fprintf(stderr,"Line %d:Variable %s used before declaration\n",yylineno,$1);
+            $$=SYM_ERROR;
         } else {
-            s->initialized = true;
+            if(!type_compatible(s->type,$3))
+            {
+                fprintf(stderr,"Line %d: Type mismatch: cannot assign %s to %s \n",yylineno,type_name($3),type_name(s->type));
+            }
+            else
+            {
+                s->initialized = true;
+                $$=s->type;
+            }
         }
     }
 
   | IDENTIFIER EQUAL STRING {
         Symbol* s = lookup($1, current_scope);
         if (!s) {
-            fprintf(stderr,"Line %d:Variable  %s used before declaration\n",yylineno, $1);
+            fprintf(stderr,"Line %d:Variable %s used before declaration\n",yylineno,$1);
+            $$=SYM_ERROR;
         } else {
-            s->initialized = true;
+            if(!type_compatible(s->type,$3))
+            {
+                fprintf(stderr,"Line %d: Type mismatch: cannot assign string to %s \n",yylineno,type_name(s->type));
+            }
+            else
+            {
+                s->initialized = true;
+                $$=s->type;
+            }
         }
     }
 
   | IDENTIFIER EQUAL condition {
         Symbol* s = lookup($1, current_scope);
+        //Symbol* s = lookup($1, current_scope);
         if (!s) {
-            fprintf(stderr,"Line %d:Variable  %s  used before declaration\n",yylineno,$1);
+            fprintf(stderr,"Line %d:Variable %s used before declaration\n",yylineno,$1);
+            $$=SYM_ERROR;
         } else {
-            s->initialized = true;
+            if(!type_compatible(s->type,$3))
+            {
+                fprintf(stderr,"Line %d: Type mismatch: cannot assign Boolean to %s \n",yylineno,type_name(s->type));
+            }
+            else
+            {
+                s->initialized = true;
+                $$=s->type;
+            }
         }
     }
 
@@ -421,6 +519,8 @@ assignment:
             fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
         else if (!s->initialized)
             fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
+        else if (s->type!=SYM_INT && s->type!= SYM_FLOAT)
+            fprintf("Line %d: Increment applied to non-numeric type %s",type_name(s->type));
     }
 
   | IDENTIFIER DECREMENT {
@@ -429,6 +529,8 @@ assignment:
              fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
         else if (!s->initialized)
             fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
+        else if (s->type!=SYM_INT && s->type != SYM_FLOAT)
+            fprintf("Line %d: Increment applied to non-numeric type %s",type_name(s->type));
     }
 
   | IDENTIFIER PLUSEQ EXPR {
@@ -437,7 +539,9 @@ assignment:
             fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
         else if (!s->initialized)
            fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
-       
+        else if (s->type!=SYM_INT && s->type!= SYM_FLOAT)
+            fprintf("Line %d: Addition applied to non-numeric type %s",type_name(s->type));
+
     }
 
   | IDENTIFIER MINUSEQ EXPR {
@@ -446,7 +550,9 @@ assignment:
             fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
         else if (!s->initialized)
            fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
-       
+        else if (s->type!=SYM_INT && s->type!= SYM_FLOAT)
+            fprintf("Line %d: Subtraction applied to non-numeric type %s",type_name(s->type));
+
     }
 
   | IDENTIFIER MULTIPLYEQ EXPR {
@@ -455,7 +561,9 @@ assignment:
             fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
         else if (!s->initialized)
            fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
-   
+        else if (s->type!=SYM_INT && s->type!= SYM_FLOAT)
+            fprintf("Line %d: Multiplication applied to non-numeric type %s",type_name(s->type));
+
     }
 
   | IDENTIFIER DIVIDEEQ EXPR {
@@ -464,41 +572,159 @@ assignment:
             fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
         else if (!s->initialized)
            fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
-        
+        else if (s->type!=SYM_INT && s->type!= SYM_FLOAT)
+            fprintf("Line %d: Division applied to non-numeric type %s",type_name(s->type));
+
     }
 ;
 
-EXPR: EXPR PLUS T {$$=$1+$3;}
-| EXPR MINUS T {$$=$1-$3;}
+EXPR: EXPR PLUS T 
+{
+    if($1==SYM_ERROR || $3 ==SYM_ERROR)
+        $$=SYM_ERROR;
+    else if ($1 == SYM_FLOAT || $3 == SYM_FLOAT)
+        $$=SYM_FLOAT;
+    else if ($1 ==SYM_INT && $3 ==SYM_INT)
+        $$=SYM_INT;
+    else
+    {
+        fprintf(stderr, "Line %d: Cannot add non-numeric types\n", yylineno);
+        $$ = SYM_ERROR;
+    }
+}
+| EXPR MINUS T
+{
+    if($1==SYM_ERROR || $3 ==SYM_ERROR)
+        $$=SYM_ERROR;
+    else if ($1 == SYM_FLOAT || $3 == SYM_FLOAT)
+        $$=SYM_FLOAT;
+    else if ($1 ==SYM_INT && $3 ==SYM_INT)
+        $$=SYM_INT;
+    else
+    {
+        fprintf(stderr, "Line %d: Cannot add non-numeric types\n", yylineno);
+        $$ = SYM_ERROR;
+    }
+}
 | T {$$=$1;}
 ;
 
-T:T MULTIPLY M {$$=$1*$3;}
-| T DIVIDE M    {if($3==0){yyerror("Division By zero");}else $$=$1/$3;}
-| T MOD M      {if((int)$3==0){yyerror("Modulo By zero");}else $$=(int)$1 % (int)$3;}
+T:T MULTIPLY M
+{
+    if($1==SYM_ERROR || $3 ==SYM_ERROR)
+        $$=SYM_ERROR;
+    else if ($1 == SYM_FLOAT || $3 == SYM_FLOAT)
+        $$=SYM_FLOAT;
+    else if ($1 ==SYM_INT && $3 ==SYM_INT)
+        $$=SYM_INT;
+    else
+    {
+        fprintf(stderr, "Line %d: Cannot add non-numeric types\n", yylineno);
+        $$ = SYM_ERROR;
+    }
+}
+| T DIVIDE M   
+{
+    if($1==SYM_ERROR || $3 ==SYM_ERROR)
+        $$=SYM_ERROR;
+    else if ($1 == SYM_FLOAT || $3 == SYM_FLOAT)
+        $$=SYM_FLOAT;
+    else if ($1 ==SYM_INT && $3 ==SYM_INT)
+        $$=SYM_INT;
+    else
+    {
+        fprintf(stderr, "Line %d: Cannot add non-numeric types\n", yylineno);
+        $$ = SYM_ERROR;
+    }
+    if($3==0){yyerror("Division By zero"); $$=SYM_ERROR}
+    // else $$=$1/$3;
+}
+| T MOD M 
+{
+    if((int)$3==0){yyerror("Modulo By zero");}
+    //else $$=(int)$1 % (int)$3;
+    if($1==SYM_ERROR || $3 ==SYM_ERROR)
+        $$=SYM_ERROR;
+    else if ($1 == SYM_FLOAT || $3 == SYM_FLOAT)
+        $$=SYM_FLOAT;
+    else if ($1 ==SYM_INT && $3 ==SYM_INT)
+        $$=SYM_INT;
+    else
+    {
+        fprintf(stderr, "Line %d: Cannot add non-numeric types\n", yylineno);
+        $$ = SYM_ERROR;
+    }
+}
 | M {$$=$1;}
 ;
 
-M: G POWER M {$$=pow($1,$3);}
-|  G   {$$=$1;}
-;
+M: G POWER M {
+        if ($1 == SYM_ERROR || $3 == SYM_ERROR)
+            $$ = SYM_ERROR;
+        else if ($1 == SYM_FLOAT || $3 == SYM_FLOAT)
+            $$ = SYM_FLOAT;
+        else if ($1 == SYM_INT && $3 == SYM_INT)
+            $$ = SYM_INT;
+        else {
+            fprintf(stderr, "Line %d: Cannot apply power to non-numeric types\n", yylineno);
+            $$ = SYM_ERROR;
+        }
+    }
+ | G { $$ = $1; };
 
 G: OPENBRACKET EXPR CLOSEDBRACKET {$$=$2;}
-|  MINUS G  {$$=-$2;}
-|  INTEGER {$$=(float)$1;}
-|  FLOAT {$$=$1;}
+|  MINUS G  
+{
+       if ($2 == SYM_ERROR)
+           $$ = SYM_ERROR;
+       else if ($2 == SYM_INT || $2 == SYM_FLOAT)
+           $$ = $2;
+       else {
+           fprintf(stderr, "Line %d: Unary minus applied to non-numeric type\n", yylineno);
+           $$ = SYM_ERROR;
+       }
+   }
+|  INTEGER {$$=SYM_INT;}
+|  FLOAT {$$=SYM_FLOAT;}
 |   IDENTIFIER { //handles use before init.
         Symbol* s = lookup($1, current_scope);
         if (!s) {
             fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
+            $$=SYM_ERROR;
         }
-        else if (!s->initialized) {
+        else if(s->type !=SYM_INT && s->type !=SYM_FLOAT)
+        {
+            fprintf(stderr,"Line %d:Variable %s is not numeric\n",yylineno,$1);
+            $$=SYM_ERROR;
+        }
+        else
+        {
+            if (!s->initialized) {
            fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
-        } else {
-            s->used = true;
+            } else {
+                s->used = true;
+                $$=s->type;
+            }
         }
+        
     }
-|  function_call {$$=0;}
+| function_call {
+    Symbol* f = lookup($1, current_scope);
+    if (!f) {
+        fprintf(stderr, "Line %d: Function %s not defined\n", yylineno, $1);
+        $$ = SYM_ERROR;
+    } else if (f->kind != FUNC) {
+        fprintf(stderr, "Line %d: Identifier %s is not a function\n", yylineno, $1);
+        $$ = SYM_ERROR;
+    } else if (f->type ==SYM_VOID) {
+        fprintf(stderr, "Line %d: Void function %s cannot be used in an expression\n", yylineno, $1);
+        $$ = SYM_ERROR;
+    } else {
+        f->used = true;
+        $$ = f->type;
+    }
+};
+
 ;
 
 enter_scope:
