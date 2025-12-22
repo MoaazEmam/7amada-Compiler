@@ -28,15 +28,16 @@ char *current_func_id = NULL;
 int return_count = 0;
 int cases[100];
 int case_count = 0;
-typedef struct {
-    DATATYPE type;   // For YOUR type checking
-    char* place;     // For HER code gen (variable name or temp register)
-    int quad_idx;    // For HER control flow (jumps/labels) if needed
-} ExprInfo;
 %}
 
 %code requires {
     #include "quadruple.h"
+    #include "enums_def.h"
+    typedef struct {
+        DATATYPE type; 
+        char* place;     
+        //int quad_idx;    
+    } ExprInfo;
 }
 %union {
     int i;
@@ -201,7 +202,7 @@ inner_declaration:
         } else {
             Symbol* s = create_symbol($1, current_type, current_kind, true, NULL);
             insert(s, current_scope);   
-            emit("=",$3,"",$1);
+            emit("=",$3.place,"",$1);
         }
     } 
 
@@ -229,7 +230,7 @@ inner_declaration:
         } else {
             Symbol* s = create_symbol($1, current_type, current_kind, true, NULL);
             insert(s, current_scope);
-            emit("=",$3,"",$1);
+            emit("=",$3.place,"",$1);
         }
     } 
 ;
@@ -484,54 +485,108 @@ function:
 ;
 
 function_call: 
-    IDENTIFIER OPENBRACKET list CLOSEDBRACKET {
-        Symbol* f = lookup($1, current_scope);
-        if (!f)
-            fprintf( stderr,"Line %d:Function %s not defined \n",yylineno,$1);
-        else if (f->kind != FUNC)
-            fprintf(stderr,"Line %d:Identifier %s is not a function\n",yylineno,$1);
+    IDENTIFIER OPENBRACKET {
+        /* --- ADDED INITIALIZATION LOGIC --- */
+        Symbol *f = lookup($1, current_scope);
+        if (!f) fprintf(stderr, "Line %d:Function %s not defined \n", yylineno, $1);
+        else if (f->kind != FUNC) fprintf(stderr, "Line %d:Identifier %s is not a function\n", yylineno, $1);
         else {
+            current_function = f; 
+            current_param = f->params->head; 
+            arg_count = 0; 
+            param_error = false;
+        }
+    }
+    list CLOSEDBRACKET {
+        /* --- VERIFY IF WE HAVE TOO FEW ARGUMENTS --- */
+        if (!param_error && current_param != NULL) {
+             fprintf(stderr, "Line %d: Too few arguments for function %s\n", yylineno, $1);
+             param_error = true;
+        }
+        
+        Symbol* f = lookup($1, current_scope); // Re-lookup to be safe
+        if (f) {
             f->used=true;
             char string_count[20];
             sprintf(string_count, "%d", f->params->count); 
+            
             if (f->type == SYM_VOID) {
                 emit("call", $1, string_count, "");
-                $$ = "";
-            }
-            else {
+                $$.type = SYM_VOID;
+                $$.place = "";
+            } else {
                 char *t = newTemp();
                 emit("call", $1, string_count, t);
-                $$ = t;
+                $$.type = f->type;
+                $$.place = t;
             }
+        } else {
+             $$.type = SYM_ERROR;
+             $$.place = NULL;
         }
     }
+    
   | IDENTIFIER OPENBRACKET CLOSEDBRACKET {
-        Symbol* f = lookup($1, current_scope);
-        if (!f)
-            fprintf( stderr,"Line %d:Function %s not defined \n",yylineno,$1);
-        else if (f->kind != FUNC)
-            fprintf(stderr,"Line %d:Identifier %s is not a function\n",yylineno,$1);
-        else {
-            f->used=true;
-            if (f->type == SYM_VOID) {
-                emit("call", $1, "0", "");
-                $$ = "";
-            }
-            else {
-                char *t = newTemp();
-                emit("call", $1, "0", t);
-                $$ = t;
-            }
-        }
+       /* Code for 0 arguments - Keep existing checks + add type propagation */
+       Symbol* f = lookup($1, current_scope);
+       if (!f) fprintf( stderr,"Line %d:Function %s not defined \n",yylineno,$1);
+       else if (f->kind != FUNC) fprintf(stderr,"Line %d:Identifier %s is not a function\n",yylineno,$1);
+       else {
+           if (f->params->count > 0) fprintf(stderr, "Line %d: Function %s expects arguments\n", yylineno, $1);
+           
+           f->used=true;
+           if (f->type == SYM_VOID) {
+               emit("call", $1, "0", "");
+               $$.type = SYM_VOID;
+               $$.place = "";
+           } else {
+               char *t = newTemp();
+               emit("call", $1, "0", t);
+               $$.type = f->type;
+               $$.place = t;
+           }
+       }
     }
 ;
 
 
 list: EXPR {
-    emit("param", $1, "", "");
-}| EXPR COMMA list {
-    emit("param", $1, "", "");
-}; //list checking -->> type
+    arg_count++;
+    if (!current_param && !param_error) {
+        fprintf(stderr, "Line %d: Too many arguments for function %s\n", yylineno, current_function->name);
+        param_error = true;
+    } 
+    else if (current_param && !type_compatible($1.type, current_param->type)) {
+        if (!param_error) {
+            fprintf(stderr, "Line %d: Parameter %d mismatch. Expected %s, got %s\n", 
+                    yylineno, arg_count, type_name(current_param->type), type_name($1.type));
+            param_error = true;
+        }
+    }
+    if (current_param) current_param = current_param->next;
+
+    emit("param", $1.place, "", "");
+    $$ = !param_error;
+}
+| EXPR COMMA list {
+    
+    arg_count++;
+
+    if (!current_param && !param_error) {
+         fprintf(stderr, "Line %d: Too many arguments\n", yylineno);
+         param_error = true;
+    } 
+    else if (current_param && !type_compatible($1.type, current_param->type)) {
+         if (!param_error) {
+             fprintf(stderr, "Line %d: Parameter mismatch\n", yylineno);
+             param_error = true;
+         }
+    }
+    if (current_param) current_param = current_param->next;
+
+    emit("param", $1.place, "", "");
+    $$ = !param_error;
+};
 
 switch_start: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET {
     Symbol* s= lookup($3, current_scope);
@@ -884,7 +939,8 @@ assignment:
     }
 
   | IDENTIFIER EQUAL STRING {
-       if (!s) {
+        Symbol* s = lookup($1, current_scope);
+        if (!s) {
             fprintf(stderr,"Line %d:Variable %s used before declaration\n",yylineno,$1);
             $$.type = SYM_ERROR;
         } 
@@ -909,7 +965,8 @@ assignment:
         Symbol* s = lookup($1, current_scope);
         if (!s) {
             fprintf(stderr,"Line %d:Variable  %s  used before declaration\n",yylineno,$1);
-            $$ = "error";
+            $$.type = SYM_ERROR;
+            $$.place = NULL;
         }
         else if (!type_compatible(s->type, $3.type)) {
             fprintf(stderr, "Line %d:Type mismatch: cannot assign %s to %s\n", 
@@ -1221,7 +1278,7 @@ M: G POWER M {
             $$.type = SYM_INT;
 
         char *t = newTemp();
-        emit("%%", $1.place, $3.place, t);
+        emit("^", $1.place, $3.place, t);
         $$.place = t;
     }
 }

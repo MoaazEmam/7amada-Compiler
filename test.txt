@@ -1,0 +1,12 @@
+int x = 3.
+string y.
+y = x / 3.
+x++.
+
+law (x > y){
+    string s = "kalam".
+} tayeb law (x < y) {
+    string s = "msh kalam".
+} tayeb {
+    string s = "dfg".
+}.

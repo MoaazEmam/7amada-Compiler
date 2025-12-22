@@ -35,25 +35,20 @@
 /* "%code requires" blocks.  */
 
 /* Line 1676 of yacc.c  */
-#line 27 "Parser.y"
-
-#include "enums_def.h"
-
-
-
-/* Line 1676 of yacc.c  */
-#line 46 "Parser.tab.h"
-/* "%code requires" blocks.  */
-
-/* Line 1676 of yacc.c  */
-#line 29 "Parser.y"
+#line 33 "Parser.y"
 
     #include "quadruple.h"
+    #include "enums_def.h"
+    typedef struct {
+        DATATYPE type; 
+        char* place;     
+        //int quad_idx;    
+    } ExprInfo;
 
 
 
 /* Line 1676 of yacc.c  */
-#line 46 "Parser.tab.h"
+#line 52 "Parser.tab.h"
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
@@ -126,7 +121,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 32 "Parser.y"
+#line 42 "Parser.y"
 
     int i;
     float f;
@@ -134,11 +129,12 @@ typedef union YYSTYPE
     _Bool b;
     DATATYPE dtype;
     Quadruple q;
+    ExprInfo info;
 
 
 
 /* Line 1676 of yacc.c  */
-#line 130 "Parser.tab.h"
+#line 138 "Parser.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
