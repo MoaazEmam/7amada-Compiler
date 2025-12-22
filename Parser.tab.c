@@ -84,9 +84,12 @@
     void report_unused(SymbolTable* table);
     int yylex(void);
     extern FILE *yyin;
-    SymbolTable* current_scope;
-    Symbol* current_function = NULL; 
-    DATATYPE current_type;    
+    SymbolTable *current_scope;
+    Symbol *current_function = NULL;
+    Param *current_param = NULL;
+    int arg_count = 0;
+    bool param_error = false;
+    DATATYPE current_type;
     KIND current_kind;
     char *current_switch_id = NULL;
     char *current_func_id = NULL;
@@ -203,7 +206,7 @@ typedef union YYSTYPE
 
     int i;
     float f;
-    char * str;
+    char *str;
     _Bool b;
     Quadruple q;
 
@@ -817,6 +820,9 @@ static const yytype_int16 yycheck[] =
       -1,    -1,    -1,    -1,    -1,    43,    -1,    -1,    46,    -1,
       48,    -1,    50,    -1,    52,    53,    -1,    43,    56,    57,
       46,    -1,    48,    -1,    50,    14,    52,    53,    -1,    -1,
+      56,    57,    21,    22,    23,    24,    25,    14,    -1,    -1,
+      -1,    -1,    -1,    -1,    21,    22,    23,    24,    25,    -1,
+      -1,    -1,    -1,    -1,    43,    -1,    -1,    46,    -1,    48,
       56,    57,    21,    22,    23,    24,    25,    14,    -1,    -1,
       -1,    -1,    -1,    -1,    21,    22,    23,    24,    25,    -1,
       -1,    -1,    -1,    -1,    43,    -1,    -1,    46,    -1,    48,
@@ -1747,22 +1753,21 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 146 "Parser.y"
     {
-        current_type = (yyvsp[(1) - (2)].i);
-        current_kind = SYM_CONST;
-    ;}
+    current_type = (yyvsp[(1) - (2)].dtype);
+    current_kind = SYM_CONST;
+;}
     break;
 
-  case 23:
+  case 24:
 
 /* Line 1455 of yacc.c  */
 #line 158 "Parser.y"
     {
-        current_type = (yyvsp[(1) - (2)].i);
-        current_kind = VAR;
-    ;}
+    current_kind = SYM_CONST;
+;}
     break;
 
-  case 25:
+  case 26:
 
 /* Line 1455 of yacc.c  */
 #line 167 "Parser.y"
@@ -1776,7 +1781,7 @@ yyreduce:
     ;}
     break;
 
-  case 26:
+  case 27:
 
 /* Line 1455 of yacc.c  */
 #line 175 "Parser.y"
@@ -1791,7 +1796,7 @@ yyreduce:
     ;}
     break;
 
-  case 27:
+  case 28:
 
 /* Line 1455 of yacc.c  */
 #line 185 "Parser.y"
@@ -1806,7 +1811,7 @@ yyreduce:
     ;}
     break;
 
-  case 28:
+  case 29:
 
 /* Line 1455 of yacc.c  */
 #line 194 "Parser.y"
@@ -1821,7 +1826,7 @@ yyreduce:
     ;}
     break;
 
-  case 29:
+  case 30:
 
 /* Line 1455 of yacc.c  */
 #line 203 "Parser.y"
@@ -1875,7 +1880,7 @@ yyreduce:
 ;}
     break;
 
-  case 35:
+  case 36:
 
 /* Line 1455 of yacc.c  */
 #line 247 "Parser.y"
@@ -2006,16 +2011,18 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 343 "Parser.y"
     {
-        current_type = (yyvsp[(1) - (2)].i);
-        if (lookup_current((yyvsp[(2) - (2)].str), current_scope)) 
-        {
-            fprintf(stderr,"Line %d:Duplicate parameter name %s\n",yylineno, (yyvsp[(2) - (2)].str));
-        } else {
-            Symbol* p = create_symbol((yyvsp[(2) - (2)].str), current_type, VAR, true, NULL);           
-            insert(p, current_scope);
-            append_param((yyvsp[(2) - (2)].str), current_function->params);
-        }
-    ;}
+    current_type = (yyvsp[(1) - (2)].dtype);
+    if (lookup_current((yyvsp[(2) - (2)].str), current_scope))
+    {
+        fprintf(stderr, "Line %d:Duplicate parameter name %s\n", yylineno, (yyvsp[(2) - (2)].str));
+    }
+    else
+    {
+        Symbol *p = create_symbol((yyvsp[(2) - (2)].str), current_type, VAR, true, NULL);
+        insert(p, current_scope);
+        append_param((yyvsp[(2) - (2)].str), (yyvsp[(1) - (2)].dtype), current_function->params);
+    }
+;}
     break;
 
   case 46:
@@ -2023,15 +2030,18 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 354 "Parser.y"
     {
-        current_type = (yyvsp[(1) - (4)].i);
-        if (lookup_current((yyvsp[(2) - (4)].str), current_scope)) {
-            fprintf(stderr,"Line %d:Duplicate parameter name  %s\n",yylineno,(yyvsp[(2) - (4)].str));
-        } else {
-            Symbol* p = create_symbol((yyvsp[(2) - (4)].str), current_type, VAR, true, NULL);
-            insert(p, current_scope);
-            append_param((yyvsp[(2) - (4)].str), current_function->params);  
-        }
-    ;}
+    current_type = (yyvsp[(1) - (4)].dtype);
+    if (lookup_current((yyvsp[(2) - (4)].str), current_scope))
+    {
+        fprintf(stderr, "Line %d:Duplicate parameter name %s\n", yylineno, (yyvsp[(2) - (4)].str));
+    }
+    else
+    {
+        Symbol *p = create_symbol((yyvsp[(2) - (4)].str), current_type, VAR, true, NULL);
+        insert(p, current_scope);
+        append_param((yyvsp[(2) - (4)].str), (yyvsp[(1) - (4)].dtype), current_function->params);
+    }
+;}
     break;
 
   case 47:
@@ -2764,8 +2774,8 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 850 "Parser.y"
     {
-        current_scope = create_table(211, current_scope);
-    ;}
+    current_scope = create_table(211, current_scope);
+;}
     break;
 
   case 103:
@@ -3000,16 +3010,21 @@ yyreturn:
 #line 866 "Parser.y"
 
 
-/* Subroutines */
-void yyerror(const char *s) {
-    extern char *yytext;  // Current token text
-    fprintf(stderr, "Line %d:Syntax error at '%s': %s\n",yylineno, yytext, s);
+    /* Subroutines */
+    void yyerror(const char *s)
+{
+    extern char *yytext; // Current token text
+    fprintf(stderr, "Line %d:Syntax error at '%s': %s\n", yylineno, yytext, s);
 }
-void report_unused(SymbolTable* table) {
-    for (int i = 0; i < table->size; i++) {
-        Symbol* s = table->table[i];
-        while (s) {
-            if (!s->used && s->kind == VAR) {
+void report_unused(SymbolTable *table)
+{
+    for (int i = 0; i < table->size; i++)
+    {
+        Symbol *s = table->table[i];
+        while (s)
+        {
+            if (!s->used && s->kind == VAR)
+            {
                 printf("Warning: variable '%s' declared but not used\n", s->name);
             }
             s = s->next;
@@ -3017,12 +3032,14 @@ void report_unused(SymbolTable* table) {
     }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     current_scope = create_table(211, NULL); // global scope
     initQuadTable();
     if (argc > 1) {
         yyin = fopen(argv[1], "r");
-        if (!yyin) {
+        if (!yyin)
+        {
             perror("Error opening file");
             return 1;
         }
@@ -3035,6 +3052,6 @@ int main(int argc, char **argv) {
         free_table(current_scope);
         return 0;
     }
-    
+
     return 1;
 }

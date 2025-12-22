@@ -1,23 +1,27 @@
 %verbose
 /* Definitions */
 %{
-    #include <stdio.h>
-    #include <stdlib.h>
-    #include <math.h>
-    #include<stdbool.h>
-    extern int yylineno;
-    #include "symbol_table.h"
-    #include "symbol.h"
-    #include "param.h"
-    #include "enums_def.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <stdbool.h>
+extern int yylineno;
+#include "symbol_table.h"
+#include "symbol.h"
+#include "param.h"
+#include "enums_def.h"
+#include "type_checks.h"
     #include "quadruple.h"
     void yyerror(const char *s);
     void report_unused(SymbolTable* table);
     int yylex(void);
     extern FILE *yyin;
-    SymbolTable* current_scope;
-    Symbol* current_function = NULL; 
-    DATATYPE current_type;    
+    SymbolTable *current_scope;
+    Symbol *current_function = NULL;
+    Param *current_param = NULL;
+    int arg_count = 0;
+    bool param_error = false;
+    DATATYPE current_type;
     KIND current_kind;
     char *current_switch_id = NULL;
     char *current_func_id = NULL;
@@ -32,12 +36,13 @@
 %union {
     int i;
     float f;
-    char * str;
+    char *str;
     _Bool b;
+    DATATYPE dtype;
     Quadruple q;
 }
 
-%token MINUS
+%token MINUS 
 %token PLUS
 %token MULTIPLY
 %token DIVIDE
@@ -98,12 +103,11 @@
 
 /* Production Rules */
 %%
-Start:S;
+Start : S;
 
-S: code DOT {printf("Correct Syntax\n");};
+S : code DOT { printf("Correct Syntax\n"); };
 
-code: inner_code 
-| code DOT inner_code;
+code : inner_code | code DOT inner_code;
 
 inner_code: assignment
 | declaration
@@ -338,30 +342,34 @@ whileloop:
     }
 ;
 
-
-parameters:
-    datatype IDENTIFIER {
-        current_type = $1;
-        if (lookup_current($2, current_scope)) 
-        {
-            fprintf(stderr,"Line %d:Duplicate parameter name %s\n",yylineno, $2);
-        } else {
-            Symbol* p = create_symbol($2, current_type, VAR, true, NULL);           
-            insert(p, current_scope);
-            append_param($2, current_function->params);
-        }
+parameters : datatype IDENTIFIER
+{
+    current_type = $1;
+    if (lookup_current($2, current_scope))
+    {
+        fprintf(stderr, "Line %d:Duplicate parameter name %s\n", yylineno, $2);
     }
-| datatype IDENTIFIER COMMA parameters {
-        current_type = $1;
-        if (lookup_current($2, current_scope)) {
-            fprintf(stderr,"Line %d:Duplicate parameter name  %s\n",yylineno,$2);
-        } else {
-            Symbol* p = create_symbol($2, current_type, VAR, true, NULL);
-            insert(p, current_scope);
-            append_param($2, current_function->params);  
-        }
+    else
+    {
+        Symbol *p = create_symbol($2, current_type, VAR, true, NULL);
+        insert(p, current_scope);
+        append_param($2, $1, current_function->params);
     }
-;
+}
+| datatype IDENTIFIER COMMA parameters
+{
+    current_type = $1;
+    if (lookup_current($2, current_scope))
+    {
+        fprintf(stderr, "Line %d:Duplicate parameter name %s\n", yylineno, $2);
+    }
+    else
+    {
+        Symbol *p = create_symbol($2, current_type, VAR, true, NULL);
+        insert(p, current_scope);
+        append_param($2, $1, current_function->params);
+    }
+};
 
 function_header: 
     datatype IDENTIFIER OPENBRACKET{
@@ -847,10 +855,9 @@ G: OPENBRACKET EXPR CLOSEDBRACKET {$$=$2;}
 ;
 
 enter_scope:
-    {
-        current_scope = create_table(211, current_scope);
-    }
-;
+{
+    current_scope = create_table(211, current_scope);
+};
 
 exit_scope:
     {
@@ -865,16 +872,21 @@ exit_scope:
 
 %%
 
-/* Subroutines */
-void yyerror(const char *s) {
-    extern char *yytext;  // Current token text
-    fprintf(stderr, "Line %d:Syntax error at '%s': %s\n",yylineno, yytext, s);
+    /* Subroutines */
+    void yyerror(const char *s)
+{
+    extern char *yytext; // Current token text
+    fprintf(stderr, "Line %d:Syntax error at '%s': %s\n", yylineno, yytext, s);
 }
-void report_unused(SymbolTable* table) {
-    for (int i = 0; i < table->size; i++) {
-        Symbol* s = table->table[i];
-        while (s) {
-            if (!s->used && s->kind == VAR) {
+void report_unused(SymbolTable *table)
+{
+    for (int i = 0; i < table->size; i++)
+    {
+        Symbol *s = table->table[i];
+        while (s)
+        {
+            if (!s->used && s->kind == VAR)
+            {
                 printf("Warning: variable '%s' declared but not used\n", s->name);
             }
             s = s->next;
@@ -882,12 +894,14 @@ void report_unused(SymbolTable* table) {
     }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     current_scope = create_table(211, NULL); // global scope
     initQuadTable();
     if (argc > 1) {
         yyin = fopen(argv[1], "r");
-        if (!yyin) {
+        if (!yyin)
+        {
             perror("Error opening file");
             return 1;
         }
@@ -900,6 +914,6 @@ int main(int argc, char **argv) {
         free_table(current_scope);
         return 0;
     }
-    
+
     return 1;
 }
