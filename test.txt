@@ -1,9 +1,13 @@
-int i.
-int a = 0.
-karar (i = 1 to 5, i++) {
-    a++.
-    string x = "fhkf".
-    law (a == 3) {
-        x = "ay 7aga".
-    }.
+int i = 4.
+int a.
+switch (i){
+    case (2) {
+        a = 5.
+    }
+    case (3) {
+        a = 8.
+    }
+    default {
+        a = 9.
+    }
 }.

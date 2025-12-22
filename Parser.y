@@ -19,6 +19,9 @@
     Symbol* current_function = NULL; 
     DATATYPE current_type;    
     KIND current_kind;
+    char *current_switch_id = NULL;
+    int cases[100];
+    int case_count = 0;
 %}
 
 %code requires {
@@ -88,7 +91,7 @@
 %token RETURN
 %token VOIDTYPE
 %type<str>  EXPR T G M condition inner_condition assignment function_call
-%type <i> datatype if_start else_place repeat_start while_start iterator
+%type <i> datatype if_start else_place repeat_start while_start iterator start_inner_case
 %type <q> for_loop_start
 
 /* Production Rules */
@@ -430,40 +433,71 @@ list: EXPR {
     emit("param", $1, "", "");
 }; //list checking -->> type
 
+switch_start: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET {
+    Symbol* s= lookup($3, current_scope);
+    if(!s){
+        fprintf(stderr,"Line %d:%s is not declared\n",yylineno, $3);
+    } 
+    else if (!s->initialized) {
+        fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $3);
+    } 
+    if (!current_switch_id) {
+        current_switch_id = $3;
+        s->used=true;
+    } else {
+        yyerror("Nested swtiches are not allowed");
+    }
+}
 switchstmt: 
-    SWITCH OPENBRACKET IDENTIFIER  CLOSEDBRACKET 
+    switch_start
     OPENBRACE enter_scope case_structure 
     DEFAULT OPENBRACE enter_scope
     code DOT 
     CLOSEDBRACE exit_scope
     CLOSEDBRACE exit_scope  { //net2aked en identifier of type int 3lshan manensash
-        Symbol* s= lookup($3, current_scope);
-        if(!s){
-            fprintf(stderr,"Line %d:%s is not declared\n",yylineno,$3);
-        } else {
-            s->used=true;
-        }
+        current_switch_id = NULL;
+        int end = nextQuad();
+        for (int i = 0; i < case_count; i++)
+            addjump(cases[i], end);
+        case_count = 0;
     }
-| SWITCH OPENBRACKET IDENTIFIER  CLOSEDBRACKET 
+| switch_start
   OPENBRACE enter_scope 
   case_structure 
   CLOSEDBRACE exit_scope {
-        Symbol* s= lookup($3, current_scope);
-        if(!s){
-            fprintf(stderr,"Line %d:%s is not declared\n",yylineno, $3);
-        } else {
-            s->used=true;
-        }
+    current_switch_id = NULL;
+    int end = nextQuad();
+    for (int i = 0; i < case_count; i++)
+        addjump(cases[i], end);
+    case_count = 0;
   }
 ;
 
 case_structure: inner_case | inner_case case_structure;
 
+start_inner_case: CASE OPENBRACKET INTEGER CLOSEDBRACKET{
+    if (current_switch_id) {
+        char *t = newTemp();
+        emit("==",current_switch_id,$3,t);
+        $$ = nextQuad();
+        emit("IfFalse",t,"","");
+    } else {
+        $$ = -1;
+    }
+}
+
 inner_case:
-    CASE OPENBRACKET INTEGER CLOSEDBRACKET
+    start_inner_case
     OPENBRACE enter_scope
         code DOT
-    CLOSEDBRACE exit_scope
+    CLOSEDBRACE exit_scope {
+        if ($1 != -1) {
+            cases[case_count] = nextQuad();
+            case_count++;
+            emit("goto", "", "", "");
+            addjump($1,nextQuad());
+        }
+    }
 ;
 
 condition: condition AND inner_condition 
