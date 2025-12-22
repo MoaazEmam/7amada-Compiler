@@ -98,7 +98,8 @@ extern int yylineno;
 %token RETURN
 %token VOIDTYPE
 %type<str>  EXPR T G M condition inner_condition assignment function_call
-%type <i> datatype if_start else_place repeat_start while_start iterator start_inner_case function_header
+%type <i> datatype 
+%type <i> if_start else_place repeat_start while_start iterator start_inner_case function_header
 %type <q> for_loop_start
 
 /* Production Rules */
