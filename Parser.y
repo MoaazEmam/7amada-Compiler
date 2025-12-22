@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
+#include <string.h>
 extern int yylineno;
 #include "symbol_table.h"
 #include "symbol.h"
@@ -21,6 +22,7 @@ extern int yylineno;
     bool param_error = false;
     DATATYPE current_type;
     KIND current_kind;
+    void syntax_error(const char* msg);
     void report_unused(SymbolTable * table);
 
 %}
@@ -100,9 +102,22 @@ extern int yylineno;
 %%
 Start : S;
 
-S : code DOT { printf("Correct Syntax\n"); };
+S : code DOT { printf("Correct Syntax\n"); }
+| code error{
+    syntax_error("Missing '.' at the end of statement");
+    yyerrok;
+};
 
-code : inner_code | code DOT inner_code;
+code : inner_code 
+|code DOT inner_code
+|code error inner_code {
+    syntax_error("Missing '.' at the end of statement");
+    yyerrok;
+}
+|code DOT error {
+    syntax_error("Invalid statement");
+    yyerrok;
+};
 
 inner_code : assignment | declaration | Ifstmt | whileloop | switchstmt | function_call | forloop | repeat | function | RETURN EXPR
 {
@@ -157,9 +172,7 @@ datatype : INTTYPE
     $$ = SYM_STRING;
     current_type = SYM_STRING;
     current_kind = VAR;
-}
-
-;
+};
 
 const_type : datatype CONST
 {
@@ -170,14 +183,9 @@ const_type : datatype CONST
 //$n in Bison means: The semantic value of the n-th symbol on the right-hand side of the rule
 // datatype IDENTIFIER
 // $1 $2
-declaration : datatype
-                  inner_declaration
-              // {
-              // current_type = $1;
-              // current_kind = VAR;
-              // }
-              |
-              const_type
+declaration : datatype inner_declaration
+| datatype error
+|const_type
 {
     current_kind = SYM_CONST;
 }
@@ -211,7 +219,6 @@ inner_declaration : IDENTIFIER
         insert(s, current_scope);
     }
 }
-
 | IDENTIFIER EQUAL BOOLEAN
 {
     if (lookup_current($1, current_scope))
@@ -260,30 +267,48 @@ inner_declaration : IDENTIFIER
         Symbol *s = create_symbol($1, current_type, current_kind, true, NULL);
         insert(s, current_scope);
     }
+}
+| IDENTIFIER EQUAL error {
+    syntax_error("Invalid expression in assignment");
+    yyerrok;
 };
 
-Ifstmt : IF OPENBRACKET condition CLOSEDBRACKET
-             OPENBRACE enter_scope
-                 code DOT
-                     CLOSEDBRACE exit_scope
-                         ELSE Ifstmt |
-         IF OPENBRACKET condition CLOSEDBRACKET
-             OPENBRACE enter_scope
-                 code DOT
-                     CLOSEDBRACE exit_scope |
-         IF OPENBRACKET condition CLOSEDBRACKET
-             OPENBRACE enter_scope
-                 code DOT
-                     CLOSEDBRACE exit_scope
-                         ELSE
-                             OPENBRACE enter_scope
-                                 code DOT
-                                     CLOSEDBRACE exit_scope;
+Ifstmt: 
+    IF if_condition
+    OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope
+    ELSE Ifstmt
+    |IF if_condition
+    OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope
+    |IF if_condition
+    OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope
+    ELSE
+    OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope
+    |IF error{
+        syntax_error("Missing '(' after 'law'");
+        yyerrok;
+    }
+;
 
-repeat : REPEAT OPENBRACE enter_scope
-             code DOT
-                 CLOSEDBRACE exit_scope
-                     UNTIL OPENBRACKET condition CLOSEDBRACKET;
+if_condition
+    : OPENBRACKET condition CLOSEDBRACKET
+    | OPENBRACKET condition error {
+          syntax_error("Missing ')' after 'law' condition");
+           while (yychar != OPENBRACE &&
+             yychar != CLOSEDBRACE &&
+             yychar != YYEOF){
+                yychar = yylex();
+            }
+          yyerrok;
+      }
+    | OPENBRACKET error CLOSEDBRACKET {
+          syntax_error("Invalid condition inside if parentheses");
+          yyclearin;
+          yyerrok;
+      }
+;
+
+
+repeat : REPEAT OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope UNTIL OPENBRACKET condition CLOSEDBRACKET;
 
 forloop : FOR OPENBRACKET enter_scope iterator COMMA assignment CLOSEDBRACKET
               OPENBRACE
@@ -388,15 +413,9 @@ function_header : datatype IDENTIFIER OPENBRACKET
 };
 
 function : function_header enter_scope parameters CLOSEDBRACKET
-               OPENBRACE
-                   code DOT
-                       CLOSEDBRACE exit_scope
-
-           |
-           function_header CLOSEDBRACKET
-               OPENBRACE enter_scope
-                   code DOT
-                       CLOSEDBRACE exit_scope;
+            OPENBRACE code DOT CLOSEDBRACE exit_scope
+           |function_header CLOSEDBRACKET
+            OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope;
 
 function_call : IDENTIFIER OPENBRACKET
 {
@@ -648,8 +667,23 @@ condition : condition AND inner_condition
         $$ = SYM_BOOL;
 };
 
-inner_condition : OPENBRACKET condition CLOSEDBRACKET { $$ = $2; }
-| EXPR GREATERTHAN EXPR
+inner_condition : 
+OPENBRACKET condition error {
+    syntax_error("Missing ')' in condition");
+    yyerrok;
+}
+|OPENBRACKET error CLOSEDBRACKET {
+    syntax_error("Invalid condition inside '()'");
+    $$=SYM_ERROR;
+    yyerrok;
+}
+|OPENBRACKET condition CLOSEDBRACKET { $$ = $2; }
+|EXPR GREATERTHAN error {
+    syntax_error("Invalid right operand for '>'");
+    $$=SYM_ERROR;
+    yyerrok;
+}
+|EXPR GREATERTHAN EXPR
 {
     if (($1 == SYM_INT || $1 == SYM_FLOAT) &&
         ($3 == SYM_INT || $3 == SYM_FLOAT))
@@ -659,6 +693,11 @@ inner_condition : OPENBRACKET condition CLOSEDBRACKET { $$ = $2; }
         fprintf(stderr, "Line %d:Invalid comparison operands. Cannot compare %s to %s", yylineno, type_name($1), type_name($3));
         $$ = SYM_ERROR;
     }
+}
+|EXPR GREATERTHANEQ error {
+    syntax_error("Invalid right operand for '>='");
+    $$=SYM_ERROR;
+    yyerrok;
 }
 | EXPR GREATERTHANEQ EXPR
 {
@@ -671,6 +710,11 @@ inner_condition : OPENBRACKET condition CLOSEDBRACKET { $$ = $2; }
         $$ = SYM_ERROR;
     }
 }
+|EXPR LESSTHAN error {
+    syntax_error("Invalid right operand for '<'");
+    $$=SYM_ERROR;
+    yyerrok;
+}
 | EXPR LESSTHAN EXPR
 {
     if (($1 == SYM_INT || $1 == SYM_FLOAT) &&
@@ -682,6 +726,11 @@ inner_condition : OPENBRACKET condition CLOSEDBRACKET { $$ = $2; }
         $$ = SYM_ERROR;
     }
 }
+|EXPR LESSTHANEQ error {
+    syntax_error("Invalid right operand for '<='");
+    $$=SYM_ERROR;
+    yyerrok;
+}
 | EXPR LESSTHANEQ EXPR
 {
     if (($1 == SYM_INT || $1 == SYM_FLOAT) &&
@@ -692,6 +741,11 @@ inner_condition : OPENBRACKET condition CLOSEDBRACKET { $$ = $2; }
         fprintf(stderr, "Line %d:Invalid comparison operands. Cannot compare %s to %s", yylineno, type_name($1), type_name($3));
         $$ = SYM_ERROR;
     }
+}
+|EXPR EQUALITY error {
+    syntax_error("Invalid right operand for '=='");
+    $$=SYM_ERROR;
+    yyerrok;
 }
 | EXPR EQUALITY BOOLEAN
 {
@@ -713,6 +767,11 @@ inner_condition : OPENBRACKET condition CLOSEDBRACKET { $$ = $2; }
         fprintf(stderr, "Line %d:Invalid comparison operands. Cannot compare %s to %s", yylineno, type_name($1), type_name($3));
         $$ = SYM_ERROR;
     }
+}
+|EXPR NOTEQUALITY error {
+    syntax_error("Invalid right operand for '!='");
+    $$=SYM_ERROR;
+    yyerrok;
 }
 | EXPR NOTEQUALITY BOOLEAN
 {
@@ -736,7 +795,18 @@ inner_condition : OPENBRACKET condition CLOSEDBRACKET { $$ = $2; }
     }
 };
 
-assignment : IDENTIFIER EQUAL EXPR
+assignment : 
+IDENTIFIER EQUAL error {
+    syntax_error("Invalid expression in assignment");
+    $$=SYM_ERROR;
+    yyerrok;
+}
+|IDENTIFIER error EXPR {
+    syntax_error("Missing '=' in assignment");
+    $$=SYM_ERROR;
+    yyerrok;
+}
+|IDENTIFIER EQUAL EXPR
 {
     Symbol *s = lookup($1, current_scope);
     if (!s)
@@ -845,7 +915,11 @@ assignment : IDENTIFIER EQUAL EXPR
     else if (s->type != SYM_INT && s->type != SYM_FLOAT)
         fprintf(stderr, "Line %d: Increment applied to non-numeric type %s", type_name(s->type));
 }
-
+|IDENTIFIER PLUSEQ error {
+    syntax_error("Invalid expression after '+='");
+    $$=SYM_ERROR;
+    yyerrok;
+}
 | IDENTIFIER PLUSEQ EXPR
 {
     Symbol *s = lookup($1, current_scope);
@@ -865,7 +939,11 @@ assignment : IDENTIFIER EQUAL EXPR
     else
         $$ = s->type;
 }
-
+|IDENTIFIER MINUSEQ error {
+    syntax_error("Invalid expression after '-='");
+    $$=SYM_ERROR;
+    yyerrok;
+}
 | IDENTIFIER MINUSEQ EXPR
 {
     Symbol *s = lookup($1, current_scope);
@@ -885,7 +963,11 @@ assignment : IDENTIFIER EQUAL EXPR
     else
         $$ = s->type;
 }
-
+|IDENTIFIER MULTIPLYEQ error {
+    syntax_error("Invalid expression after '*='");
+    $$=SYM_ERROR;
+    yyerrok;
+}
 | IDENTIFIER MULTIPLYEQ EXPR
 {
     Symbol *s = lookup($1, current_scope);
@@ -900,7 +982,11 @@ assignment : IDENTIFIER EQUAL EXPR
     else if ((s->type != SYM_INT && s->type != SYM_FLOAT) || ($3 != SYM_INT && $3 != SYM_FLOAT))
         fprintf(stderr, "Line %d: Multiplication applied to non-numeric type %s", type_name(s->type));
 }
-
+|IDENTIFIER DIVIDEEQ error {
+    syntax_error("Invalid expression after '/='");
+    $$=SYM_ERROR;
+    yyerrok;
+}
 | IDENTIFIER DIVIDEEQ EXPR
 {
     Symbol *s = lookup($1, current_scope);
@@ -1017,7 +1103,13 @@ M : G POWER M
 }
 | G { $$ = $1; };
 
-G : OPENBRACKET EXPR CLOSEDBRACKET { $$ = $2; }
+G : 
+OPENBRACKET EXPR error {
+    syntax_error("Expression missing a bracket or more");
+    $$=SYM_ERROR;
+    yyerrok;
+}
+|OPENBRACKET EXPR CLOSEDBRACKET { $$ = $2; }
 | MINUS G
 {
     if ($2 == SYM_ERROR)
@@ -1092,7 +1184,16 @@ exit_scope:
     void yyerror(const char *s)
 {
     extern char *yytext; // Current token text
-    fprintf(stderr, "Line %d:Syntax error at '%s': %s\n", yylineno, yytext, s);
+     if (strcmp(s, "syntax error") == 0) {
+        return;
+    }
+    fprintf(stderr, "Line %d: Syntax error at '%s': %s\n", 
+            yylineno, yytext, s);
+}
+void syntax_error(const char *msg) {
+    extern char *yytext;
+    fprintf(stderr, "Line %d: %s (found '%s')\n", 
+            yylineno, msg, yytext);
 }
 void report_unused(SymbolTable *table)
 {
