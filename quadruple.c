@@ -30,6 +30,11 @@ void addjump(int quadIndex, int target) {
     strcpy(quadTable[quadIndex].result,label);
 }
 
+Quadruple pop_last() {
+    Quadruple last = quadTable[quadCount];
+    quadCount--;
+}
+
 /* Emit a new quadruple */
 void emit(char *op, char *arg1, char *arg2, char *result) {
     if (quadCount == quadCapacity) {

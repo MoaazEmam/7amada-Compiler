@@ -17,6 +17,7 @@ void emit(char *op, char *arg1, char *arg2, char *result);
 int  nextQuad();
 void printQuadruples();
 void addjump(int quadIndex, int target);
+Quadruple pop_last();
 
 /* Temporary variable */
 char* newTemp();

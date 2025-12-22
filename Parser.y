@@ -84,7 +84,7 @@
 %token RETURN
 %token VOIDTYPE
 %type<str>  EXPR T G M condition inner_condition assignment function_call
-%type <i> datatype if_start else_place repeat_start while_start
+%type <i> datatype if_start else_place repeat_start while_start iterator
 
 
 /* Production Rules */
@@ -246,22 +246,34 @@ repeat:
         emit("IfFalse",$11,"",label);
     }
 ;
-
 forloop:
     FOR OPENBRACKET enter_scope iterator COMMA assignment CLOSEDBRACKET
     OPENBRACE 
         code DOT
-    CLOSEDBRACE exit_scope
+    CLOSEDBRACE exit_scope {
+        if ($4 != -1) {
+            char label[20];
+            sprintf(label, "%d", $4);
+            emit("goto","","",label);
+            addjump($4+1,nextQuad());
+        }
+    }
 ;
 
 iterator: INTTYPE IDENTIFIER EQUAL EXPR TO EXPR
     {
         if (lookup_current($2, current_scope)) {
             fprintf(stderr,"Line %d:iterator %s has been declared before \n",yylineno,$2);
+            $$ = -1;
         } else {
             Symbol* s = create_symbol($2, SYM_INT, VAR, true, NULL);
             insert(s, current_scope);
             s->used=true;
+            emit("=",$2,"",$4);
+            $$ = nextQuad();
+            char *t = newTemp();
+            emit(">",$2,$6,t);
+            emit("IfTrue",t,"","");
         }
     }
 | IDENTIFIER EQUAL EXPR TO EXPR 
@@ -269,9 +281,15 @@ iterator: INTTYPE IDENTIFIER EQUAL EXPR TO EXPR
     Symbol* s = lookup($1, current_scope);
         if (!s) {
             fprintf(stderr,"Line %d:Variable %s used before declaration\n",yylineno,$1);
+            $$ = -1;
         } else {
             s->initialized = true;
             s->used=true;
+            emit("=",$1,"",$3);
+            $$ = nextQuad();
+            char *t = newTemp();
+            emit(">",$1,$5,t);
+            emit("IfTrue",t,"","");
         }
 }
 ;

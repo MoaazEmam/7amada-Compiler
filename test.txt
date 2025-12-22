@@ -1,12 +1,8 @@
 int a = 2.
 int b = 1.
 int c = 3.
-e3mel {
-    int x = 5.
-    string str = "kalam".
-    b++.
-} lehad (b > 4).
-tol_ma (c > 1){
-    b += a.
-    c--.
+int i.
+
+karar (i = 1 to 5, i++) {
+    a++.
 }.
