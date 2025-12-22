@@ -7,6 +7,7 @@ ParamList* create_param_list(){
     if(!list) return NULL;
     list->head=NULL;
     list->tail=NULL;
+    list->count = 0;
     return list;
 }
 
@@ -34,6 +35,7 @@ void append_param(char* name, ParamList* list){
         //make tail look at new_p
         list->tail=new_p;
     }
+    list->count++;
 }
 void free_params(ParamList* list){
     while(list->head){

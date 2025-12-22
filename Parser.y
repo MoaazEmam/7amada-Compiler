@@ -320,22 +320,48 @@ function_call:
             fprintf( stderr,"Line %d:Function %s not defined \n",yylineno,$1);
         else if (f->kind != FUNC)
             fprintf(stderr,"Line %d:Identifier %s is not a function\n",yylineno,$1);
-        else 
-           f->used=true;
+        else {
+            f->used=true;
+            char string_count[20];
+            sprintf(string_count, "%d", f->params->count); 
+            if (f->type == SYM_VOID) {
+                emit("call", $1, string_count, "");
+                $$ = "";
+            }
+            else {
+                char *t = newTemp();
+                emit("call", $1, string_count, t);
+                $$ = t;
+            }
         }
+    }
   | IDENTIFIER OPENBRACKET CLOSEDBRACKET {
         Symbol* f = lookup($1, current_scope);
         if (!f)
             fprintf( stderr,"Line %d:Function %s not defined \n",yylineno,$1);
         else if (f->kind != FUNC)
             fprintf(stderr,"Line %d:Identifier %s is not a function\n",yylineno,$1);
-        else 
-           f->used=true;
+        else {
+            f->used=true;
+            if (f->type == SYM_VOID) {
+                emit("call", $1, "0", "");
+                $$ = "";
+            }
+            else {
+                char *t = newTemp();
+                emit("call", $1, "0", t);
+                $$ = t;
+            }
+        }
     }
 ;
 
 
-list: EXPR | EXPR COMMA list; //list checking -->> type
+list: EXPR {
+    emit("param", $1, "", "");
+}| EXPR COMMA list {
+    emit("param", $1, "", "");
+}; //list checking -->> type
 
 switchstmt: 
     SWITCH OPENBRACKET IDENTIFIER  CLOSEDBRACKET 
@@ -676,9 +702,10 @@ enter_scope:
 exit_scope:
     {
         SymbolTable* old = current_scope;
-        current_scope = current_scope->parent;
+        print_table(current_scope);
         report_unused(current_scope);
-        //print_table(current_scope);
+        printf("_____________________________ \n");
+        current_scope = current_scope->parent;
         free_table(old);
     }
 ;
@@ -714,9 +741,10 @@ int main(int argc, char **argv) {
     }
 
     if (yyparse() == 0) {
-        //report_unused(current_scope);
-        free_table(current_scope);
+        print_table(current_scope);
+        report_unused(current_scope);
         printQuadruples();
+        free_table(current_scope);
         return 0;
     }
     

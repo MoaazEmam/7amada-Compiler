@@ -12,6 +12,7 @@ typedef struct param{
 typedef struct param_list{
     Param* head;
     Param* tail;
+    int count;
 } ParamList;
 
 ParamList* create_param_list();

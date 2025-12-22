@@ -544,12 +544,12 @@ static const yytype_uint16 yyrline[] =
      103,   104,   105,   106,   107,   108,   109,   110,   114,   115,
      116,   117,   123,   135,   139,   144,   152,   162,   171,   180,
      192,   197,   201,   212,   219,   225,   235,   249,   257,   268,
-     281,   292,   304,   310,   317,   326,   338,   338,   341,   354,
-     367,   367,   370,   376,   382,   388,   394,   398,   404,   410,
-     418,   419,   425,   431,   437,   443,   449,   455,   461,   470,
-     482,   494,   506,   522,   538,   555,   572,   589,   606,   611,
-     616,   619,   624,   629,   634,   637,   642,   645,   646,   651,
-     652,   653,   667,   671,   677
+     281,   292,   304,   310,   317,   338,   360,   362,   367,   380,
+     393,   393,   396,   402,   408,   414,   420,   424,   430,   436,
+     444,   445,   451,   457,   463,   469,   475,   481,   487,   496,
+     508,   520,   532,   548,   564,   581,   598,   615,   632,   637,
+     642,   645,   650,   655,   660,   663,   668,   671,   672,   677,
+     678,   679,   693,   697,   703
 };
 #endif
 
@@ -1881,30 +1881,70 @@ yyreduce:
             fprintf( stderr,"Line %d:Function %s not defined \n",yylineno,(yyvsp[(1) - (4)].str));
         else if (f->kind != FUNC)
             fprintf(stderr,"Line %d:Identifier %s is not a function\n",yylineno,(yyvsp[(1) - (4)].str));
-        else 
-           f->used=true;
-        ;}
+        else {
+            f->used=true;
+            char string_count[20];
+            sprintf(string_count, "%d", f->params->count); 
+            if (f->type == SYM_VOID) {
+                emit("call", (yyvsp[(1) - (4)].str), string_count, "");
+                (yyval.str) = "";
+            }
+            else {
+                char *t = newTemp();
+                emit("call", (yyvsp[(1) - (4)].str), string_count, t);
+                (yyval.str) = t;
+            }
+        }
+    ;}
     break;
 
   case 45:
 
 /* Line 1455 of yacc.c  */
-#line 326 "Parser.y"
+#line 338 "Parser.y"
     {
         Symbol* f = lookup((yyvsp[(1) - (3)].str), current_scope);
         if (!f)
             fprintf( stderr,"Line %d:Function %s not defined \n",yylineno,(yyvsp[(1) - (3)].str));
         else if (f->kind != FUNC)
             fprintf(stderr,"Line %d:Identifier %s is not a function\n",yylineno,(yyvsp[(1) - (3)].str));
-        else 
-           f->used=true;
+        else {
+            f->used=true;
+            if (f->type == SYM_VOID) {
+                emit("call", (yyvsp[(1) - (3)].str), "0", "");
+                (yyval.str) = "";
+            }
+            else {
+                char *t = newTemp();
+                emit("call", (yyvsp[(1) - (3)].str), "0", t);
+                (yyval.str) = t;
+            }
+        }
     ;}
+    break;
+
+  case 46:
+
+/* Line 1455 of yacc.c  */
+#line 360 "Parser.y"
+    {
+    emit("param", (yyvsp[(1) - (1)].str), "", "");
+;}
+    break;
+
+  case 47:
+
+/* Line 1455 of yacc.c  */
+#line 362 "Parser.y"
+    {
+    emit("param", (yyvsp[(1) - (3)].str), "", "");
+;}
     break;
 
   case 48:
 
 /* Line 1455 of yacc.c  */
-#line 346 "Parser.y"
+#line 372 "Parser.y"
     { //net2aked en identifier of type int 3lshan manensash
         Symbol* s= lookup((yyvsp[(3) - (16)].str), current_scope);
         if(!s){
@@ -1918,7 +1958,7 @@ yyreduce:
   case 49:
 
 /* Line 1455 of yacc.c  */
-#line 357 "Parser.y"
+#line 383 "Parser.y"
     {
         Symbol* s= lookup((yyvsp[(3) - (9)].str), current_scope);
         if(!s){
@@ -1932,7 +1972,7 @@ yyreduce:
   case 53:
 
 /* Line 1455 of yacc.c  */
-#line 377 "Parser.y"
+#line 403 "Parser.y"
     {
     char *t = newTemp();
     emit("and", (yyvsp[(1) - (3)].str), (yyvsp[(3) - (3)].str), t);
@@ -1943,7 +1983,7 @@ yyreduce:
   case 54:
 
 /* Line 1455 of yacc.c  */
-#line 383 "Parser.y"
+#line 409 "Parser.y"
     {
     char *t = newTemp();
     emit("or", (yyvsp[(1) - (3)].str), (yyvsp[(3) - (3)].str), t);
@@ -1954,7 +1994,7 @@ yyreduce:
   case 55:
 
 /* Line 1455 of yacc.c  */
-#line 389 "Parser.y"
+#line 415 "Parser.y"
     {
     char *t = newTemp();
     emit("not", (yyvsp[(2) - (2)].str), "", t);
@@ -1965,7 +2005,7 @@ yyreduce:
   case 56:
 
 /* Line 1455 of yacc.c  */
-#line 395 "Parser.y"
+#line 421 "Parser.y"
     {
     (yyval.str) = (yyvsp[(1) - (1)].str);
 ;}
@@ -1974,7 +2014,7 @@ yyreduce:
   case 57:
 
 /* Line 1455 of yacc.c  */
-#line 399 "Parser.y"
+#line 425 "Parser.y"
     {
     char *t = newTemp();
     emit("and", (yyvsp[(1) - (3)].str), (yyvsp[(3) - (3)].str), t);
@@ -1985,7 +2025,7 @@ yyreduce:
   case 58:
 
 /* Line 1455 of yacc.c  */
-#line 405 "Parser.y"
+#line 431 "Parser.y"
     {
     char *t = newTemp();
     emit("or", (yyvsp[(1) - (3)].str), (yyvsp[(3) - (3)].str), t);
@@ -1996,7 +2036,7 @@ yyreduce:
   case 59:
 
 /* Line 1455 of yacc.c  */
-#line 411 "Parser.y"
+#line 437 "Parser.y"
     {
     char *t = newTemp();
     emit("not", (yyvsp[(2) - (2)].str), "", t);
@@ -2007,14 +2047,14 @@ yyreduce:
   case 60:
 
 /* Line 1455 of yacc.c  */
-#line 418 "Parser.y"
+#line 444 "Parser.y"
     {(yyval.str)=(yyvsp[(2) - (3)].str);;}
     break;
 
   case 61:
 
 /* Line 1455 of yacc.c  */
-#line 420 "Parser.y"
+#line 446 "Parser.y"
     {
     char *t = newTemp();
     emit(">", (yyvsp[(1) - (3)].str), (yyvsp[(3) - (3)].str), t);
@@ -2025,7 +2065,7 @@ yyreduce:
   case 62:
 
 /* Line 1455 of yacc.c  */
-#line 426 "Parser.y"
+#line 452 "Parser.y"
     {
     char *t = newTemp();
     emit(">=", (yyvsp[(1) - (3)].str), (yyvsp[(3) - (3)].str), t);
@@ -2036,7 +2076,7 @@ yyreduce:
   case 63:
 
 /* Line 1455 of yacc.c  */
-#line 432 "Parser.y"
+#line 458 "Parser.y"
     {
     char *t = newTemp();
     emit("<", (yyvsp[(1) - (3)].str), (yyvsp[(3) - (3)].str), t);
@@ -2047,7 +2087,7 @@ yyreduce:
   case 64:
 
 /* Line 1455 of yacc.c  */
-#line 438 "Parser.y"
+#line 464 "Parser.y"
     {
     char *t = newTemp();
     emit("<=", (yyvsp[(1) - (3)].str), (yyvsp[(3) - (3)].str), t);
@@ -2058,7 +2098,7 @@ yyreduce:
   case 65:
 
 /* Line 1455 of yacc.c  */
-#line 444 "Parser.y"
+#line 470 "Parser.y"
     {
     char *t = newTemp();
     emit("==", (yyvsp[(1) - (3)].str), (yyvsp[(3) - (3)].str), t);
@@ -2069,7 +2109,7 @@ yyreduce:
   case 66:
 
 /* Line 1455 of yacc.c  */
-#line 450 "Parser.y"
+#line 476 "Parser.y"
     {
     char *t = newTemp();
     emit("==", (yyvsp[(1) - (3)].str), (yyvsp[(3) - (3)].str), t);
@@ -2080,7 +2120,7 @@ yyreduce:
   case 67:
 
 /* Line 1455 of yacc.c  */
-#line 456 "Parser.y"
+#line 482 "Parser.y"
     {
     char *t = newTemp();
     emit("!=", (yyvsp[(1) - (3)].str), (yyvsp[(3) - (3)].str), t);
@@ -2091,7 +2131,7 @@ yyreduce:
   case 68:
 
 /* Line 1455 of yacc.c  */
-#line 462 "Parser.y"
+#line 488 "Parser.y"
     {
     char *t = newTemp();
     emit("!=", (yyvsp[(1) - (3)].str), (yyvsp[(3) - (3)].str), t);
@@ -2102,7 +2142,7 @@ yyreduce:
   case 69:
 
 /* Line 1455 of yacc.c  */
-#line 470 "Parser.y"
+#line 496 "Parser.y"
     {
         Symbol* s = lookup((yyvsp[(1) - (3)].str), current_scope);
         if (!s) {
@@ -2119,7 +2159,7 @@ yyreduce:
   case 70:
 
 /* Line 1455 of yacc.c  */
-#line 482 "Parser.y"
+#line 508 "Parser.y"
     {
         Symbol* s = lookup((yyvsp[(1) - (3)].str), current_scope);
         if (!s) {
@@ -2136,7 +2176,7 @@ yyreduce:
   case 71:
 
 /* Line 1455 of yacc.c  */
-#line 494 "Parser.y"
+#line 520 "Parser.y"
     {
         Symbol* s = lookup((yyvsp[(1) - (3)].str), current_scope);
         if (!s) {
@@ -2153,7 +2193,7 @@ yyreduce:
   case 72:
 
 /* Line 1455 of yacc.c  */
-#line 506 "Parser.y"
+#line 532 "Parser.y"
     {
         Symbol* s = lookup((yyvsp[(1) - (2)].str), current_scope);
         if (!s) {
@@ -2174,7 +2214,7 @@ yyreduce:
   case 73:
 
 /* Line 1455 of yacc.c  */
-#line 522 "Parser.y"
+#line 548 "Parser.y"
     {
         Symbol* s = lookup((yyvsp[(1) - (2)].str), current_scope);
         if (!s) {
@@ -2195,7 +2235,7 @@ yyreduce:
   case 74:
 
 /* Line 1455 of yacc.c  */
-#line 538 "Parser.y"
+#line 564 "Parser.y"
     {
         Symbol* s = lookup((yyvsp[(1) - (3)].str), current_scope);
         if (!s) {
@@ -2217,7 +2257,7 @@ yyreduce:
   case 75:
 
 /* Line 1455 of yacc.c  */
-#line 555 "Parser.y"
+#line 581 "Parser.y"
     {
         Symbol* s = lookup((yyvsp[(1) - (3)].str), current_scope);
         if (!s) {
@@ -2239,7 +2279,7 @@ yyreduce:
   case 76:
 
 /* Line 1455 of yacc.c  */
-#line 572 "Parser.y"
+#line 598 "Parser.y"
     {
          Symbol* s = lookup((yyvsp[(1) - (3)].str), current_scope);
         if (!s) {
@@ -2261,7 +2301,7 @@ yyreduce:
   case 77:
 
 /* Line 1455 of yacc.c  */
-#line 589 "Parser.y"
+#line 615 "Parser.y"
     {
         Symbol* s = lookup((yyvsp[(1) - (3)].str), current_scope);
         if (!s) {
@@ -2282,7 +2322,7 @@ yyreduce:
   case 78:
 
 /* Line 1455 of yacc.c  */
-#line 606 "Parser.y"
+#line 632 "Parser.y"
     {
     char *t = newTemp();
     emit("+", (yyvsp[(1) - (3)].str), (yyvsp[(3) - (3)].str), t);
@@ -2293,7 +2333,7 @@ yyreduce:
   case 79:
 
 /* Line 1455 of yacc.c  */
-#line 611 "Parser.y"
+#line 637 "Parser.y"
     {
     char *t = newTemp();
     emit("-", (yyvsp[(1) - (3)].str), (yyvsp[(3) - (3)].str), t);
@@ -2304,14 +2344,14 @@ yyreduce:
   case 80:
 
 /* Line 1455 of yacc.c  */
-#line 616 "Parser.y"
+#line 642 "Parser.y"
     {(yyval.str)=(yyvsp[(1) - (1)].str);;}
     break;
 
   case 81:
 
 /* Line 1455 of yacc.c  */
-#line 619 "Parser.y"
+#line 645 "Parser.y"
     {
     char *t = newTemp();
     emit("*", (yyvsp[(1) - (3)].str), (yyvsp[(3) - (3)].str), t);
@@ -2322,7 +2362,7 @@ yyreduce:
   case 82:
 
 /* Line 1455 of yacc.c  */
-#line 624 "Parser.y"
+#line 650 "Parser.y"
     {
     char *t = newTemp();
     emit("/", (yyvsp[(1) - (3)].str), (yyvsp[(3) - (3)].str), t);
@@ -2333,7 +2373,7 @@ yyreduce:
   case 83:
 
 /* Line 1455 of yacc.c  */
-#line 629 "Parser.y"
+#line 655 "Parser.y"
     {
     char *t = newTemp();
     emit("%%", (yyvsp[(1) - (3)].str), (yyvsp[(3) - (3)].str), t);
@@ -2344,14 +2384,14 @@ yyreduce:
   case 84:
 
 /* Line 1455 of yacc.c  */
-#line 634 "Parser.y"
+#line 660 "Parser.y"
     {(yyval.str)=(yyvsp[(1) - (1)].str);;}
     break;
 
   case 85:
 
 /* Line 1455 of yacc.c  */
-#line 637 "Parser.y"
+#line 663 "Parser.y"
     {
     char *t = newTemp();
     emit("^", (yyvsp[(1) - (3)].str), (yyvsp[(3) - (3)].str), t);
@@ -2362,21 +2402,21 @@ yyreduce:
   case 86:
 
 /* Line 1455 of yacc.c  */
-#line 642 "Parser.y"
+#line 668 "Parser.y"
     {(yyval.str)=(yyvsp[(1) - (1)].str);;}
     break;
 
   case 87:
 
 /* Line 1455 of yacc.c  */
-#line 645 "Parser.y"
+#line 671 "Parser.y"
     {(yyval.str)=(yyvsp[(2) - (3)].str);;}
     break;
 
   case 88:
 
 /* Line 1455 of yacc.c  */
-#line 646 "Parser.y"
+#line 672 "Parser.y"
     {
     char *t = newTemp();
     emit("negative", (yyvsp[(2) - (2)].str), "", t);
@@ -2387,21 +2427,21 @@ yyreduce:
   case 89:
 
 /* Line 1455 of yacc.c  */
-#line 651 "Parser.y"
+#line 677 "Parser.y"
     {(yyval.str)=(yyvsp[(1) - (1)].str);;}
     break;
 
   case 90:
 
 /* Line 1455 of yacc.c  */
-#line 652 "Parser.y"
+#line 678 "Parser.y"
     {(yyval.str)=(yyvsp[(1) - (1)].str);;}
     break;
 
   case 91:
 
 /* Line 1455 of yacc.c  */
-#line 653 "Parser.y"
+#line 679 "Parser.y"
     { //handles use before init.
         Symbol* s = lookup((yyvsp[(1) - (1)].str), current_scope);
         if (!s) {
@@ -2421,14 +2461,14 @@ yyreduce:
   case 92:
 
 /* Line 1455 of yacc.c  */
-#line 667 "Parser.y"
+#line 693 "Parser.y"
     {(yyval.str)=(yyvsp[(1) - (1)].str);;}
     break;
 
   case 93:
 
 /* Line 1455 of yacc.c  */
-#line 671 "Parser.y"
+#line 697 "Parser.y"
     {
         current_scope = create_table(211, current_scope);
     ;}
@@ -2437,12 +2477,13 @@ yyreduce:
   case 94:
 
 /* Line 1455 of yacc.c  */
-#line 677 "Parser.y"
+#line 703 "Parser.y"
     {
         SymbolTable* old = current_scope;
-        current_scope = current_scope->parent;
+        print_table(current_scope);
         report_unused(current_scope);
-        //print_table(current_scope);
+        printf("_____________________________ \n");
+        current_scope = current_scope->parent;
         free_table(old);
     ;}
     break;
@@ -2450,7 +2491,7 @@ yyreduce:
 
 
 /* Line 1455 of yacc.c  */
-#line 2454 "Parser.tab.c"
+#line 2495 "Parser.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -2662,7 +2703,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 686 "Parser.y"
+#line 713 "Parser.y"
 
 
 /* Subroutines */
@@ -2694,9 +2735,10 @@ int main(int argc, char **argv) {
     }
 
     if (yyparse() == 0) {
-        //report_unused(current_scope);
-        free_table(current_scope);
+        print_table(current_scope);
+        report_unused(current_scope);
         printQuadruples();
+        free_table(current_scope);
         return 0;
     }
     
