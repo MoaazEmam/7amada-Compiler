@@ -31,6 +31,7 @@ SymbolTable *create_table(int size, SymbolTable *parent)
     }
     table->size = size;
     table->parent = parent;
+    table->scope_id = scope_counter++;
     return table;
 }
 
