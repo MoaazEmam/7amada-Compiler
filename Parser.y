@@ -84,7 +84,7 @@
 %token RETURN
 %token VOIDTYPE
 %type<str>  EXPR T G M condition inner_condition assignment function_call
-%type <i> datatype if_start else_place repeat_start
+%type <i> datatype if_start else_place repeat_start while_start
 
 
 /* Production Rules */
@@ -274,14 +274,23 @@ iterator: INTTYPE IDENTIFIER EQUAL EXPR TO EXPR
             s->used=true;
         }
 }
-
 ;
 
+while_start: WHILE OPENBRACKET condition CLOSEDBRACKET {
+    $$ = nextQuad();
+    emit("IfFalse",$3,"","");
+}
+
 whileloop:
-    WHILE OPENBRACKET condition CLOSEDBRACKET 
+    while_start
     OPENBRACE enter_scope
         code DOT
-    CLOSEDBRACE exit_scope
+    CLOSEDBRACE exit_scope {
+        char label[20];
+        sprintf(label, "%d", $1); 
+        emit("goto","","",label);
+        addjump($1,nextQuad());
+    }
 ;
 
 
