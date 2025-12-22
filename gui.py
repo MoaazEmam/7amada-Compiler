@@ -3,6 +3,15 @@ from tkinter import ttk, messagebox
 import subprocess
 import tempfile
 import os
+def update_line_numbers(event=None):
+    line_numbers.config(state="normal")
+    line_numbers.delete("1.0", tk.END)
+
+    lines = source_text.index("end-1c").split('.')[0]
+    for i in range(1, int(lines) + 1):
+        line_numbers.insert(tk.END, f"{i}\n")
+
+    line_numbers.config(state="disabled")
 
 # ---------- Compile Function ----------
 def compile_code():
@@ -18,7 +27,7 @@ def compile_code():
 
     try:
         result = subprocess.run(
-            ["./compiler", filename],
+            ["./a.exe", filename],
             capture_output=True,
             text=True
         )
@@ -54,13 +63,56 @@ def compile_code():
 root = tk.Tk()
 root.title("CMPN403 Mini Compiler")
 
-# ---------- Source Code ----------
+# ---------- Source Code with Line Numbers ----------
 tk.Label(root, text="Source Code").pack(anchor="w", padx=5)
-source_text = tk.Text(root, height=15, width=100)
-source_text.pack(padx=5, pady=5)
+
+code_frame = tk.Frame(root)
+code_frame.pack(fill="both", expand=False, padx=5, pady=5)
+
+line_numbers = tk.Text(
+    code_frame,
+    width=4,
+    padx=5,
+    takefocus=0,
+    border=0,
+    background="lightgray",
+    state="disabled"
+)
+line_numbers.pack(side="left", fill="y")
+
+source_text = tk.Text(code_frame, height=15, width=95)
+source_text.pack(side="right", fill="both", expand=True)
+
+source_text.insert("1.0", "")
+
+source_text.bind("<KeyRelease>", update_line_numbers)
+source_text.bind("<MouseWheel>", update_line_numbers)
+source_text.bind("<Button-1>", update_line_numbers)
+
+update_line_numbers()
+
+scrollbar = tk.Scrollbar(code_frame, command=lambda *args: sync_scroll(*args))
+scrollbar.pack(side="right", fill="y")
+
+source_text.config(yscrollcommand=scrollbar.set)
+line_numbers.config(yscrollcommand=scrollbar.set)
+
+def sync_scroll(*args):
+    source_text.yview(*args)
+    line_numbers.yview(*args)
 
 # ---------- Compile Button ----------
-tk.Button(root, text="Compile", command=compile_code).pack(pady=5)
+button_frame = tk.Frame(root)
+button_frame.pack(pady=5)
+
+tk.Button(button_frame, text="Compile", command=compile_code).pack(side="left", padx=5)
+
+# 👇 ADD THIS LINE HERE
+tk.Button(
+    button_frame,
+    text="Clear",
+    command=lambda: source_text.delete("1.0", tk.END)
+).pack(side="left", padx=5)
 
 # ---------- Tabs ----------
 notebook = ttk.Notebook(root)
