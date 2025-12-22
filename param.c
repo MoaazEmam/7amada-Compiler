@@ -10,7 +10,7 @@ ParamList* create_param_list(){
     return list;
 }
 
-Param* create_param(char* name){
+Param* create_param(char* name,DATATYPE type){
     Param* p=(Param*)malloc(sizeof(Param));
     if(!p) return NULL;
     p->name=strdup(name);
@@ -18,12 +18,13 @@ Param* create_param(char* name){
         free(p);
         return NULL;
     }
+    p->type=type;
     p->next=NULL;
     return p;
 }
 
-void append_param(char* name, ParamList* list){
-    Param* new_p=create_param(name);
+void append_param(char* name, DATATYPE type,ParamList* list){
+    Param* new_p=create_param(name,type);
     if(!new_p) return;
 
     //empty list
@@ -34,6 +35,7 @@ void append_param(char* name, ParamList* list){
         //make tail look at new_p
         list->tail=new_p;
     }
+    list->size++;
 }
 void free_params(ParamList* list){
     while(list->head){
