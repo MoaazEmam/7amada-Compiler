@@ -16,10 +16,9 @@ int max (int x, int y) {
 
 c = max(3,2).
 
-c = b^2.
-wala_haga print () {
+wala_haga print (string v) {
     string x.
-    x = x + x.
+    x = v + v.
 }.
 string d = "kalam".
-print().
+print(d).

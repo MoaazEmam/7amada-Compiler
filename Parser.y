@@ -84,7 +84,7 @@
 %token RETURN
 %token VOIDTYPE
 %type<str>  EXPR T G M condition inner_condition assignment function_call
-%type <i> datatype
+%type <i> datatype if_start else_place
 
 
 /* Production Rules */
@@ -188,24 +188,48 @@ inner_declaration:
     } 
 ;
 
+if_start: IF OPENBRACKET condition CLOSEDBRACKET 
+{
+    $$ = nextQuad();
+    emit("IfFalse", $3, "", "");
+}
+
 Ifstmt: 
-  IF OPENBRACKET condition CLOSEDBRACKET 
-  OPENBRACE enter_scope 
-  code DOT 
-  CLOSEDBRACE exit_scope 
-  ELSE Ifstmt
-| IF OPENBRACKET condition CLOSEDBRACKET 
-  OPENBRACE enter_scope
-  code DOT
-  CLOSEDBRACE exit_scope
-| IF OPENBRACKET condition CLOSEDBRACKET 
-  OPENBRACE enter_scope 
-  code DOT 
-  CLOSEDBRACE exit_scope 
-  ELSE 
-  OPENBRACE enter_scope
-  code DOT 
-  CLOSEDBRACE exit_scope
+  if_start
+    OPENBRACE enter_scope 
+    code DOT 
+    CLOSEDBRACE exit_scope 
+    {
+        addjump($1,nextQuad()+1); //skip the goto at the end of the if condition
+
+    }
+    else_stmt
+| if_start
+    OPENBRACE enter_scope
+    code DOT
+    CLOSEDBRACE exit_scope
+    {
+        addjump($1,nextQuad());
+    }
+;
+
+else_place: 
+{
+    $$ = nextQuad();
+    emit("goto", "", "", "");
+}
+
+else_stmt:
+    ELSE else_place Ifstmt
+    {
+        addjump($2,nextQuad());
+    }
+| ELSE else_place OPENBRACE enter_scope
+    code DOT 
+    CLOSEDBRACE exit_scope
+    {
+        addjump($2,nextQuad());
+    }
 ;
 
 repeat:

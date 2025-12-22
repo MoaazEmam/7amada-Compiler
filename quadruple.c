@@ -24,6 +24,12 @@ int nextQuad() {
     return quadCount;
 }
 
+void addjump(int quadIndex, int target) {
+    char label[20];
+    sprintf(label, "%d", target);
+    strcpy(quadTable[quadIndex].result,label);
+}
+
 /* Emit a new quadruple */
 void emit(char *op, char *arg1, char *arg2, char *result) {
     if (quadCount == quadCapacity) {
