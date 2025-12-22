@@ -3,10 +3,12 @@ string y.
 y = x / 3.
 x++.
 
-law (x > y){
-    string s = "kalam".
-} tayeb law (x < y) {
-    string s = "msh kalam".
-} tayeb {
-    string s = "dfg".
+int max(int x, int y){
+    law (x > y) {
+        raga3 x.
+    } tayeb {
+        raga3 y.
+    }.
 }.
+
+int z = max(3,2).

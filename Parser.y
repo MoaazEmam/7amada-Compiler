@@ -568,7 +568,7 @@ list: EXPR {
     emit("param", $1.place, "", "");
     $$ = !param_error;
 }
-| EXPR COMMA list {
+| list COMMA EXPR {
     
     arg_count++;
 
@@ -576,7 +576,7 @@ list: EXPR {
          fprintf(stderr, "Line %d: Too many arguments\n", yylineno);
          param_error = true;
     } 
-    else if (current_param && !type_compatible($1.type, current_param->type)) {
+    else if (current_param && !type_compatible($3.type, current_param->type)) {
          if (!param_error) {
              fprintf(stderr, "Line %d: Parameter mismatch\n", yylineno);
              param_error = true;
@@ -584,7 +584,7 @@ list: EXPR {
     }
     if (current_param) current_param = current_param->next;
 
-    emit("param", $1.place, "", "");
+    emit("param", $3.place, "", "");
     $$ = !param_error;
 };
 

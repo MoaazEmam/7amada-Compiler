@@ -88,7 +88,7 @@ Grammar
    51              | IDENTIFIER OPENBRACKET CLOSEDBRACKET
 
    52 list: EXPR
-   53     | EXPR COMMA list
+   53     | list COMMA EXPR
 
    54 switch_start: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET
 
@@ -1552,20 +1552,20 @@ state 103
 state 104
 
    50 function_call: IDENTIFIER OPENBRACKET $@2 list . CLOSEDBRACKET
+   53 list: list . COMMA EXPR
 
     CLOSEDBRACKET  shift, and go to state 145
+    COMMA          shift, and go to state 146
 
 
 state 105
 
    52 list: EXPR .
-   53     | EXPR . COMMA list
    86 EXPR: EXPR . PLUS T
    87     | EXPR . MINUS T
 
     MINUS  shift, and go to state 88
     PLUS   shift, and go to state 89
-    COMMA  shift, and go to state 146
 
     $default  reduce using rule 52 (list)
 
@@ -2096,7 +2096,7 @@ state 145
 
 state 146
 
-   53 list: EXPR COMMA . list
+   53 list: list COMMA . EXPR
 
     MINUS        shift, and go to state 45
     OPENBRACKET  shift, and go to state 46
@@ -2105,8 +2105,7 @@ state 146
     IDENTIFIER   shift, and go to state 49
 
     function_call  go to state 50
-    list           go to state 174
-    EXPR           go to state 105
+    EXPR           go to state 174
     T              go to state 52
     M              go to state 53
     G              go to state 54
@@ -2485,7 +2484,12 @@ state 173
 
 state 174
 
-   53 list: EXPR COMMA list .
+   53 list: list COMMA EXPR .
+   86 EXPR: EXPR . PLUS T
+   87     | EXPR . MINUS T
+
+    MINUS  shift, and go to state 88
+    PLUS   shift, and go to state 89
 
     $default  reduce using rule 53 (list)
 
