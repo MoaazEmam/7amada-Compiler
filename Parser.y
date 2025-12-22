@@ -10,7 +10,9 @@
     #include "symbol.h"
     #include "param.h"
     #include "enums_def.h"
+    #include "quadruple.h"
     void yyerror(const char *s);
+    void report_unused(SymbolTable* table);
     int yylex(void);
     extern FILE *yyin;
     SymbolTable* current_scope;
@@ -32,10 +34,10 @@
 %token DIVIDE
 %token OPENBRACKET
 %token CLOSEDBRACKET
-%token <i> INTEGER
+%token <str> INTEGER
 %token <str> STRING
-%token <f> FLOAT
-%token <b> BOOLEAN
+%token <str> FLOAT
+%token <str> BOOLEAN
 %token OPENBRACE
 %token CLOSEDBRACE
 %token SEMICOLON
@@ -81,7 +83,7 @@
 %token DEFAULT
 %token RETURN
 %token VOIDTYPE
-%type<f>  EXPR T G M
+%type<str>  EXPR T G M condition inner_condition assignment function_call
 %type <i> datatype
 
 
@@ -153,6 +155,7 @@ inner_declaration:
         } else {
             Symbol* s = create_symbol($1, current_type, current_kind, true, NULL);
             insert(s, current_scope);   
+            emit("=",$3,"",$1);
         }
     } 
 
@@ -162,6 +165,7 @@ inner_declaration:
         } else {
             Symbol* s = create_symbol($1, current_type, current_kind, true, NULL);
             insert(s, current_scope);
+            emit("=",$3,"",$1);
         }
     } 
 | IDENTIFIER EQUAL STRING { 
@@ -170,6 +174,7 @@ inner_declaration:
         } else {
             Symbol* s = create_symbol($1, current_type, current_kind, true, NULL);
             insert(s, current_scope);
+            emit("=",$3,"",$1);
         }
     } 
 | IDENTIFIER EQUAL condition { //Multiple declaration check , Symbol insertion
@@ -178,6 +183,7 @@ inner_declaration:
         } else {
             Symbol* s = create_symbol($1, current_type, current_kind, true, NULL);
             insert(s, current_scope);
+            emit("=",$3,"",$1);
         }
     } 
 ;
@@ -368,23 +374,96 @@ inner_case:
 ;
 
 condition: condition AND inner_condition 
+{
+    char *t = newTemp();
+    emit("and", $1, $3, t);
+    $$ = t;
+}
 | condition OR inner_condition
+{
+    char *t = newTemp();
+    emit("or", $1, $3, t);
+    $$ = t;
+}
 | NOT inner_condition
+{
+    char *t = newTemp();
+    emit("not", $2, "", t);
+    $$ = t;
+}
 | inner_condition
+{
+    $$ = $1;
+}
 | condition AND EXPR
+{
+    char *t = newTemp();
+    emit("and", $1, $3, t);
+    $$ = t;
+}
 | condition OR EXPR
+{
+    char *t = newTemp();
+    emit("or", $1, $3, t);
+    $$ = t;
+}
 | NOT EXPR
+{
+    char *t = newTemp();
+    emit("not", $2, "", t);
+    $$ = t;
+}
 ;
 
-inner_condition: OPENBRACKET condition CLOSEDBRACKET
+inner_condition: OPENBRACKET condition CLOSEDBRACKET {$$=$2;}
 | EXPR GREATERTHAN EXPR
+{
+    char *t = newTemp();
+    emit(">", $1, $3, t);
+    $$ = t;
+}
 | EXPR GREATERTHANEQ EXPR
+{
+    char *t = newTemp();
+    emit(">=", $1, $3, t);
+    $$ = t;
+}
 | EXPR LESSTHAN EXPR
+{
+    char *t = newTemp();
+    emit("<", $1, $3, t);
+    $$ = t;
+}
 | EXPR LESSTHANEQ EXPR
+{
+    char *t = newTemp();
+    emit("<=", $1, $3, t);
+    $$ = t;
+}
 | EXPR EQUALITY BOOLEAN
+{
+    char *t = newTemp();
+    emit("==", $1, $3, t);
+    $$ = t;
+}
 | EXPR EQUALITY EXPR
+{
+    char *t = newTemp();
+    emit("==", $1, $3, t);
+    $$ = t;
+}
 | EXPR NOTEQUALITY BOOLEAN
+{
+    char *t = newTemp();
+    emit("!=", $1, $3, t);
+    $$ = t;
+}
 | EXPR NOTEQUALITY EXPR
+{
+    char *t = newTemp();
+    emit("!=", $1, $3, t);
+    $$ = t;
+}
 ;
 
 assignment:
@@ -392,8 +471,11 @@ assignment:
         Symbol* s = lookup($1, current_scope);
         if (!s) {
             fprintf(stderr,"Line %d:Variable %s used before declaration\n",yylineno,$1);
+            $$ = "error";
         } else {
             s->initialized = true;
+            emit("=", $3, "", $1);
+            $$ = $1;
         }
     }
 
@@ -401,8 +483,11 @@ assignment:
         Symbol* s = lookup($1, current_scope);
         if (!s) {
             fprintf(stderr,"Line %d:Variable  %s used before declaration\n",yylineno, $1);
+            $$ = "error";
         } else {
             s->initialized = true;
+            emit("=", $3, "", $1);
+            $$ = $1;
         }
     }
 
@@ -410,95 +495,176 @@ assignment:
         Symbol* s = lookup($1, current_scope);
         if (!s) {
             fprintf(stderr,"Line %d:Variable  %s  used before declaration\n",yylineno,$1);
+            $$ = "error";
         } else {
             s->initialized = true;
+            emit("=", $3, "", $1);
+            $$ = $1;
         }
     }
 
   | IDENTIFIER INCREMENT {
         Symbol* s = lookup($1, current_scope);
-        if (!s)
+        if (!s) {
             fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
-        else if (!s->initialized)
+            $$ = "error";
+        }
+        else if (!s->initialized) {
             fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
+            $$ = "error";
+        }
+        else {
+            emit("++", $1, "", $1);
+            $$ = $1;
+        }
     }
 
   | IDENTIFIER DECREMENT {
         Symbol* s = lookup($1, current_scope);
-        if (!s)
-             fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
-        else if (!s->initialized)
+        if (!s) {
+            fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
+            $$ = "error";
+        }
+        else if (!s->initialized) {
             fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
+            $$ = "error";
+        }
+        else {
+            emit("--", $1, "", $1);
+            $$ = $1;
+        }
     }
 
   | IDENTIFIER PLUSEQ EXPR {
         Symbol* s = lookup($1, current_scope);
-        if (!s)
+        if (!s) {
             fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
-        else if (!s->initialized)
-           fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
+            $$ = "error";
+        }
+        else if (!s->initialized) {
+            fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
+            $$ = "error";
+        }
+        else {
+            emit("+", $1, $3, $1);
+            $$ = $1;
+        }
        
     }
 
   | IDENTIFIER MINUSEQ EXPR {
-         Symbol* s = lookup($1, current_scope);
-        if (!s)
+        Symbol* s = lookup($1, current_scope);
+        if (!s) {
             fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
-        else if (!s->initialized)
-           fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
+            $$ = "error";
+        }
+        else if (!s->initialized) {
+            fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
+            $$ = "error";
+        }
+        else {
+            emit("-", $1, $3, $1);
+            $$ = $1;
+        }
        
     }
 
   | IDENTIFIER MULTIPLYEQ EXPR {
          Symbol* s = lookup($1, current_scope);
-        if (!s)
+        if (!s) {
             fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
-        else if (!s->initialized)
-           fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
+            $$ = "error";
+        }
+        else if (!s->initialized) {
+            fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
+            $$ = "error";
+        }
+        else {
+            emit("*", $1, $3, $1);
+            $$ = $1;
+        }
    
     }
 
   | IDENTIFIER DIVIDEEQ EXPR {
         Symbol* s = lookup($1, current_scope);
-        if (!s)
+        if (!s) {
             fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
-        else if (!s->initialized)
+            $$ = "error";
+        }
+        else if (!s->initialized) {
            fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
-        
+           $$ = "error";
+        }
+        else {
+            emit("/", $1, $3, $1);
+            $$ = $1;
+        }
     }
 ;
 
-EXPR: EXPR PLUS T {$$=$1+$3;}
-| EXPR MINUS T {$$=$1-$3;}
+EXPR: EXPR PLUS T {
+    char *t = newTemp();
+    emit("+", $1, $3, t);
+    $$ = t;
+}
+| EXPR MINUS T {
+    char *t = newTemp();
+    emit("-", $1, $3, t);
+    $$ = t;
+}
 | T {$$=$1;}
 ;
 
-T:T MULTIPLY M {$$=$1*$3;}
-| T DIVIDE M    {if($3==0){yyerror("Division By zero");}else $$=$1/$3;}
-| T MOD M      {if((int)$3==0){yyerror("Modulo By zero");}else $$=(int)$1 % (int)$3;}
+T:T MULTIPLY M {
+    char *t = newTemp();
+    emit("*", $1, $3, t);
+    $$ = t;
+}
+| T DIVIDE M    {
+    char *t = newTemp();
+    emit("/", $1, $3, t);
+    $$ = t;
+}
+| T MOD M      {
+    char *t = newTemp();
+    emit("%%", $1, $3, t);
+    $$ = t;
+}
 | M {$$=$1;}
 ;
 
-M: G POWER M {$$=pow($1,$3);}
+M: G POWER M {
+    char *t = newTemp();
+    emit("^", $1, $3, t);
+    $$ = t;
+}
 |  G   {$$=$1;}
 ;
 
 G: OPENBRACKET EXPR CLOSEDBRACKET {$$=$2;}
-|  MINUS G  {$$=-$2;}
-|  INTEGER {$$=(float)$1;}
+|  MINUS G  {
+    char *t = newTemp();
+    emit("negative", $2, "", t);
+    $$ = t;
+}
+|  INTEGER {$$=$1;}
 |  FLOAT {$$=$1;}
 |   IDENTIFIER { //handles use before init.
         Symbol* s = lookup($1, current_scope);
         if (!s) {
             fprintf(stderr,"Line %d:Variable  %s  not declared\n",yylineno, $1);
+            $$ = "error";    
         }
         else if (!s->initialized) {
-           fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
+            fprintf(stderr,"Line %d:Variable  %s used before initialization\n",yylineno, $1);
+            $$ = "error";
         } else {
             s->used = true;
+            $$ = $1;
         }
     }
-|  function_call {$$=0;}
+|  function_call {$$=$1;}
 ;
 
 enter_scope:
@@ -538,7 +704,7 @@ void report_unused(SymbolTable* table) {
 
 int main(int argc, char **argv) {
     current_scope = create_table(211, NULL); // global scope
-    
+    initQuadTable();
     if (argc > 1) {
         yyin = fopen(argv[1], "r");
         if (!yyin) {
@@ -550,6 +716,7 @@ int main(int argc, char **argv) {
     if (yyparse() == 0) {
         //report_unused(current_scope);
         free_table(current_scope);
+        printQuadruples();
         return 0;
     }
     

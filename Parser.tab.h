@@ -104,7 +104,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 22 "Parser.y"
+#line 24 "Parser.y"
 
     int i;
     float f;
