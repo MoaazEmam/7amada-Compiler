@@ -1,16 +1,47 @@
 %verbose
 /* Definitions */
 %{
-    #include <stdio.h>
-    #include <stdlib.h>
-    #include <math.h>
-    #include<stdbool.h>
-    void yyerror(const char *s);
-    int yylex(void);
-    extern FILE *yyin;
-    
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <stdbool.h>
+extern int yylineno;
+#include "symbol_table.h"
+#include "symbol.h"
+#include "param.h"
+#include "enums_def.h"
+#include "type_checks.h"
+#include "quadruple.h"
+void yyerror(const char *s);
+void report_unused(SymbolTable* table);
+int yylex(void);
+extern FILE *yyin;
+SymbolTable *current_scope;
+Symbol *current_function = NULL;
+Param *current_param = NULL;
+int arg_count = 0;
+bool param_error = false;
+DATATYPE current_type;
+KIND current_kind;
+char *current_switch_id = NULL;
+char *current_func_id = NULL;
+int return_count = 0;
+int cases[100];
+int case_count = 0;
+#define MAX_SCOPES 1000;
+SymbolTable* all_scopes[MAX_SCOPES];
+int scope_count=0;
 %}
 
+%code requires {
+    #include "quadruple.h"
+    #include "enums_def.h"
+    typedef struct {
+        DATATYPE type; 
+        char* place;     
+        //int quad_idx;    
+    } ExprInfo;
+}
 %union {
     int i;
     float f;
@@ -183,13 +214,101 @@ T:T MULTIPLY M {$$=$1*$3;}
 M: G POWER M {$$=pow($1,$3);}
 |  G   {$$=$1;}
 ;
-G: OPENBRACKET EXPR CLOSEDBRACKET {$$=$2;}
-|  MINUS G  {$$=-$2;}
-|  INTEGER {$$=(float)$1;}
-|  FLOAT {$$=$1;}
-|  IDENTIFIER {$$=0;}
-|  function_call {$$=0;}
+
+G: OPENBRACKET EXPR CLOSEDBRACKET { 
+    /* Pass through both Type and Place from the inner expression */
+    $$ = $2; 
+}
+| MINUS G {
+    /* --- YOUR LOGIC: Type Checking --- */
+    if ($2.type == SYM_ERROR) {
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+    else if ($2.type == SYM_INT || $2.type == SYM_FLOAT) {
+        /* Valid numeric type, propagate the type up */
+        $$.type = $2.type;
+        
+        /* --- HER LOGIC: Code Generation --- */
+        char *t = newTemp();
+        emit("negative", $2.place, "", t);
+        $$.place = t;
+    }
+    else {
+        fprintf(stderr, "Line %d: Unary minus applied to non-numeric type %s\n", 
+                yylineno, type_name($2.type));
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+}
+| INTEGER { 
+    $$.type = SYM_INT;    // For your Type Checking
+    $$.place = $1;        // For her Code Gen (The string value "5", "10", etc.)
+}
+| FLOAT { 
+    $$.type = SYM_FLOAT;  // For your Type Checking
+    $$.place = $1;        // For her Code Gen (The string value "3.14", etc.)
+}
+| IDENTIFIER { 
+    Symbol* s = lookup($1, current_scope);
+    
+    /* --- YOUR LOGIC: Type Checking --- */
+    if (!s) {
+        fprintf(stderr,"Line %d:Variable %s not declared\n", yylineno, $1);
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+    else if (s->type != SYM_INT && s->type != SYM_FLOAT && s->type != SYM_BOOL) {
+        fprintf(stderr, "Line %d: Unsupported type in expression: %s\n", yylineno, $1);
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+    else {
+        if (!s->initialized) {
+            fprintf(stderr,"Line %d:Variable %s used before initialization\n", yylineno, $1);
+            // Note: We flag the error but usually continue to avoid cascading errors, 
+            // or you can set SYM_ERROR here if you want to stop compilation.
+            // For now, I will allow it to proceed with code gen to catch other errors:
+        }
+        
+        s->used = true;
+        
+        /* --- MERGED OUTPUT --- */
+        $$.type = s->type;  // Pass the type up
+        $$.place = $1;      // Pass the variable name ("x", "count") up
+    }
+}
+| function_call {
+    /* --- YOUR LOGIC: Type Checking --- */
+    if ($1.type == SYM_VOID) {
+        fprintf(stderr, "Line %d: Void function used in expression\n", yylineno);
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+    }
+    else {
+        /* Pass through the result from function_call */
+        $$.type = $1.type;
+        $$.place = $1.place;
+    }
+}
 ;
+enter_scope:
+{
+    current_scope = create_table(211, current_scope);
+    all_scopes[scope_count++]=current_scope;
+};
+
+exit_scope:
+    {
+        SymbolTable* old = current_scope;
+        //print_table(current_scope);
+        report_unused(current_scope);
+        printf("_____________________________ \n");
+        current_scope = current_scope->parent;
+        free_table(old);
+    }
+;
+
 %%
 
 /* Subroutines */
@@ -197,7 +316,75 @@ void yyerror(const char *s) {
     extern char *yytext;  // Current token text
     fprintf(stderr, "Syntax error at '%s': %s\n", yytext, s);
 }
-int main(int argc, char **argv) {
+void report_unused(SymbolTable *table)
+{
+    for (int i = 0; i < table->size; i++)
+    {
+        Symbol *s = table->table[i];
+        while (s)
+        {
+            if (!s->used && s->kind == VAR)
+            {
+                printf("Warning: variable '%s' declared but not used\n", s->name);
+            }
+            s = s->next;
+        }
+    }
+}
+const char* type_to_string(DATATYPE t) {
+    switch(t) {
+        case SYM_INT: return "int";
+        case SYM_FLOAT: return "float";
+        case SYM_BOOL: return "bool";
+        case SYM_STRING: return "string";
+        case SYM_VOID: return "void";
+        default: return "unknown";
+    }
+}
+
+const char* kind_to_string(KIND k) {
+    switch(k) {
+        case VAR: return "VAR";
+        case FUNC: return "FUNC";
+        case SYM_CONST: return "CONST";
+        default: return "unknown";
+    }
+}
+
+void print_all_scopes(FILE* out) {
+    for (int s = 0; s < scope_count; s++) {
+        SymbolTable* table = all_scopes[s];
+
+        fprintf(out, "\nSCOPE %d\n", s);
+        fprintf(out, "--------------------------------\n");
+        fprintf(out, "Name\tKind\tType\tInit\tUsed\n");
+
+        for (int i = 0; i < table->size; i++) {
+            Symbol* sym = table->table[i];
+            while (sym) {
+                fprintf(out, "%s\t%s\t%s\t%s\t%s\n",
+                    sym->name,
+                    kind_to_string(sym->kind),
+                    type_to_string(sym->type),
+                    sym->initialized ? "yes" : "no",
+                    sym->used ? "yes" : "no"
+                );
+                sym = sym->next;
+            }
+        }
+    }
+}
+
+void free_all_tables() {
+    for (int i = 0; i < scope_count; i++) {
+        free_table(all_scopes[i]);
+    }
+}
+
+int main(int argc, char **argv)
+{
+    current_scope = create_table(211, NULL); // global scope
+    initQuadTable();
     if (argc > 1) {
         yyin = fopen(argv[1], "r");
         if (!yyin) {
@@ -207,6 +394,16 @@ int main(int argc, char **argv) {
     }
 
     if (yyparse() == 0) {
+         printf("\n===== unused =====\n");
+        report_unused(current_scope);
+        //print_table(current_scope);
+        printf("\n===== SYMBOL TABLE =====\n");
+        print_all_scopes(stdout);
+
+        printf("\n===== QUADRUPLES =====\n");
+        printQuadruples();
+       
+        free_all_tables();
         return 0;
     }
     return 1;
