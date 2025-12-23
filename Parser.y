@@ -368,7 +368,7 @@ whileloop:
         code DOT
     CLOSEDBRACE exit_scope {
         char label[20];
-        sprintf(label, "%d", $1); 
+        sprintf(label, "%d", $1-1); 
         emit("goto","","",label);
         addjump($1,nextQuad());
     }

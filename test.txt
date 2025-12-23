@@ -1,13 +1,6 @@
-int x1 = 3.
-string y = "kjk".
-x1++.
-string z = "fhfg".
-
-y = z.
-
-string max(string x, string y){
-    x = "ghj".
-    raga3 x.
+int x = 0.
+tol_ma (x < 4) {
+    x++.
 }.
 
-z = max("yes","no").
+int a = 2 + 2.
