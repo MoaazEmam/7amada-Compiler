@@ -1,4 +1,0 @@
-int x = 2.
-e3mel {
-    int y = 2.
-} lehad (x < 3).
