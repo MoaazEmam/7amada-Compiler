@@ -1163,7 +1163,6 @@ assignment:
 ;
 
 EXPR: EXPR PLUS T {
-    /* --- YOUR LOGIC: Type Checking --- */
     if ($1.type == SYM_ERROR || $3.type == SYM_ERROR) {
         $$.type = SYM_ERROR;
         $$.place = "error";
@@ -1175,20 +1174,29 @@ EXPR: EXPR PLUS T {
         $$.place = "error";
     }
     else {
-        /* Determine Result Type (Float takes precedence) */
         if ($1.type == SYM_FLOAT || $3.type == SYM_FLOAT) 
             $$.type = SYM_FLOAT;
         else 
             $$.type = SYM_INT;
 
-        /* --- HER LOGIC: Code Generation --- */
+        char *t1 = $1.place;
+        char *t3 = $3.place;
+        if ($1.type == SYM_FLOAT && $3.type == SYM_INT) {
+            char *t = newTemp();
+            emit("intTofloat",$3.place,"",t);
+            t3 = t;
+        }
+        if ($1.type == SYM_INT && $3.type == SYM_FLOAT) {
+            char *t = newTemp();
+            emit("intTofloat",$1.place,"",t);
+            t1 = t;
+        }
         char *t = newTemp();
-        emit("+", $1.place, $3.place, t);
+        emit("+", t1, t3, t);
         $$.place = t;
     }
 }
 | EXPR MINUS T {
-    /* --- YOUR LOGIC: Type Checking --- */
     if ($1.type == SYM_ERROR || $3.type == SYM_ERROR) {
         $$.type = SYM_ERROR;
         $$.place = "error";
@@ -1200,20 +1208,28 @@ EXPR: EXPR PLUS T {
         $$.place = "error";
     }
     else {
-        /* Determine Result Type (Float takes precedence) */
         if ($1.type == SYM_FLOAT || $3.type == SYM_FLOAT) 
             $$.type = SYM_FLOAT;
         else 
             $$.type = SYM_INT;
-
-        /* --- HER LOGIC: Code Generation --- */
+        char *t1 = $1.place;
+        char *t3 = $3.place;
+        if ($1.type == SYM_FLOAT && $3.type == SYM_INT) {
+            char *t = newTemp();
+            emit("intTofloat",$3.place,"",t);
+            t3 = t;
+        }
+        if ($1.type == SYM_INT && $3.type == SYM_FLOAT) {
+            char *t = newTemp();
+            emit("intTofloat",$1.place,"",t);
+            t1 = t;
+        }
         char *t = newTemp();
-        emit("-", $1.place, $3.place, t);
+        emit("-", t1, t3, t);
         $$.place = t;
     }
 }
 | T { 
-    /* Pass through both fields */
     $$.type = $1.type;
     $$.place = $1.place;
 }
@@ -1235,9 +1251,20 @@ T:T MULTIPLY M {
             $$.type = SYM_FLOAT;
         else 
             $$.type = SYM_INT;
-
+        char *t1 = $1.place;
+        char *t3 = $3.place;
+        if ($1.type == SYM_FLOAT && $3.type == SYM_INT) {
+            char *t = newTemp();
+            emit("intTofloat",$3.place,"",t);
+            t3 = t;
+        }
+        if ($1.type == SYM_INT && $3.type == SYM_FLOAT) {
+            char *t = newTemp();
+            emit("intTofloat",$1.place,"",t);
+            t1 = t;
+        }
         char *t = newTemp();
-        emit("*", $1.place, $3.place, t);
+        emit("*", t1, t3, t);
         $$.place = t;
     }
 }
@@ -1251,9 +1278,20 @@ T:T MULTIPLY M {
             $$.type = SYM_FLOAT;
         else 
             $$.type = SYM_INT;
-
+        char *t1 = $1.place;
+        char *t3 = $3.place;
+        if ($1.type == SYM_FLOAT && $3.type == SYM_INT) {
+            char *t = newTemp();
+            emit("intTofloat",$3.place,"",t);
+            t3 = t;
+        }
+        if ($1.type == SYM_INT && $3.type == SYM_FLOAT) {
+            char *t = newTemp();
+            emit("intTofloat",$1.place,"",t);
+            t1 = t;
+        }
         char *t = newTemp();
-        emit("/", $1.place, $3.place, t);
+        emit("/", t1, t3, t);
         $$.place = t;
     }
 }
@@ -1267,9 +1305,20 @@ T:T MULTIPLY M {
             $$.type = SYM_FLOAT;
         else 
             $$.type = SYM_INT;
-
+        char *t1 = $1.place;
+        char *t3 = $3.place;
+        if ($1.type == SYM_FLOAT && $3.type == SYM_INT) {
+            char *t = newTemp();
+            emit("intTofloat",$3.place,"",t);
+            t3 = t;
+        }
+        if ($1.type == SYM_INT && $3.type == SYM_FLOAT) {
+            char *t = newTemp();
+            emit("intTofloat",$1.place,"",t);
+            t1 = t;
+        }
         char *t = newTemp();
-        emit("%%", $1.place, $3.place, t);
+        emit("%%", t1, t3, t);
         $$.place = t;
     }
 }
@@ -1287,9 +1336,20 @@ M: G POWER M {
             $$.type = SYM_FLOAT;
         else 
             $$.type = SYM_INT;
-
+        char *t1 = $1.place;
+        char *t3 = $3.place;
+        if ($1.type == SYM_FLOAT && $3.type == SYM_INT) {
+            char *t = newTemp();
+            emit("intTofloat",$3.place,"",t);
+            t3 = t;
+        }
+        if ($1.type == SYM_INT && $3.type == SYM_FLOAT) {
+            char *t = newTemp();
+            emit("intTofloat",$1.place,"",t);
+            t1 = t;
+        }
         char *t = newTemp();
-        emit("^", $1.place, $3.place, t);
+        emit("^", t1, t3, t);
         $$.place = t;
     }
 }

@@ -584,8 +584,8 @@ static const yytype_uint16 yyrline[] =
      635,   655,   667,   679,   679,   681,   693,   707,   721,   735,
      749,   754,   771,   788,   807,   808,   825,   842,   859,   876,
      891,   908,   923,   942,   970,   993,  1013,  1039,  1065,  1090,
-    1115,  1140,  1165,  1190,  1215,  1222,  1244,  1260,  1276,  1280,
-    1296,  1300,  1303,  1323,  1327,  1331,  1355,  1368,  1374
+    1115,  1140,  1165,  1199,  1232,  1238,  1271,  1298,  1325,  1329,
+    1356,  1360,  1363,  1383,  1387,  1391,  1415,  1428,  1434
 };
 #endif
 
@@ -3049,7 +3049,6 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 1165 "Parser.y"
     {
-    /* --- YOUR LOGIC: Type Checking --- */
     if ((yyvsp[(1) - (3)].info).type == SYM_ERROR || (yyvsp[(3) - (3)].info).type == SYM_ERROR) {
         (yyval.info).type = SYM_ERROR;
         (yyval.info).place = "error";
@@ -3061,15 +3060,25 @@ yyreduce:
         (yyval.info).place = "error";
     }
     else {
-        /* Determine Result Type (Float takes precedence) */
         if ((yyvsp[(1) - (3)].info).type == SYM_FLOAT || (yyvsp[(3) - (3)].info).type == SYM_FLOAT) 
             (yyval.info).type = SYM_FLOAT;
         else 
             (yyval.info).type = SYM_INT;
 
-        /* --- HER LOGIC: Code Generation --- */
+        char *t1 = (yyvsp[(1) - (3)].info).place;
+        char *t3 = (yyvsp[(3) - (3)].info).place;
+        if ((yyvsp[(1) - (3)].info).type == SYM_FLOAT && (yyvsp[(3) - (3)].info).type == SYM_INT) {
+            char *t = newTemp();
+            emit("intTofloat",(yyvsp[(3) - (3)].info).place,"",t);
+            t3 = t;
+        }
+        if ((yyvsp[(1) - (3)].info).type == SYM_INT && (yyvsp[(3) - (3)].info).type == SYM_FLOAT) {
+            char *t = newTemp();
+            emit("intTofloat",(yyvsp[(1) - (3)].info).place,"",t);
+            t1 = t;
+        }
         char *t = newTemp();
-        emit("+", (yyvsp[(1) - (3)].info).place, (yyvsp[(3) - (3)].info).place, t);
+        emit("+", t1, t3, t);
         (yyval.info).place = t;
     }
 ;}
@@ -3078,9 +3087,8 @@ yyreduce:
   case 93:
 
 /* Line 1455 of yacc.c  */
-#line 1190 "Parser.y"
+#line 1199 "Parser.y"
     {
-    /* --- YOUR LOGIC: Type Checking --- */
     if ((yyvsp[(1) - (3)].info).type == SYM_ERROR || (yyvsp[(3) - (3)].info).type == SYM_ERROR) {
         (yyval.info).type = SYM_ERROR;
         (yyval.info).place = "error";
@@ -3092,15 +3100,24 @@ yyreduce:
         (yyval.info).place = "error";
     }
     else {
-        /* Determine Result Type (Float takes precedence) */
         if ((yyvsp[(1) - (3)].info).type == SYM_FLOAT || (yyvsp[(3) - (3)].info).type == SYM_FLOAT) 
             (yyval.info).type = SYM_FLOAT;
         else 
             (yyval.info).type = SYM_INT;
-
-        /* --- HER LOGIC: Code Generation --- */
+        char *t1 = (yyvsp[(1) - (3)].info).place;
+        char *t3 = (yyvsp[(3) - (3)].info).place;
+        if ((yyvsp[(1) - (3)].info).type == SYM_FLOAT && (yyvsp[(3) - (3)].info).type == SYM_INT) {
+            char *t = newTemp();
+            emit("intTofloat",(yyvsp[(3) - (3)].info).place,"",t);
+            t3 = t;
+        }
+        if ((yyvsp[(1) - (3)].info).type == SYM_INT && (yyvsp[(3) - (3)].info).type == SYM_FLOAT) {
+            char *t = newTemp();
+            emit("intTofloat",(yyvsp[(1) - (3)].info).place,"",t);
+            t1 = t;
+        }
         char *t = newTemp();
-        emit("-", (yyvsp[(1) - (3)].info).place, (yyvsp[(3) - (3)].info).place, t);
+        emit("-", t1, t3, t);
         (yyval.info).place = t;
     }
 ;}
@@ -3109,9 +3126,8 @@ yyreduce:
   case 94:
 
 /* Line 1455 of yacc.c  */
-#line 1215 "Parser.y"
+#line 1232 "Parser.y"
     { 
-    /* Pass through both fields */
     (yyval.info).type = (yyvsp[(1) - (1)].info).type;
     (yyval.info).place = (yyvsp[(1) - (1)].info).place;
 ;}
@@ -3120,7 +3136,7 @@ yyreduce:
   case 95:
 
 /* Line 1455 of yacc.c  */
-#line 1222 "Parser.y"
+#line 1238 "Parser.y"
     {
     if ((yyvsp[(1) - (3)].info).type == SYM_ERROR || (yyvsp[(3) - (3)].info).type == SYM_ERROR) {
         (yyval.info).type = SYM_ERROR;
@@ -3137,9 +3153,20 @@ yyreduce:
             (yyval.info).type = SYM_FLOAT;
         else 
             (yyval.info).type = SYM_INT;
-
+        char *t1 = (yyvsp[(1) - (3)].info).place;
+        char *t3 = (yyvsp[(3) - (3)].info).place;
+        if ((yyvsp[(1) - (3)].info).type == SYM_FLOAT && (yyvsp[(3) - (3)].info).type == SYM_INT) {
+            char *t = newTemp();
+            emit("intTofloat",(yyvsp[(3) - (3)].info).place,"",t);
+            t3 = t;
+        }
+        if ((yyvsp[(1) - (3)].info).type == SYM_INT && (yyvsp[(3) - (3)].info).type == SYM_FLOAT) {
+            char *t = newTemp();
+            emit("intTofloat",(yyvsp[(1) - (3)].info).place,"",t);
+            t1 = t;
+        }
         char *t = newTemp();
-        emit("*", (yyvsp[(1) - (3)].info).place, (yyvsp[(3) - (3)].info).place, t);
+        emit("*", t1, t3, t);
         (yyval.info).place = t;
     }
 ;}
@@ -3148,7 +3175,7 @@ yyreduce:
   case 96:
 
 /* Line 1455 of yacc.c  */
-#line 1244 "Parser.y"
+#line 1271 "Parser.y"
     {
     if ((yyvsp[(1) - (3)].info).type == SYM_ERROR || (yyvsp[(3) - (3)].info).type == SYM_ERROR) {
         (yyval.info).type = SYM_ERROR; 
@@ -3159,9 +3186,20 @@ yyreduce:
             (yyval.info).type = SYM_FLOAT;
         else 
             (yyval.info).type = SYM_INT;
-
+        char *t1 = (yyvsp[(1) - (3)].info).place;
+        char *t3 = (yyvsp[(3) - (3)].info).place;
+        if ((yyvsp[(1) - (3)].info).type == SYM_FLOAT && (yyvsp[(3) - (3)].info).type == SYM_INT) {
+            char *t = newTemp();
+            emit("intTofloat",(yyvsp[(3) - (3)].info).place,"",t);
+            t3 = t;
+        }
+        if ((yyvsp[(1) - (3)].info).type == SYM_INT && (yyvsp[(3) - (3)].info).type == SYM_FLOAT) {
+            char *t = newTemp();
+            emit("intTofloat",(yyvsp[(1) - (3)].info).place,"",t);
+            t1 = t;
+        }
         char *t = newTemp();
-        emit("/", (yyvsp[(1) - (3)].info).place, (yyvsp[(3) - (3)].info).place, t);
+        emit("/", t1, t3, t);
         (yyval.info).place = t;
     }
 ;}
@@ -3170,7 +3208,7 @@ yyreduce:
   case 97:
 
 /* Line 1455 of yacc.c  */
-#line 1260 "Parser.y"
+#line 1298 "Parser.y"
     {
     if ((yyvsp[(1) - (3)].info).type == SYM_ERROR || (yyvsp[(3) - (3)].info).type == SYM_ERROR) {
         (yyval.info).type = SYM_ERROR; 
@@ -3181,9 +3219,20 @@ yyreduce:
             (yyval.info).type = SYM_FLOAT;
         else 
             (yyval.info).type = SYM_INT;
-
+        char *t1 = (yyvsp[(1) - (3)].info).place;
+        char *t3 = (yyvsp[(3) - (3)].info).place;
+        if ((yyvsp[(1) - (3)].info).type == SYM_FLOAT && (yyvsp[(3) - (3)].info).type == SYM_INT) {
+            char *t = newTemp();
+            emit("intTofloat",(yyvsp[(3) - (3)].info).place,"",t);
+            t3 = t;
+        }
+        if ((yyvsp[(1) - (3)].info).type == SYM_INT && (yyvsp[(3) - (3)].info).type == SYM_FLOAT) {
+            char *t = newTemp();
+            emit("intTofloat",(yyvsp[(1) - (3)].info).place,"",t);
+            t1 = t;
+        }
         char *t = newTemp();
-        emit("%%", (yyvsp[(1) - (3)].info).place, (yyvsp[(3) - (3)].info).place, t);
+        emit("%%", t1, t3, t);
         (yyval.info).place = t;
     }
 ;}
@@ -3192,7 +3241,7 @@ yyreduce:
   case 98:
 
 /* Line 1455 of yacc.c  */
-#line 1276 "Parser.y"
+#line 1325 "Parser.y"
     { (yyval.info).type = (yyvsp[(1) - (1)].info).type;
     (yyval.info).place = (yyvsp[(1) - (1)].info).place;;}
     break;
@@ -3200,7 +3249,7 @@ yyreduce:
   case 99:
 
 /* Line 1455 of yacc.c  */
-#line 1280 "Parser.y"
+#line 1329 "Parser.y"
     {
     if ((yyvsp[(1) - (3)].info).type == SYM_ERROR || (yyvsp[(3) - (3)].info).type == SYM_ERROR) {
         (yyval.info).type = SYM_ERROR; 
@@ -3211,9 +3260,20 @@ yyreduce:
             (yyval.info).type = SYM_FLOAT;
         else 
             (yyval.info).type = SYM_INT;
-
+        char *t1 = (yyvsp[(1) - (3)].info).place;
+        char *t3 = (yyvsp[(3) - (3)].info).place;
+        if ((yyvsp[(1) - (3)].info).type == SYM_FLOAT && (yyvsp[(3) - (3)].info).type == SYM_INT) {
+            char *t = newTemp();
+            emit("intTofloat",(yyvsp[(3) - (3)].info).place,"",t);
+            t3 = t;
+        }
+        if ((yyvsp[(1) - (3)].info).type == SYM_INT && (yyvsp[(3) - (3)].info).type == SYM_FLOAT) {
+            char *t = newTemp();
+            emit("intTofloat",(yyvsp[(1) - (3)].info).place,"",t);
+            t1 = t;
+        }
         char *t = newTemp();
-        emit("^", (yyvsp[(1) - (3)].info).place, (yyvsp[(3) - (3)].info).place, t);
+        emit("^", t1, t3, t);
         (yyval.info).place = t;
     }
 ;}
@@ -3222,7 +3282,7 @@ yyreduce:
   case 100:
 
 /* Line 1455 of yacc.c  */
-#line 1296 "Parser.y"
+#line 1356 "Parser.y"
     { (yyval.info).type = (yyvsp[(1) - (1)].info).type;
     (yyval.info).place = (yyvsp[(1) - (1)].info).place;;}
     break;
@@ -3230,7 +3290,7 @@ yyreduce:
   case 101:
 
 /* Line 1455 of yacc.c  */
-#line 1300 "Parser.y"
+#line 1360 "Parser.y"
     { 
     (yyval.info) = (yyvsp[(2) - (3)].info); 
 ;}
@@ -3239,7 +3299,7 @@ yyreduce:
   case 102:
 
 /* Line 1455 of yacc.c  */
-#line 1303 "Parser.y"
+#line 1363 "Parser.y"
     {
     if ((yyvsp[(2) - (2)].info).type == SYM_ERROR) {
         (yyval.info).type = SYM_ERROR;
@@ -3265,7 +3325,7 @@ yyreduce:
   case 103:
 
 /* Line 1455 of yacc.c  */
-#line 1323 "Parser.y"
+#line 1383 "Parser.y"
     { 
     (yyval.info).type = SYM_INT;    
     (yyval.info).place = (yyvsp[(1) - (1)].str);        
@@ -3275,7 +3335,7 @@ yyreduce:
   case 104:
 
 /* Line 1455 of yacc.c  */
-#line 1327 "Parser.y"
+#line 1387 "Parser.y"
     { 
     (yyval.info).type = SYM_FLOAT; 
     (yyval.info).place = (yyvsp[(1) - (1)].str);        
@@ -3285,7 +3345,7 @@ yyreduce:
   case 105:
 
 /* Line 1455 of yacc.c  */
-#line 1331 "Parser.y"
+#line 1391 "Parser.y"
     { 
     Symbol* s = lookup((yyvsp[(1) - (1)].str), current_scope);
     
@@ -3315,7 +3375,7 @@ yyreduce:
   case 106:
 
 /* Line 1455 of yacc.c  */
-#line 1355 "Parser.y"
+#line 1415 "Parser.y"
     {
     if ((yyvsp[(1) - (1)].info).type == SYM_VOID) {
         fprintf(stderr, "Line %d: Void function used in expression\n", yylineno);
@@ -3332,7 +3392,7 @@ yyreduce:
   case 107:
 
 /* Line 1455 of yacc.c  */
-#line 1368 "Parser.y"
+#line 1428 "Parser.y"
     {
     current_scope = create_table(211, current_scope);
     all_scopes[scope_count++]= current_scope;
@@ -3342,7 +3402,7 @@ yyreduce:
   case 108:
 
 /* Line 1455 of yacc.c  */
-#line 1374 "Parser.y"
+#line 1434 "Parser.y"
     {
         // SymbolTable* old = current_scope;
         // print_table(current_scope);
@@ -3356,7 +3416,7 @@ yyreduce:
 
 
 /* Line 1455 of yacc.c  */
-#line 3360 "Parser.tab.c"
+#line 3420 "Parser.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -3568,7 +3628,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 1384 "Parser.y"
+#line 1444 "Parser.y"
 
 
     /* Subroutines */
