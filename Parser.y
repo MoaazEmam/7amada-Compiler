@@ -119,7 +119,6 @@ Start : S;
 
 S : code DOT { printf("Correct Syntax\n"); }
 |code error {
-    printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
     syntax_error("Missing '.' at the end of statement");
     yyerrok;
 }
