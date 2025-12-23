@@ -1,14 +1,2 @@
-int x = 3.
-string y.
-y = x / 3.
-x++.
-
-int max(int x, int y){
-    law (x > y) {
-        raga3 x.
-    } tayeb {
-        raga3 y.
-    }.
-}.
-
-int z = max(3,2).
+int x=5.
+int y=10

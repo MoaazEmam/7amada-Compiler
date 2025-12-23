@@ -1,10 +1,12 @@
 %verbose
+%locations
 /* Definitions */
 %{
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
+#include <string.h>
 extern int yylineno;
 #include "symbol_table.h"
 #include "symbol.h"
@@ -28,6 +30,7 @@ char *current_func_id = NULL;
 int return_count = 0;
 int cases[100];
 int case_count = 0;
+void syntax_error(const char* msg);
 %}
 
 %code requires {
@@ -114,9 +117,27 @@ int case_count = 0;
 %%
 Start : S;
 
-S : code DOT { printf("Correct Syntax\n"); };
+S : code DOT { printf("Correct Syntax\n"); }
+|code error {
+    printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+    syntax_error("Missing '.' at the end of statement");
+    yyerrok;
+}
+| code DOT error{ 
+    syntax_error("Extra '.' or more after statement");
+    while(yychar!= DOT)
+        yychar=yylex();
+    yyerrok;
+};
 
-code : inner_code | code DOT inner_code;
+code : inner_code 
+| code DOT inner_code
+|code error inner_code {
+    syntax_error("Missing '.' at the end of statement");
+    while (yychar != DOT && yychar != 0) 
+        yychar = yylex();
+    yyerrok;
+};
 
 inner_code: assignment
 | declaration
@@ -205,7 +226,6 @@ inner_declaration:
             emit("=",$3.place,"",$1);
         }
     } 
-
 | IDENTIFIER EQUAL BOOLEAN { 
         if (lookup_current($1, current_scope)) {
             fprintf(stderr,"Line %d:Multiple declaration of variable %s\n ",yylineno,$1);
@@ -245,6 +265,18 @@ if_start: IF OPENBRACKET condition CLOSEDBRACKET
     $$ = nextQuad();
     emit("IfFalse", $3.place, "", "");
 }
+|IF error{
+    syntax_error("Missing '(' after 'law'");
+        while (yychar != CLOSEDBRACKET && yychar != OPENBRACE && yychar != 0)
+            yychar = yylex();
+        yyerrok;
+}
+| IF OPENBRACKET condition error{
+        syntax_error("Missing ')' after 'law' condition");
+        while (yychar != OPENBRACE && yychar != 0)
+            yychar = yylex();
+        yyerrok;
+};
 
 Ifstmt: 
   if_start
@@ -263,13 +295,26 @@ Ifstmt:
     {
         addjump($1,nextQuad());
     }
-;
+|if_start error{
+    syntax_error("Missing '{' after 'law' condition");
+        while (yychar != ELSE && yychar != DOT && yychar != 0)
+            yychar = yylex();
+        yyerrok;
+}
+|if_start
+    OPENBRACE enter_scope code DOT error exit_scope
+    {
+        syntax_error("Missing '}' after 'law' block");
+        while (yychar != ELSE && yychar != DOT && yychar != 0)
+            yychar = yylex();
+        yyerrok;
+    };
 
 else_place: 
 {
     $$ = nextQuad();
     emit("goto", "", "", "");
-}
+};
 
 else_stmt:
     ELSE else_place Ifstmt
@@ -282,11 +327,26 @@ else_stmt:
     {
         addjump($2,nextQuad());
     }
-;
+| ELSE error
+    {
+        syntax_error("Missing a brace or more after 'tayeb'");
+        while (yychar != DOT && yychar != 0)
+            yychar = yylex();
+        yyerrok;
+    }
+    | ELSE else_place OPENBRACE enter_scope
+    code DOT 
+    error exit_scope {
+    syntax_error("Missing '}' after 'tayeb' block");
+    while (yychar != DOT && yychar != 0)
+        yychar = yylex();
+    yyerrok;
+}
+;;
 
 repeat_start: {
     $$ = nextQuad();
-}
+};
 
 repeat:
     REPEAT OPENBRACE enter_scope repeat_start
@@ -300,10 +360,32 @@ repeat:
         sprintf(label, "%d", $4); 
         emit("IfFalse",$11.place,"",label);
     }
-;
+| REPEAT error {
+    syntax_error("Missing '{' after 'e3mel'");
+    while (yychar != DOT && yychar != UNTIL && yychar != 0)
+        yychar = yylex();
+    yyerrok;
+}
+| REPEAT OPENBRACE enter_scope repeat_start
+    code DOT
+  error exit_scope {
+    syntax_error("Missing '}' after 'e3mel' block");
+    while (yychar != UNTIL && yychar != 0)
+        yychar = yylex();
+    yyerrok;
+}
+| REPEAT OPENBRACE enter_scope repeat_start
+    code DOT
+    CLOSEDBRACE exit_scope
+    UNTIL error {
+    syntax_error("Missing '(' or ')' after 'lehad'");
+    while (yychar != CLOSEDBRACKET && yychar != 0)
+        yychar = yylex();
+    yyerrok;
+};
 for_loop_start: {
     $$ = pop_last();
-}
+};
 forloop:
     FOR OPENBRACKET enter_scope iterator COMMA assignment CLOSEDBRACKET for_loop_start
     OPENBRACE 
@@ -316,6 +398,40 @@ forloop:
             emit("goto","","",label);
             addjump($4+1,nextQuad());
         }
+    }
+| FOR error {
+    syntax_error("Missing '(' after 'karar'");
+    while (yychar != CLOSEDBRACKET && yychar != 0)
+        yychar = yylex();
+    yyerrok;
+}
+| FOR OPENBRACKET enter_scope iterator COMMA assignment error for_loop_start {
+    syntax_error("Missing ')' in 'karar' loop");
+    while (yychar != OPENBRACE && yychar != 0)
+        yychar = yylex();
+    yyerrok;
+}
+| FOR OPENBRACKET enter_scope iterator COMMA assignment CLOSEDBRACKET for_loop_start
+    error exit_scope {
+    syntax_error("Missing '{' after 'karar' loop header");
+    while (yychar != DOT && yychar != CLOSEDBRACE && yychar != 0)
+        yychar = yylex();
+    yyerrok;
+}
+| FOR OPENBRACKET enter_scope iterator COMMA assignment CLOSEDBRACKET for_loop_start
+    OPENBRACE 
+        code DOT
+    error exit_scope {
+    syntax_error("Missing '}' in 'karar' loop body");
+    while (yychar != DOT && yychar != 0)
+        yychar = yylex();
+    yyerrok;
+}
+| FOR OPENBRACKET enter_scope iterator error {
+        syntax_error("Missing ',' between iterator and assignment in 'karar' loop");
+        while (yychar != CLOSEDBRACKET && yychar != 0)
+            yychar = yylex();
+        yyerrok;
     }
 ;
 
@@ -361,6 +477,16 @@ iterator: INTTYPE IDENTIFIER EQUAL EXPR TO EXPR
         emit("IfTrue",t,"","");
     }
 }
+| INTTYPE IDENTIFIER EQUAL EXPR TO error {
+        syntax_error("Invalid upper bound in for loop");
+        $$ = -1;
+        yyerrok;
+    }
+    | IDENTIFIER EQUAL EXPR TO error {
+        syntax_error("Invalid upper bound in for loop");
+        $$ = -1;
+        yyerrok;
+    }
 ;
 
 while_start: WHILE OPENBRACKET condition CLOSEDBRACKET {
@@ -370,6 +496,19 @@ while_start: WHILE OPENBRACKET condition CLOSEDBRACKET {
     $$ = nextQuad();
     emit("IfFalse",$3.place,"","");
 }
+| WHILE error {
+        syntax_error("Missing '(' after 'tol_ma'");
+        while (yychar != CLOSEDBRACKET && yychar != OPENBRACE && yychar != 0)
+            yychar = yylex();
+        yyerrok;
+    }
+| WHILE OPENBRACKET condition error {
+        syntax_error("Missing ')' after 'tol_ma' condition");
+        while (yychar != OPENBRACE && yychar != 0)
+            yychar = yylex();
+        yyerrok;
+    }
+;
 
 whileloop:
     while_start
@@ -380,6 +519,18 @@ whileloop:
         sprintf(label, "%d", $1); 
         emit("goto","","",label);
         addjump($1,nextQuad());
+    }
+| while_start error {
+        syntax_error("Missing '{' after 'tol_ma' condition");
+        while (yychar != DOT && yychar != 0)
+            yychar = yylex();
+        yyerrok;
+    }
+| while_start OPENBRACE enter_scope code DOT error exit_scope {
+        syntax_error("Missing '}' after 'tol_ma' block");
+        while (yychar != DOT && yychar != 0)
+            yychar = yylex();
+        yyerrok;
     }
 ;
 
@@ -410,7 +561,24 @@ parameters : datatype IDENTIFIER
         insert(p, current_scope);
         append_param($2, $1, current_function->params);
     }
-};
+}
+|error{
+    syntax_error("Invalid parameter syntax or missing brackets");
+    yyerrok;
+}
+| datatype error {
+        syntax_error("Missing parameter name after type");
+        yyerrok;
+    }
+    | datatype error COMMA parameters {
+        syntax_error("Missing parameter name after type");
+        yyerrok;
+    }
+| datatype IDENTIFIER error parameters {
+        syntax_error("Missing ',' between parameters");
+        yyerrok;
+    }
+;
 
 function_header: 
     datatype IDENTIFIER OPENBRACKET{
@@ -450,8 +618,12 @@ function_header:
                 yyerror("Nested functions are not allowed");
             } 
         }
-    } ;
-
+    } 
+    | VOIDTYPE IDENTIFIER error {
+        syntax_error("Missing '(' in function declaration");
+        yyerrok;
+    }
+;
 function: 
     function_header enter_scope parameters CLOSEDBRACKET 
     OPENBRACE  
@@ -482,7 +654,29 @@ function:
             return_count = 0;
         }
     }
-;
+    | function_header enter_scope parameters CLOSEDBRACKET error {
+        syntax_error("Missing '{' after function header");
+        while (yychar != DOT && yychar != 0)
+            yychar = yylex();
+        yyerrok;
+    }
+    | function_header CLOSEDBRACKET error {
+        syntax_error("Missing '{' after function header");
+        while (yychar != DOT && yychar != 0)
+            yychar = yylex();
+        yyerrok;
+    }
+    | function_header enter_scope parameters CLOSEDBRACKET 
+      OPENBRACE code DOT error exit_scope {
+        syntax_error("Missing '}' at end of function");
+        yyerrok;
+    }
+    | function_header CLOSEDBRACKET
+      OPENBRACE enter_scope code DOT error exit_scope {
+        syntax_error("Missing '}' at end of function");
+        yyerrok;
+    }
+;   
 
 function_call: 
     IDENTIFIER OPENBRACKET {
@@ -586,7 +780,12 @@ list: EXPR {
 
     emit("param", $3.place, "", "");
     $$ = !param_error;
-};
+}
+| list error EXPR {
+    syntax_error("Missing ','");
+    yyerrok;
+}
+;
 
 switch_start: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET {
     Symbol* s= lookup($3, current_scope);
@@ -608,6 +807,18 @@ switch_start: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET {
         yyerror("Nested swtiches are not allowed");
     }
 }
+|SWITCH error{
+        syntax_error("Missing '(' after 'switch'");
+        while (yychar != CLOSEDBRACKET && yychar != OPENBRACE && yychar != 0)
+            yychar = yylex();
+        yyerrok;
+}
+|SWITCH OPENBRACKET IDENTIFIER error{
+    syntax_error("Missing ')' after 'switch' condition");
+        while (yychar != OPENBRACE && yychar != 0)
+        yychar = yylex();
+        yyerrok;
+};
 switchstmt: 
     switch_start
     OPENBRACE enter_scope case_structure 
@@ -631,7 +842,34 @@ switchstmt:
         addjump(cases[i], end);
     case_count = 0;
   }
-;
+| switch_start error {
+        syntax_error("Missing '{' after 'switch'");
+        while (yychar != DOT && yychar != 0)
+            yychar = yylex();
+        yyerrok;
+    }
+| switch_start
+    OPENBRACE enter_scope case_structure 
+    DEFAULT OPENBRACE enter_scope
+    code DOT 
+    CLOSEDBRACE exit_scope
+    error exit_scope {
+    syntax_error("Missing '}' at end of switch statement");
+    while (yychar != DOT && yychar != 0)
+        yychar = yylex();
+    yyerrok;
+}
+
+| switch_start
+  OPENBRACE enter_scope 
+  case_structure 
+  error exit_scope {
+    syntax_error("Missing '}' at end of switch statement");
+    while (yychar != DOT && yychar != 0)
+        yychar = yylex();
+    yyerrok;
+}
+;;
 
 case_structure: inner_case | inner_case case_structure;
 
@@ -645,6 +883,18 @@ start_inner_case: CASE OPENBRACKET INTEGER CLOSEDBRACKET{
         $$ = -1;
     }
 }
+|CASE error {
+    syntax_error("Missing '(' after 'case'");
+    while (yychar != CLOSEDBRACKET && yychar != OPENBRACE && yychar != 0)
+        yychar = yylex();
+    yyerrok;
+}
+|CASE OPENBRACKET INTEGER error{
+    syntax_error("Missing ')' after 'case' condition");
+    while (yychar != OPENBRACE && yychar != 0)
+    yychar = yylex();
+    yyerrok;
+};
 
 inner_case:
     start_inner_case
@@ -658,7 +908,21 @@ inner_case:
             addjump($1,nextQuad());
         }
     }
-;
+|start_inner_case error{
+     syntax_error("Missing '{' after 'case'");
+        while (yychar != DOT && yychar != 0)
+            yychar = yylex();
+        yyerrok;
+}
+| start_inner_case
+    OPENBRACE enter_scope
+        code DOT
+    error exit_scope{
+        syntax_error("Missing '}' after 'case' block");
+        while (yychar != DOT && yychar != 0)
+            yychar = yylex();
+        yyerrok;
+    };
 
 condition: 
 condition AND inner_condition {
@@ -768,6 +1032,54 @@ condition AND inner_condition {
 ;
 
 inner_condition: OPENBRACKET condition CLOSEDBRACKET {$$=$2;}
+|error{
+    syntax_error("Missing '('");
+    while (yychar != CLOSEDBRACKET && yychar != OPENBRACE && yychar != 0)
+        yychar = yylex();
+    yyerrok;
+}
+| OPENBRACKET condition error{
+    syntax_error("Missing ')'");
+    while (yychar != OPENBRACE && yychar != 0)
+    yychar = yylex();
+    yyerrok;
+}
+|EXPR GREATERTHAN error{
+    syntax_error("Invalid right operand for '>'");
+    $$.type = SYM_ERROR;
+    $$.place = NULL;
+    yyerrok;
+}
+| EXPR LESSTHAN error {
+    syntax_error("Invalid right operand for '<'");
+    $$.type = SYM_ERROR;
+    $$.place = NULL;
+    yyerrok;
+}
+| EXPR GREATERTHANEQ error {
+    syntax_error("Invalid right operand for '>='");
+    $$.type = SYM_ERROR;
+    $$.place = NULL;
+    yyerrok;
+}
+| EXPR LESSTHANEQ error {
+    syntax_error("Invalid right operand for '<='");
+    $$.type = SYM_ERROR;
+    $$.place = NULL;
+    yyerrok;
+}
+| EXPR EQUALITY error {
+    syntax_error("Invalid right operand for '=='");
+    $$.type = SYM_ERROR;
+    $$.place = NULL;
+    yyerrok;
+}
+| EXPR NOTEQUALITY error {
+    syntax_error("Invalid right operand for '!='");
+    $$.type = SYM_ERROR;
+    $$.place = NULL;
+    yyerrok;
+}
 | EXPR GREATERTHAN EXPR {
     /* Check Numerics */
     if (($1.type == SYM_INT || $1.type == SYM_FLOAT) && 
@@ -1149,7 +1461,31 @@ assignment:
             $$.place = $1;
         }
     }
-;
+| IDENTIFIER PLUSEQ error {
+        syntax_error("Invalid expression after '+='");
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+        yyerrok;
+    }
+    | IDENTIFIER MINUSEQ error {
+        syntax_error("Invalid expression after '-='");
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+        yyerrok;
+    }
+    | IDENTIFIER MULTIPLYEQ error {
+        syntax_error("Invalid expression after '*='");
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+        yyerrok;
+    }
+    | IDENTIFIER DIVIDEEQ error {
+        syntax_error("Invalid expression after '/='");
+        $$.type = SYM_ERROR;
+        $$.place = NULL;
+        yyerrok;
+    }
+;;
 
 EXPR: EXPR PLUS T {
     /* --- YOUR LOGIC: Type Checking --- */
@@ -1382,11 +1718,21 @@ exit_scope:
 %%
 
     /* Subroutines */
-    void yyerror(const char *s)
+     void yyerror(const char *s)
 {
     extern char *yytext; // Current token text
-    fprintf(stderr, "Line %d:Syntax error at '%s': %s\n", yylineno, yytext, s);
+     if (strcmp(s, "syntax error") == 0) {
+        return;
+    }
+    fprintf(stderr, "Line %d: Syntax error at '%s': %s\n", 
+            yylineno, yytext, s);
 }
+void syntax_error(const char *msg) {
+    extern char *yytext;
+    fprintf(stderr, "Line %d: %s (found '%s')\n", 
+            yylineno-1, msg, yytext);
+}
+
 void report_unused(SymbolTable *table)
 {
     for (int i = 0; i < table->size; i++)
