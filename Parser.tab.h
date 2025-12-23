@@ -35,7 +35,7 @@
 /* "%code requires" blocks.  */
 
 /* Line 1676 of yacc.c  */
-#line 36 "Parser.y"
+#line 40 "Parser.y"
 
     #include "quadruple.h"
     #include "enums_def.h"
@@ -121,7 +121,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 45 "Parser.y"
+#line 49 "Parser.y"
 
     int i;
     float f;

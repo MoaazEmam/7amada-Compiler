@@ -24,18 +24,17 @@ Param* create_param(char* name,DATATYPE type){
     return p;
 }
 
-void append_param(char* name, DATATYPE type,ParamList* list){
-    Param* new_p=create_param(name,type);
+void append_param(char* name, DATATYPE type, ParamList* list){
+    Param* new_p = create_param(name, type);
     if(!new_p) return;
 
-    //empty list
-    if(list->head==NULL) {list->head=new_p; list->tail=new_p;}
-    else{
-        //make tail param point to new param
-        list->tail->next=new_p;
-        //make tail look at new_p
-        list->tail=new_p;
+    new_p->next = list->head;
+    list->head = new_p;
+    
+    if(list->tail == NULL) {
+        list->tail = new_p;
     }
+    
     list->size++;
     list->count++;
 }

@@ -34,6 +34,7 @@ void syntax_error(const char* msg);
 #define MAX_SCOPES 1000
 SymbolTable* all_scopes[MAX_SCOPES];
 int scope_count=0;
+bool syn_error=false;
 %}
 
 %code requires {
@@ -141,7 +142,6 @@ code : inner_code
         yychar = yylex();
     yyerrok;
 };
-code : inner_code | code DOT inner_code ;
 
 inner_code:
 OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope
@@ -1083,12 +1083,6 @@ condition AND inner_condition {
 ;
 
 inner_condition: OPENBRACKET condition CLOSEDBRACKET {$$=$2;}
-// |error{
-//     syntax_error("Missing '('");
-//     while (yychar != 0 && yychar != CLOSEDBRACKET && yychar != OPENBRACE )
-//         yychar = yylex();
-//     yyerrok;
-// }
 | OPENBRACKET condition error{
     syntax_error("Missing ')'");
     while (yychar != 0 && yychar != OPENBRACE)
@@ -1868,6 +1862,7 @@ exit_scope:
             yylineno, yytext, s);
 }
 void syntax_error(const char *msg) {
+    syn_error=true;
     extern char *yytext;
     fprintf(stderr, "Line %d: %s (found '%s')\n", 
             yylineno, msg, yytext);
@@ -1955,7 +1950,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    if (yyparse() == 0) {
+    if (yyparse() == 0 && !syn_error) {
         printf("===== SYMBOL TABLE =====\n");
         print_all_scopes(stdout);
 
