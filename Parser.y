@@ -224,23 +224,24 @@ inner_declaration:
             Symbol* s = create_symbol($1, current_type, current_kind, true, NULL);
             insert(s, current_scope);   
             if (!type_compatible(current_type, $3.type)) {
-                 fprintf(stderr, "Line %d: Type mismatch in declaration. Expected %s, got %s\n", 
+                fprintf(stderr, "Line %d: Type mismatch in declaration. Expected %s, got %s\n", 
                          yylineno, type_name(current_type), type_name($3.type));
-            }
-            char* t3 = $3.place;
-            if (current_type != $3.type) {
-                if ($3.type == SYM_INT) {
-                    char* t = newTemp();
-                    emit("intTofloat",$3.place,"",t);
-                    t3 = t;
+            } else {
+                char* t3 = $3.place;
+                if (current_type != $3.type) {
+                    if ($3.type == SYM_INT) {
+                        char* t = newTemp();
+                        emit("intTofloat",$3.place,"",t);
+                        t3 = t;
+                    }
+                    if ($3.type == SYM_FLOAT) {
+                        char* t = newTemp();
+                        emit("floatToint",$3.place,"",t);
+                        t3 = t;
+                    }
                 }
-                if ($3.type == SYM_FLOAT) {
-                    char* t = newTemp();
-                    emit("floatToint",$3.place,"",t);
-                    t3 = t;
-                }
+                emit("=", t3, "", $1); 
             }
-            emit("=", t3, "", $1); 
         }
     } 
 | IDENTIFIER EQUAL BOOLEAN { 

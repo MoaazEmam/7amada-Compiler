@@ -631,20 +631,20 @@ static const yytype_uint16 yyrline[] =
        0,   123,   123,   125,   126,   130,   137,   138,   139,   147,
      148,   149,   150,   151,   152,   153,   154,   155,   156,   157,
      170,   186,   187,   188,   189,   194,   203,   207,   212,   220,
-     246,   259,   272,   287,   296,   302,   314,   310,   318,   325,
-     331,   341,   347,   351,   357,   364,   374,   379,   390,   396,
-     404,   413,   417,   429,   435,   441,   448,   457,   465,   485,
-     505,   510,   517,   524,   530,   539,   548,   554,   562,   576,
-     594,   598,   602,   609,   628,   647,   653,   668,   682,   688,
-     694,   699,   707,   707,   746,   769,   788,   808,   813,   831,
-     835,   839,   843,   848,   867,   873,   880,   892,   902,   908,
-     920,   931,   931,   933,   943,   949,   957,   968,   974,   985,
-     999,  1013,  1027,  1032,  1049,  1066,  1085,  1086,  1092,  1098,
-    1104,  1110,  1116,  1122,  1128,  1145,  1162,  1179,  1196,  1211,
-    1228,  1243,  1262,  1302,  1325,  1345,  1371,  1397,  1435,  1473,
-    1511,  1547,  1553,  1559,  1565,  1573,  1607,  1640,  1646,  1679,
-    1706,  1733,  1737,  1764,  1768,  1771,  1791,  1795,  1799,  1823,
-    1836,  1842
+     247,   260,   273,   288,   297,   303,   315,   311,   319,   326,
+     332,   342,   348,   352,   358,   365,   375,   380,   391,   397,
+     405,   414,   418,   430,   436,   442,   449,   458,   466,   486,
+     506,   511,   518,   525,   531,   540,   549,   555,   563,   577,
+     595,   599,   603,   610,   629,   648,   654,   669,   683,   689,
+     695,   700,   708,   708,   747,   770,   789,   809,   814,   832,
+     836,   840,   844,   849,   868,   874,   881,   893,   903,   909,
+     921,   932,   932,   934,   944,   950,   958,   969,   975,   986,
+    1000,  1014,  1028,  1033,  1050,  1067,  1086,  1087,  1093,  1099,
+    1105,  1111,  1117,  1123,  1129,  1146,  1163,  1180,  1197,  1212,
+    1229,  1244,  1263,  1303,  1326,  1346,  1372,  1398,  1436,  1474,
+    1512,  1548,  1554,  1560,  1566,  1574,  1608,  1641,  1647,  1680,
+    1707,  1734,  1738,  1765,  1769,  1772,  1792,  1796,  1800,  1824,
+    1837,  1843
 };
 #endif
 
@@ -2015,23 +2015,24 @@ yyreduce:
             Symbol* s = create_symbol((yyvsp[(1) - (3)].str), current_type, current_kind, true, NULL);
             insert(s, current_scope);   
             if (!type_compatible(current_type, (yyvsp[(3) - (3)].info).type)) {
-                 fprintf(stderr, "Line %d: Type mismatch in declaration. Expected %s, got %s\n", 
+                fprintf(stderr, "Line %d: Type mismatch in declaration. Expected %s, got %s\n", 
                          yylineno, type_name(current_type), type_name((yyvsp[(3) - (3)].info).type));
-            }
-            char* t3 = (yyvsp[(3) - (3)].info).place;
-            if (current_type != (yyvsp[(3) - (3)].info).type) {
-                if ((yyvsp[(3) - (3)].info).type == SYM_INT) {
-                    char* t = newTemp();
-                    emit("intTofloat",(yyvsp[(3) - (3)].info).place,"",t);
-                    t3 = t;
+            } else {
+                char* t3 = (yyvsp[(3) - (3)].info).place;
+                if (current_type != (yyvsp[(3) - (3)].info).type) {
+                    if ((yyvsp[(3) - (3)].info).type == SYM_INT) {
+                        char* t = newTemp();
+                        emit("intTofloat",(yyvsp[(3) - (3)].info).place,"",t);
+                        t3 = t;
+                    }
+                    if ((yyvsp[(3) - (3)].info).type == SYM_FLOAT) {
+                        char* t = newTemp();
+                        emit("floatToint",(yyvsp[(3) - (3)].info).place,"",t);
+                        t3 = t;
+                    }
                 }
-                if ((yyvsp[(3) - (3)].info).type == SYM_FLOAT) {
-                    char* t = newTemp();
-                    emit("floatToint",(yyvsp[(3) - (3)].info).place,"",t);
-                    t3 = t;
-                }
+                emit("=", t3, "", (yyvsp[(1) - (3)].str)); 
             }
-            emit("=", t3, "", (yyvsp[(1) - (3)].str)); 
         }
     ;}
     break;
@@ -2039,7 +2040,7 @@ yyreduce:
   case 30:
 
 /* Line 1455 of yacc.c  */
-#line 246 "Parser.y"
+#line 247 "Parser.y"
     { 
         if (lookup_current((yyvsp[(1) - (3)].str), current_scope)) {
             fprintf(stderr,"Line %d:Multiple declaration of variable %s\n ",yylineno,(yyvsp[(1) - (3)].str));
@@ -2058,7 +2059,7 @@ yyreduce:
   case 31:
 
 /* Line 1455 of yacc.c  */
-#line 259 "Parser.y"
+#line 260 "Parser.y"
     { 
         if (lookup_current((yyvsp[(1) - (3)].str), current_scope)) {
             fprintf(stderr,"Line %d:Multiple declaration of variable %s\n",yylineno,(yyvsp[(1) - (3)].str));
@@ -2077,7 +2078,7 @@ yyreduce:
   case 32:
 
 /* Line 1455 of yacc.c  */
-#line 272 "Parser.y"
+#line 273 "Parser.y"
     { 
         if (lookup_current((yyvsp[(1) - (3)].str), current_scope)) {
             fprintf(stderr,"Line %d:Multiple declaration of variable %s\n",yylineno,(yyvsp[(1) - (3)].str));
@@ -2096,7 +2097,7 @@ yyreduce:
   case 33:
 
 /* Line 1455 of yacc.c  */
-#line 288 "Parser.y"
+#line 289 "Parser.y"
     {
     if ((yyvsp[(3) - (4)].info).type != SYM_BOOL) {
          fprintf(stderr, "Line %d: If condition must be boolean\n", yylineno);
@@ -2110,7 +2111,7 @@ yyreduce:
   case 34:
 
 /* Line 1455 of yacc.c  */
-#line 296 "Parser.y"
+#line 297 "Parser.y"
     {
     syntax_error("Missing '(' after 'law'");
         while (yychar != DOT && yychar != OPENBRACE && yychar != 0)
@@ -2122,7 +2123,7 @@ yyreduce:
   case 35:
 
 /* Line 1455 of yacc.c  */
-#line 302 "Parser.y"
+#line 303 "Parser.y"
     {
         syntax_error("Missing ')' after 'law' condition");
         while (yychar != OPENBRACE && yychar != 0)
@@ -2134,7 +2135,7 @@ yyreduce:
   case 36:
 
 /* Line 1455 of yacc.c  */
-#line 314 "Parser.y"
+#line 315 "Parser.y"
     {
         addjump((yyvsp[(1) - (7)].i),nextQuad()+1);
     ;}
@@ -2143,7 +2144,7 @@ yyreduce:
   case 38:
 
 /* Line 1455 of yacc.c  */
-#line 322 "Parser.y"
+#line 323 "Parser.y"
     {
         addjump((yyvsp[(1) - (7)].i),nextQuad());
     ;}
@@ -2152,7 +2153,7 @@ yyreduce:
   case 39:
 
 /* Line 1455 of yacc.c  */
-#line 325 "Parser.y"
+#line 326 "Parser.y"
     {
     syntax_error("Missing '{' after 'law' condition");
         while (yychar != ELSE && yychar != DOT && yychar != 0)
@@ -2164,7 +2165,7 @@ yyreduce:
   case 40:
 
 /* Line 1455 of yacc.c  */
-#line 333 "Parser.y"
+#line 334 "Parser.y"
     {
         syntax_error("Missing '}' after 'law' block");
         while (yychar != ELSE && yychar != DOT && yychar != 0)
@@ -2176,7 +2177,7 @@ yyreduce:
   case 41:
 
 /* Line 1455 of yacc.c  */
-#line 341 "Parser.y"
+#line 342 "Parser.y"
     {
     (yyval.i) = nextQuad();
     emit("goto", "", "", "");
@@ -2186,7 +2187,7 @@ yyreduce:
   case 42:
 
 /* Line 1455 of yacc.c  */
-#line 348 "Parser.y"
+#line 349 "Parser.y"
     {
         addjump((yyvsp[(2) - (3)].i),nextQuad());
     ;}
@@ -2195,7 +2196,7 @@ yyreduce:
   case 43:
 
 /* Line 1455 of yacc.c  */
-#line 354 "Parser.y"
+#line 355 "Parser.y"
     {
         addjump((yyvsp[(2) - (8)].i),nextQuad());
     ;}
@@ -2204,7 +2205,7 @@ yyreduce:
   case 44:
 
 /* Line 1455 of yacc.c  */
-#line 358 "Parser.y"
+#line 359 "Parser.y"
     {
         syntax_error("Missing a brace or more after 'tayeb'");
         while (yychar != DOT && yychar != 0)
@@ -2216,7 +2217,7 @@ yyreduce:
   case 45:
 
 /* Line 1455 of yacc.c  */
-#line 366 "Parser.y"
+#line 367 "Parser.y"
     {
     syntax_error("Missing '}' after 'tayeb' block");
     while (yychar != DOT && yychar != 0)
@@ -2228,7 +2229,7 @@ yyreduce:
   case 46:
 
 /* Line 1455 of yacc.c  */
-#line 374 "Parser.y"
+#line 375 "Parser.y"
     {
     (yyval.i) = nextQuad();
 ;}
@@ -2237,7 +2238,7 @@ yyreduce:
   case 47:
 
 /* Line 1455 of yacc.c  */
-#line 382 "Parser.y"
+#line 383 "Parser.y"
     {
         if ((yyvsp[(11) - (12)].info).type != SYM_BOOL) {
              fprintf(stderr, "Line %d: Until condition must be boolean\n", yylineno);
@@ -2251,7 +2252,7 @@ yyreduce:
   case 48:
 
 /* Line 1455 of yacc.c  */
-#line 390 "Parser.y"
+#line 391 "Parser.y"
     {
     syntax_error("Missing '{' after 'e3mel'");
     while (yychar != DOT && yychar != UNTIL && yychar != 0)
@@ -2263,7 +2264,7 @@ yyreduce:
   case 49:
 
 /* Line 1455 of yacc.c  */
-#line 398 "Parser.y"
+#line 399 "Parser.y"
     {
     syntax_error("Missing '}' after 'e3mel' block");
     while (yychar != UNTIL && yychar != 0)
@@ -2275,7 +2276,7 @@ yyreduce:
   case 50:
 
 /* Line 1455 of yacc.c  */
-#line 407 "Parser.y"
+#line 408 "Parser.y"
     {
     syntax_error("Missing '(' or ')' after 'lehad'");
     while (yychar != 0 &&yychar != CLOSEDBRACKET)
@@ -2287,7 +2288,7 @@ yyreduce:
   case 51:
 
 /* Line 1455 of yacc.c  */
-#line 413 "Parser.y"
+#line 414 "Parser.y"
     {
     (yyval.q) = pop_last();
 ;}
@@ -2296,7 +2297,7 @@ yyreduce:
   case 52:
 
 /* Line 1455 of yacc.c  */
-#line 420 "Parser.y"
+#line 421 "Parser.y"
     {
         if ((yyvsp[(4) - (13)].i) != -1) {
             char label[20];
@@ -2311,7 +2312,7 @@ yyreduce:
   case 53:
 
 /* Line 1455 of yacc.c  */
-#line 429 "Parser.y"
+#line 430 "Parser.y"
     {
     syntax_error("Missing '(' after 'karar'");
     while (yychar != 0 && yychar != CLOSEDBRACKET)
@@ -2323,7 +2324,7 @@ yyreduce:
   case 54:
 
 /* Line 1455 of yacc.c  */
-#line 435 "Parser.y"
+#line 436 "Parser.y"
     {
     syntax_error("Missing ')' in 'karar' loop");
     while (yychar != 0 && yychar != OPENBRACE)
@@ -2335,7 +2336,7 @@ yyreduce:
   case 55:
 
 /* Line 1455 of yacc.c  */
-#line 442 "Parser.y"
+#line 443 "Parser.y"
     {
     syntax_error("Missing '{' after 'karar' loop header");
     while (yychar != 0 && yychar != DOT && yychar != CLOSEDBRACE)
@@ -2347,7 +2348,7 @@ yyreduce:
   case 56:
 
 /* Line 1455 of yacc.c  */
-#line 451 "Parser.y"
+#line 452 "Parser.y"
     {
     syntax_error("Missing '}' in 'karar' loop body");
     while (yychar != 0 && yychar != DOT)
@@ -2359,7 +2360,7 @@ yyreduce:
   case 57:
 
 /* Line 1455 of yacc.c  */
-#line 457 "Parser.y"
+#line 458 "Parser.y"
     {
         syntax_error("Missing ',' between iterator and assignment in 'karar' loop");
         while (yychar != 0 && yychar != CLOSEDBRACKET)
@@ -2371,7 +2372,7 @@ yyreduce:
   case 58:
 
 /* Line 1455 of yacc.c  */
-#line 466 "Parser.y"
+#line 467 "Parser.y"
     {
     if ((yyvsp[(4) - (6)].info).type != SYM_INT || (yyvsp[(6) - (6)].info).type != SYM_INT) {
         fprintf(stderr, "Line %d: For loop range must be Integers\n", yylineno);
@@ -2396,7 +2397,7 @@ yyreduce:
   case 59:
 
 /* Line 1455 of yacc.c  */
-#line 486 "Parser.y"
+#line 487 "Parser.y"
     {
     if ((yyvsp[(3) - (5)].info).type != SYM_INT || (yyvsp[(5) - (5)].info).type != SYM_INT) {
         fprintf(stderr, "Line %d: For loop range must be Integers\n", yylineno);
@@ -2421,7 +2422,7 @@ yyreduce:
   case 60:
 
 /* Line 1455 of yacc.c  */
-#line 505 "Parser.y"
+#line 506 "Parser.y"
     {
         syntax_error("Invalid upper bound in for loop");
         (yyval.i) = -1;
@@ -2432,7 +2433,7 @@ yyreduce:
   case 61:
 
 /* Line 1455 of yacc.c  */
-#line 510 "Parser.y"
+#line 511 "Parser.y"
     {
         syntax_error("Invalid upper bound in for loop");
         (yyval.i) = -1;
@@ -2443,7 +2444,7 @@ yyreduce:
   case 62:
 
 /* Line 1455 of yacc.c  */
-#line 517 "Parser.y"
+#line 518 "Parser.y"
     {
     if ((yyvsp[(3) - (4)].info).type != SYM_BOOL) {
          fprintf(stderr, "Line %d: While condition must be boolean\n", yylineno);
@@ -2456,7 +2457,7 @@ yyreduce:
   case 63:
 
 /* Line 1455 of yacc.c  */
-#line 524 "Parser.y"
+#line 525 "Parser.y"
     {
         syntax_error("Missing '(' after 'tol_ma'");
         while (yychar != 0 && yychar != CLOSEDBRACKET && yychar != OPENBRACE)
@@ -2468,7 +2469,7 @@ yyreduce:
   case 64:
 
 /* Line 1455 of yacc.c  */
-#line 530 "Parser.y"
+#line 531 "Parser.y"
     {
         syntax_error("Missing ')' after 'tol_ma' condition");
         while (yychar != 0 && yychar != OPENBRACE)
@@ -2480,7 +2481,7 @@ yyreduce:
   case 65:
 
 /* Line 1455 of yacc.c  */
-#line 542 "Parser.y"
+#line 543 "Parser.y"
     {
         char label[20];
         sprintf(label, "%d", (yyvsp[(1) - (7)].i)); 
@@ -2492,7 +2493,7 @@ yyreduce:
   case 66:
 
 /* Line 1455 of yacc.c  */
-#line 548 "Parser.y"
+#line 549 "Parser.y"
     {
         syntax_error("Missing '{' after 'tol_ma' condition");
         while (yychar != 0 && yychar != DOT)
@@ -2504,7 +2505,7 @@ yyreduce:
   case 67:
 
 /* Line 1455 of yacc.c  */
-#line 554 "Parser.y"
+#line 555 "Parser.y"
     {
         syntax_error("Missing '}' after 'tol_ma' block");
         while (yychar != 0 && yychar != DOT)
@@ -2516,7 +2517,7 @@ yyreduce:
   case 68:
 
 /* Line 1455 of yacc.c  */
-#line 563 "Parser.y"
+#line 564 "Parser.y"
     {
     current_type = (yyvsp[(1) - (2)].dtype);
     if (lookup_current((yyvsp[(2) - (2)].str), current_scope))
@@ -2535,7 +2536,7 @@ yyreduce:
   case 69:
 
 /* Line 1455 of yacc.c  */
-#line 577 "Parser.y"
+#line 578 "Parser.y"
     {
     current_type = (yyvsp[(1) - (4)].dtype);
     if (lookup_current((yyvsp[(2) - (4)].str), current_scope))
@@ -2554,7 +2555,7 @@ yyreduce:
   case 70:
 
 /* Line 1455 of yacc.c  */
-#line 594 "Parser.y"
+#line 595 "Parser.y"
     {
         syntax_error("Missing parameter name after type");
         yyerrok;
@@ -2564,7 +2565,7 @@ yyreduce:
   case 71:
 
 /* Line 1455 of yacc.c  */
-#line 598 "Parser.y"
+#line 599 "Parser.y"
     {
         syntax_error("Missing parameter name after type");
         yyerrok;
@@ -2574,7 +2575,7 @@ yyreduce:
   case 72:
 
 /* Line 1455 of yacc.c  */
-#line 602 "Parser.y"
+#line 603 "Parser.y"
     {
         syntax_error("Missing ',' between parameters");
         yyerrok;
@@ -2584,7 +2585,7 @@ yyreduce:
   case 73:
 
 /* Line 1455 of yacc.c  */
-#line 609 "Parser.y"
+#line 610 "Parser.y"
     {
           
             if (lookup_current((yyvsp[(2) - (3)].str), current_scope))
@@ -2609,7 +2610,7 @@ yyreduce:
   case 74:
 
 /* Line 1455 of yacc.c  */
-#line 628 "Parser.y"
+#line 629 "Parser.y"
     {
         if (lookup_current((yyvsp[(2) - (3)].str), current_scope))
             fprintf(stderr,"Line %d:Function  %s redeclared \n",yylineno,(yyvsp[(2) - (3)].str));
@@ -2634,7 +2635,7 @@ yyreduce:
   case 75:
 
 /* Line 1455 of yacc.c  */
-#line 647 "Parser.y"
+#line 648 "Parser.y"
     {
         syntax_error("Missing '(' in function declaration");
         yyerrok;
@@ -2644,7 +2645,7 @@ yyreduce:
   case 76:
 
 /* Line 1455 of yacc.c  */
-#line 657 "Parser.y"
+#line 658 "Parser.y"
     {
         if (return_count == 0){
             fprintf( stderr,"Line %d:Function %s has no return \n",yylineno,current_func_id);
@@ -2660,7 +2661,7 @@ yyreduce:
   case 77:
 
 /* Line 1455 of yacc.c  */
-#line 672 "Parser.y"
+#line 673 "Parser.y"
     {
         if (return_count == 0){
             fprintf( stderr,"Line %d:Function %s has no return \n",yylineno,current_func_id);
@@ -2676,7 +2677,7 @@ yyreduce:
   case 78:
 
 /* Line 1455 of yacc.c  */
-#line 682 "Parser.y"
+#line 683 "Parser.y"
     {
         syntax_error("Missing '{' after function header");
         while (yychar != 0 && yychar != DOT)
@@ -2688,7 +2689,7 @@ yyreduce:
   case 79:
 
 /* Line 1455 of yacc.c  */
-#line 688 "Parser.y"
+#line 689 "Parser.y"
     {
         syntax_error("Missing '{' after function header");
         while (yychar != 0 && yychar != DOT)
@@ -2700,7 +2701,7 @@ yyreduce:
   case 80:
 
 /* Line 1455 of yacc.c  */
-#line 695 "Parser.y"
+#line 696 "Parser.y"
     {
         syntax_error("Missing '}' at end of function");
         yyerrok;
@@ -2710,7 +2711,7 @@ yyreduce:
   case 81:
 
 /* Line 1455 of yacc.c  */
-#line 700 "Parser.y"
+#line 701 "Parser.y"
     {
         syntax_error("Missing '}' at end of function");
         yyerrok;
@@ -2720,7 +2721,7 @@ yyreduce:
   case 82:
 
 /* Line 1455 of yacc.c  */
-#line 707 "Parser.y"
+#line 708 "Parser.y"
     {
         Symbol *f = lookup((yyvsp[(1) - (2)].str), current_scope);
         if (!f) fprintf(stderr, "Line %d:Function %s not defined \n", yylineno, (yyvsp[(1) - (2)].str));
@@ -2737,7 +2738,7 @@ yyreduce:
   case 83:
 
 /* Line 1455 of yacc.c  */
-#line 718 "Parser.y"
+#line 719 "Parser.y"
     {
         if (!param_error && current_param != NULL) {
              fprintf(stderr, "Line %d: Too few arguments for function %s\n", yylineno, (yyvsp[(1) - (5)].str));
@@ -2770,7 +2771,7 @@ yyreduce:
   case 84:
 
 /* Line 1455 of yacc.c  */
-#line 746 "Parser.y"
+#line 747 "Parser.y"
     {
        Symbol* f = lookup((yyvsp[(1) - (3)].str), current_scope);
        if (!f) fprintf( stderr,"Line %d:Function %s not defined \n",yylineno,(yyvsp[(1) - (3)].str));
@@ -2796,7 +2797,7 @@ yyreduce:
   case 85:
 
 /* Line 1455 of yacc.c  */
-#line 769 "Parser.y"
+#line 770 "Parser.y"
     {
     arg_count++;
     if (!current_param && !param_error) {
@@ -2821,7 +2822,7 @@ yyreduce:
   case 86:
 
 /* Line 1455 of yacc.c  */
-#line 788 "Parser.y"
+#line 789 "Parser.y"
     {
     
     arg_count++;
@@ -2847,7 +2848,7 @@ yyreduce:
   case 87:
 
 /* Line 1455 of yacc.c  */
-#line 808 "Parser.y"
+#line 809 "Parser.y"
     {
     syntax_error("Missing ','");
     yyerrok;
@@ -2857,7 +2858,7 @@ yyreduce:
   case 88:
 
 /* Line 1455 of yacc.c  */
-#line 813 "Parser.y"
+#line 814 "Parser.y"
     {
     Symbol* s = lookup((yyvsp[(1) - (1)].str), current_scope);
     if (!s) {
@@ -2881,7 +2882,7 @@ yyreduce:
   case 89:
 
 /* Line 1455 of yacc.c  */
-#line 831 "Parser.y"
+#line 832 "Parser.y"
     {
     (yyval.info).type = SYM_INT;
     (yyval.info).place = (yyvsp[(1) - (1)].str);
@@ -2891,7 +2892,7 @@ yyreduce:
   case 90:
 
 /* Line 1455 of yacc.c  */
-#line 835 "Parser.y"
+#line 836 "Parser.y"
     {
     (yyval.info).type = SYM_FLOAT;
     (yyval.info).place = (yyvsp[(1) - (1)].str);
@@ -2901,7 +2902,7 @@ yyreduce:
   case 91:
 
 /* Line 1455 of yacc.c  */
-#line 839 "Parser.y"
+#line 840 "Parser.y"
     {
     (yyval.info).type = SYM_STRING;
     (yyval.info).place = (yyvsp[(1) - (1)].str);
@@ -2911,7 +2912,7 @@ yyreduce:
   case 92:
 
 /* Line 1455 of yacc.c  */
-#line 843 "Parser.y"
+#line 844 "Parser.y"
     {
     (yyval.info).type = SYM_BOOL;
     (yyval.info).place = (yyvsp[(1) - (1)].str);
@@ -2921,7 +2922,7 @@ yyreduce:
   case 93:
 
 /* Line 1455 of yacc.c  */
-#line 848 "Parser.y"
+#line 849 "Parser.y"
     {
     Symbol* s= lookup((yyvsp[(3) - (4)].str), current_scope);
     if(!s){
@@ -2946,7 +2947,7 @@ yyreduce:
   case 94:
 
 /* Line 1455 of yacc.c  */
-#line 867 "Parser.y"
+#line 868 "Parser.y"
     {
         syntax_error("Missing '(' after 'switch'");
         while (yychar != 0 && yychar != CLOSEDBRACKET && yychar != OPENBRACE)
@@ -2958,7 +2959,7 @@ yyreduce:
   case 95:
 
 /* Line 1455 of yacc.c  */
-#line 873 "Parser.y"
+#line 874 "Parser.y"
     {
     syntax_error("Missing ')' after 'switch' condition");
         while (yychar != 0 && yychar != OPENBRACE)
@@ -2970,7 +2971,7 @@ yyreduce:
   case 96:
 
 /* Line 1455 of yacc.c  */
-#line 885 "Parser.y"
+#line 886 "Parser.y"
     {
         current_switch_id = NULL;
         int end = nextQuad();
@@ -2983,7 +2984,7 @@ yyreduce:
   case 97:
 
 /* Line 1455 of yacc.c  */
-#line 895 "Parser.y"
+#line 896 "Parser.y"
     {
     current_switch_id = NULL;
     int end = nextQuad();
@@ -2996,7 +2997,7 @@ yyreduce:
   case 98:
 
 /* Line 1455 of yacc.c  */
-#line 902 "Parser.y"
+#line 903 "Parser.y"
     {
         syntax_error("Missing '{' after 'switch'");
         while (yychar != 0 && yychar != DOT)
@@ -3008,7 +3009,7 @@ yyreduce:
   case 99:
 
 /* Line 1455 of yacc.c  */
-#line 913 "Parser.y"
+#line 914 "Parser.y"
     {
     syntax_error("Missing '}' at end of switch statement");
     while (yychar != 0 && yychar != DOT)
@@ -3020,7 +3021,7 @@ yyreduce:
   case 100:
 
 /* Line 1455 of yacc.c  */
-#line 923 "Parser.y"
+#line 924 "Parser.y"
     {
     syntax_error("Missing '}' at end of switch statement");
     while (yychar != 0 && yychar != DOT)
@@ -3032,7 +3033,7 @@ yyreduce:
   case 103:
 
 /* Line 1455 of yacc.c  */
-#line 933 "Parser.y"
+#line 934 "Parser.y"
     {
     if (current_switch_id) {
         char *t = newTemp();
@@ -3048,7 +3049,7 @@ yyreduce:
   case 104:
 
 /* Line 1455 of yacc.c  */
-#line 943 "Parser.y"
+#line 944 "Parser.y"
     {
     syntax_error("Missing '(' after 'case'");
     while (yychar != 0 && yychar != CLOSEDBRACKET && yychar != OPENBRACE)
@@ -3060,7 +3061,7 @@ yyreduce:
   case 105:
 
 /* Line 1455 of yacc.c  */
-#line 949 "Parser.y"
+#line 950 "Parser.y"
     {
     syntax_error("Missing ')' after 'case' condition");
     while (yychar != 0 && yychar != OPENBRACE)
@@ -3072,7 +3073,7 @@ yyreduce:
   case 106:
 
 /* Line 1455 of yacc.c  */
-#line 960 "Parser.y"
+#line 961 "Parser.y"
     {
         if ((yyvsp[(1) - (7)].i) != -1) {
             cases[case_count] = nextQuad();
@@ -3086,7 +3087,7 @@ yyreduce:
   case 107:
 
 /* Line 1455 of yacc.c  */
-#line 968 "Parser.y"
+#line 969 "Parser.y"
     {
      syntax_error("Missing '{' after 'case'");
         while (yychar != 0 && yychar != DOT)
@@ -3098,7 +3099,7 @@ yyreduce:
   case 108:
 
 /* Line 1455 of yacc.c  */
-#line 977 "Parser.y"
+#line 978 "Parser.y"
     {
         syntax_error("Missing '}' after 'case' block");
         while (yychar != 0 && yychar != DOT)
@@ -3110,7 +3111,7 @@ yyreduce:
   case 109:
 
 /* Line 1455 of yacc.c  */
-#line 985 "Parser.y"
+#line 986 "Parser.y"
     {
     if ((yyvsp[(1) - (3)].info).type != SYM_BOOL || (yyvsp[(3) - (3)].info).type != SYM_BOOL) {
         fprintf(stderr, "Line %d: Type mismatch. AND operator requires boolean operands.\n", yylineno);
@@ -3130,7 +3131,7 @@ yyreduce:
   case 110:
 
 /* Line 1455 of yacc.c  */
-#line 999 "Parser.y"
+#line 1000 "Parser.y"
     {
     if ((yyvsp[(1) - (3)].info).type != SYM_BOOL || (yyvsp[(3) - (3)].info).type != SYM_BOOL) {
         fprintf(stderr, "Line %d: Type mismatch. OR operator requires boolean operands.\n", yylineno);
@@ -3150,7 +3151,7 @@ yyreduce:
   case 111:
 
 /* Line 1455 of yacc.c  */
-#line 1013 "Parser.y"
+#line 1014 "Parser.y"
     {
     if ((yyvsp[(2) - (2)].info).type != SYM_BOOL) {
         fprintf(stderr, "Line %d: Type mismatch. NOT operator requires boolean operand.\n", yylineno);
@@ -3170,7 +3171,7 @@ yyreduce:
   case 112:
 
 /* Line 1455 of yacc.c  */
-#line 1028 "Parser.y"
+#line 1029 "Parser.y"
     {
    (yyval.info).type = (yyvsp[(1) - (1)].info).type;
    (yyval.info).place = (yyvsp[(1) - (1)].info).place;
@@ -3180,7 +3181,7 @@ yyreduce:
   case 113:
 
 /* Line 1455 of yacc.c  */
-#line 1032 "Parser.y"
+#line 1033 "Parser.y"
     {
     if ((yyvsp[(1) - (3)].info).type == SYM_ERROR || (yyvsp[(3) - (3)].info).type == SYM_ERROR) {
         (yyval.info).type = SYM_ERROR;
@@ -3203,7 +3204,7 @@ yyreduce:
   case 114:
 
 /* Line 1455 of yacc.c  */
-#line 1049 "Parser.y"
+#line 1050 "Parser.y"
     {
     if ((yyvsp[(1) - (3)].info).type == SYM_ERROR || (yyvsp[(3) - (3)].info).type == SYM_ERROR) {
         (yyval.info).type = SYM_ERROR;
@@ -3226,7 +3227,7 @@ yyreduce:
   case 115:
 
 /* Line 1455 of yacc.c  */
-#line 1066 "Parser.y"
+#line 1067 "Parser.y"
     {
     if ((yyvsp[(2) - (2)].info).type == SYM_ERROR) {
         (yyval.info).type = SYM_ERROR;
@@ -3249,14 +3250,14 @@ yyreduce:
   case 116:
 
 /* Line 1455 of yacc.c  */
-#line 1085 "Parser.y"
+#line 1086 "Parser.y"
     {(yyval.info)=(yyvsp[(2) - (3)].info);;}
     break;
 
   case 117:
 
 /* Line 1455 of yacc.c  */
-#line 1086 "Parser.y"
+#line 1087 "Parser.y"
     {
     syntax_error("Missing ')'");
     while (yychar != 0 && yychar != OPENBRACE)
@@ -3268,7 +3269,7 @@ yyreduce:
   case 118:
 
 /* Line 1455 of yacc.c  */
-#line 1092 "Parser.y"
+#line 1093 "Parser.y"
     {
     syntax_error("Invalid right operand for '>'");
     (yyval.info).type = SYM_ERROR;
@@ -3280,7 +3281,7 @@ yyreduce:
   case 119:
 
 /* Line 1455 of yacc.c  */
-#line 1098 "Parser.y"
+#line 1099 "Parser.y"
     {
     syntax_error("Invalid right operand for '<'");
     (yyval.info).type = SYM_ERROR;
@@ -3292,7 +3293,7 @@ yyreduce:
   case 120:
 
 /* Line 1455 of yacc.c  */
-#line 1104 "Parser.y"
+#line 1105 "Parser.y"
     {
     syntax_error("Invalid right operand for '>='");
     (yyval.info).type = SYM_ERROR;
@@ -3304,7 +3305,7 @@ yyreduce:
   case 121:
 
 /* Line 1455 of yacc.c  */
-#line 1110 "Parser.y"
+#line 1111 "Parser.y"
     {
     syntax_error("Invalid right operand for '<='");
     (yyval.info).type = SYM_ERROR;
@@ -3316,7 +3317,7 @@ yyreduce:
   case 122:
 
 /* Line 1455 of yacc.c  */
-#line 1116 "Parser.y"
+#line 1117 "Parser.y"
     {
     syntax_error("Invalid right operand for '=='");
     (yyval.info).type = SYM_ERROR;
@@ -3328,7 +3329,7 @@ yyreduce:
   case 123:
 
 /* Line 1455 of yacc.c  */
-#line 1122 "Parser.y"
+#line 1123 "Parser.y"
     {
     syntax_error("Invalid right operand for '!='");
     (yyval.info).type = SYM_ERROR;
@@ -3340,7 +3341,7 @@ yyreduce:
   case 124:
 
 /* Line 1455 of yacc.c  */
-#line 1128 "Parser.y"
+#line 1129 "Parser.y"
     {
     if (((yyvsp[(1) - (3)].info).type == SYM_INT || (yyvsp[(1) - (3)].info).type == SYM_FLOAT) && 
         ((yyvsp[(3) - (3)].info).type == SYM_INT || (yyvsp[(3) - (3)].info).type == SYM_FLOAT)) {
@@ -3363,7 +3364,7 @@ yyreduce:
   case 125:
 
 /* Line 1455 of yacc.c  */
-#line 1145 "Parser.y"
+#line 1146 "Parser.y"
     {
     if (((yyvsp[(1) - (3)].info).type == SYM_INT || (yyvsp[(1) - (3)].info).type == SYM_FLOAT) && 
         ((yyvsp[(3) - (3)].info).type == SYM_INT || (yyvsp[(3) - (3)].info).type == SYM_FLOAT)) {
@@ -3386,7 +3387,7 @@ yyreduce:
   case 126:
 
 /* Line 1455 of yacc.c  */
-#line 1162 "Parser.y"
+#line 1163 "Parser.y"
     {
     if (((yyvsp[(1) - (3)].info).type == SYM_INT || (yyvsp[(1) - (3)].info).type == SYM_FLOAT) && 
         ((yyvsp[(3) - (3)].info).type == SYM_INT || (yyvsp[(3) - (3)].info).type == SYM_FLOAT)) {
@@ -3409,7 +3410,7 @@ yyreduce:
   case 127:
 
 /* Line 1455 of yacc.c  */
-#line 1179 "Parser.y"
+#line 1180 "Parser.y"
     {
     if (((yyvsp[(1) - (3)].info).type == SYM_INT || (yyvsp[(1) - (3)].info).type == SYM_FLOAT) && 
         ((yyvsp[(3) - (3)].info).type == SYM_INT || (yyvsp[(3) - (3)].info).type == SYM_FLOAT)) {
@@ -3432,7 +3433,7 @@ yyreduce:
   case 128:
 
 /* Line 1455 of yacc.c  */
-#line 1196 "Parser.y"
+#line 1197 "Parser.y"
     {
     if ((yyvsp[(1) - (3)].info).type == SYM_BOOL) {
         (yyval.info).type = SYM_BOOL;
@@ -3453,7 +3454,7 @@ yyreduce:
   case 129:
 
 /* Line 1455 of yacc.c  */
-#line 1211 "Parser.y"
+#line 1212 "Parser.y"
     {
     if ( (((yyvsp[(1) - (3)].info).type == SYM_INT || (yyvsp[(1) - (3)].info).type == SYM_FLOAT) && ((yyvsp[(3) - (3)].info).type == SYM_INT || (yyvsp[(3) - (3)].info).type == SYM_FLOAT)) ||
          ((yyvsp[(1) - (3)].info).type == SYM_BOOL && (yyvsp[(3) - (3)].info).type == SYM_BOOL) ) {
@@ -3476,7 +3477,7 @@ yyreduce:
   case 130:
 
 /* Line 1455 of yacc.c  */
-#line 1228 "Parser.y"
+#line 1229 "Parser.y"
     {
     if ((yyvsp[(1) - (3)].info).type == SYM_BOOL) {
         (yyval.info).type = SYM_BOOL;
@@ -3496,7 +3497,7 @@ yyreduce:
   case 131:
 
 /* Line 1455 of yacc.c  */
-#line 1243 "Parser.y"
+#line 1244 "Parser.y"
     {
     if ( (((yyvsp[(1) - (3)].info).type == SYM_INT || (yyvsp[(1) - (3)].info).type == SYM_FLOAT) && ((yyvsp[(3) - (3)].info).type == SYM_INT || (yyvsp[(3) - (3)].info).type == SYM_FLOAT)) ||
          ((yyvsp[(1) - (3)].info).type == SYM_BOOL && (yyvsp[(3) - (3)].info).type == SYM_BOOL) ) {
@@ -3518,7 +3519,7 @@ yyreduce:
   case 132:
 
 /* Line 1455 of yacc.c  */
-#line 1262 "Parser.y"
+#line 1263 "Parser.y"
     {
         Symbol* s = lookup((yyvsp[(1) - (3)].str), current_scope);
         if (!s) {
@@ -3563,7 +3564,7 @@ yyreduce:
   case 133:
 
 /* Line 1455 of yacc.c  */
-#line 1302 "Parser.y"
+#line 1303 "Parser.y"
     {
         Symbol* s = lookup((yyvsp[(1) - (3)].str), current_scope);
         if (!s) {
@@ -3591,7 +3592,7 @@ yyreduce:
   case 134:
 
 /* Line 1455 of yacc.c  */
-#line 1325 "Parser.y"
+#line 1326 "Parser.y"
     {
         Symbol* s = lookup((yyvsp[(1) - (3)].str), current_scope);
         if (!s) {
@@ -3616,7 +3617,7 @@ yyreduce:
   case 135:
 
 /* Line 1455 of yacc.c  */
-#line 1345 "Parser.y"
+#line 1346 "Parser.y"
     {
         Symbol* s = lookup((yyvsp[(1) - (2)].str), current_scope);
         if (!s) {
@@ -3647,7 +3648,7 @@ yyreduce:
   case 136:
 
 /* Line 1455 of yacc.c  */
-#line 1371 "Parser.y"
+#line 1372 "Parser.y"
     {
         Symbol* s = lookup((yyvsp[(1) - (2)].str), current_scope);
         if (!s) {
@@ -3678,7 +3679,7 @@ yyreduce:
   case 137:
 
 /* Line 1455 of yacc.c  */
-#line 1397 "Parser.y"
+#line 1398 "Parser.y"
     {
         Symbol* s = lookup((yyvsp[(1) - (3)].str), current_scope);
         if (!s) {
@@ -3721,7 +3722,7 @@ yyreduce:
   case 138:
 
 /* Line 1455 of yacc.c  */
-#line 1435 "Parser.y"
+#line 1436 "Parser.y"
     {
         Symbol* s = lookup((yyvsp[(1) - (3)].str), current_scope);
         if (!s) {
@@ -3764,7 +3765,7 @@ yyreduce:
   case 139:
 
 /* Line 1455 of yacc.c  */
-#line 1473 "Parser.y"
+#line 1474 "Parser.y"
     {
         Symbol* s = lookup((yyvsp[(1) - (3)].str), current_scope);
         if (!s) {
@@ -3807,7 +3808,7 @@ yyreduce:
   case 140:
 
 /* Line 1455 of yacc.c  */
-#line 1511 "Parser.y"
+#line 1512 "Parser.y"
     {
         Symbol* s = lookup((yyvsp[(1) - (3)].str), current_scope);
         if (!s) {
@@ -3849,7 +3850,7 @@ yyreduce:
   case 141:
 
 /* Line 1455 of yacc.c  */
-#line 1547 "Parser.y"
+#line 1548 "Parser.y"
     {
         syntax_error("Invalid expression after '+='");
         (yyval.info).type = SYM_ERROR;
@@ -3861,7 +3862,7 @@ yyreduce:
   case 142:
 
 /* Line 1455 of yacc.c  */
-#line 1553 "Parser.y"
+#line 1554 "Parser.y"
     {
         syntax_error("Invalid expression after '-='");
         (yyval.info).type = SYM_ERROR;
@@ -3873,7 +3874,7 @@ yyreduce:
   case 143:
 
 /* Line 1455 of yacc.c  */
-#line 1559 "Parser.y"
+#line 1560 "Parser.y"
     {
         syntax_error("Invalid expression after '*='");
         (yyval.info).type = SYM_ERROR;
@@ -3885,7 +3886,7 @@ yyreduce:
   case 144:
 
 /* Line 1455 of yacc.c  */
-#line 1565 "Parser.y"
+#line 1566 "Parser.y"
     {
         syntax_error("Invalid expression after '/='");
         (yyval.info).type = SYM_ERROR;
@@ -3897,7 +3898,7 @@ yyreduce:
   case 145:
 
 /* Line 1455 of yacc.c  */
-#line 1573 "Parser.y"
+#line 1574 "Parser.y"
     {
     if ((yyvsp[(1) - (3)].info).type == SYM_ERROR || (yyvsp[(3) - (3)].info).type == SYM_ERROR) {
         (yyval.info).type = SYM_ERROR;
@@ -3937,7 +3938,7 @@ yyreduce:
   case 146:
 
 /* Line 1455 of yacc.c  */
-#line 1607 "Parser.y"
+#line 1608 "Parser.y"
     {
     if ((yyvsp[(1) - (3)].info).type == SYM_ERROR || (yyvsp[(3) - (3)].info).type == SYM_ERROR) {
         (yyval.info).type = SYM_ERROR;
@@ -3976,7 +3977,7 @@ yyreduce:
   case 147:
 
 /* Line 1455 of yacc.c  */
-#line 1640 "Parser.y"
+#line 1641 "Parser.y"
     { 
     (yyval.info).type = (yyvsp[(1) - (1)].info).type;
     (yyval.info).place = (yyvsp[(1) - (1)].info).place;
@@ -3986,7 +3987,7 @@ yyreduce:
   case 148:
 
 /* Line 1455 of yacc.c  */
-#line 1646 "Parser.y"
+#line 1647 "Parser.y"
     {
     if ((yyvsp[(1) - (3)].info).type == SYM_ERROR || (yyvsp[(3) - (3)].info).type == SYM_ERROR) {
         (yyval.info).type = SYM_ERROR;
@@ -4025,7 +4026,7 @@ yyreduce:
   case 149:
 
 /* Line 1455 of yacc.c  */
-#line 1679 "Parser.y"
+#line 1680 "Parser.y"
     {
     if ((yyvsp[(1) - (3)].info).type == SYM_ERROR || (yyvsp[(3) - (3)].info).type == SYM_ERROR) {
         (yyval.info).type = SYM_ERROR; 
@@ -4058,7 +4059,7 @@ yyreduce:
   case 150:
 
 /* Line 1455 of yacc.c  */
-#line 1706 "Parser.y"
+#line 1707 "Parser.y"
     {
     if ((yyvsp[(1) - (3)].info).type == SYM_ERROR || (yyvsp[(3) - (3)].info).type == SYM_ERROR) {
         (yyval.info).type = SYM_ERROR; 
@@ -4091,7 +4092,7 @@ yyreduce:
   case 151:
 
 /* Line 1455 of yacc.c  */
-#line 1733 "Parser.y"
+#line 1734 "Parser.y"
     { (yyval.info).type = (yyvsp[(1) - (1)].info).type;
     (yyval.info).place = (yyvsp[(1) - (1)].info).place;;}
     break;
@@ -4099,7 +4100,7 @@ yyreduce:
   case 152:
 
 /* Line 1455 of yacc.c  */
-#line 1737 "Parser.y"
+#line 1738 "Parser.y"
     {
     if ((yyvsp[(1) - (3)].info).type == SYM_ERROR || (yyvsp[(3) - (3)].info).type == SYM_ERROR) {
         (yyval.info).type = SYM_ERROR; 
@@ -4132,7 +4133,7 @@ yyreduce:
   case 153:
 
 /* Line 1455 of yacc.c  */
-#line 1764 "Parser.y"
+#line 1765 "Parser.y"
     { (yyval.info).type = (yyvsp[(1) - (1)].info).type;
     (yyval.info).place = (yyvsp[(1) - (1)].info).place;;}
     break;
@@ -4140,7 +4141,7 @@ yyreduce:
   case 154:
 
 /* Line 1455 of yacc.c  */
-#line 1768 "Parser.y"
+#line 1769 "Parser.y"
     { 
     (yyval.info) = (yyvsp[(2) - (3)].info); 
 ;}
@@ -4149,7 +4150,7 @@ yyreduce:
   case 155:
 
 /* Line 1455 of yacc.c  */
-#line 1771 "Parser.y"
+#line 1772 "Parser.y"
     {
     if ((yyvsp[(2) - (2)].info).type == SYM_ERROR) {
         (yyval.info).type = SYM_ERROR;
@@ -4175,7 +4176,7 @@ yyreduce:
   case 156:
 
 /* Line 1455 of yacc.c  */
-#line 1791 "Parser.y"
+#line 1792 "Parser.y"
     { 
     (yyval.info).type = SYM_INT;    
     (yyval.info).place = (yyvsp[(1) - (1)].str);        
@@ -4185,7 +4186,7 @@ yyreduce:
   case 157:
 
 /* Line 1455 of yacc.c  */
-#line 1795 "Parser.y"
+#line 1796 "Parser.y"
     { 
     (yyval.info).type = SYM_FLOAT; 
     (yyval.info).place = (yyvsp[(1) - (1)].str);        
@@ -4195,7 +4196,7 @@ yyreduce:
   case 158:
 
 /* Line 1455 of yacc.c  */
-#line 1799 "Parser.y"
+#line 1800 "Parser.y"
     { 
     Symbol* s = lookup((yyvsp[(1) - (1)].str), current_scope);
     
@@ -4225,7 +4226,7 @@ yyreduce:
   case 159:
 
 /* Line 1455 of yacc.c  */
-#line 1823 "Parser.y"
+#line 1824 "Parser.y"
     {
     if ((yyvsp[(1) - (1)].info).type == SYM_VOID) {
         fprintf(stderr, "Line %d: Void function used in expression\n", yylineno);
@@ -4242,7 +4243,7 @@ yyreduce:
   case 160:
 
 /* Line 1455 of yacc.c  */
-#line 1836 "Parser.y"
+#line 1837 "Parser.y"
     {
     current_scope = create_table(211, current_scope);
     all_scopes[scope_count++]= current_scope;
@@ -4252,7 +4253,7 @@ yyreduce:
   case 161:
 
 /* Line 1455 of yacc.c  */
-#line 1842 "Parser.y"
+#line 1843 "Parser.y"
     {
         // SymbolTable* old = current_scope;
         // print_table(current_scope);
@@ -4266,7 +4267,7 @@ yyreduce:
 
 
 /* Line 1455 of yacc.c  */
-#line 4270 "Parser.tab.c"
+#line 4271 "Parser.tab.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -4485,7 +4486,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 1852 "Parser.y"
+#line 1853 "Parser.y"
 
 
     /* Subroutines */
@@ -4587,7 +4588,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    if (yyparse() == 0) {
+    if (yyparse() == 0 && !syn_error) {
         printf("===== SYMBOL TABLE =====\n");
         print_all_scopes(stdout);
 
