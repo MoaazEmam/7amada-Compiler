@@ -371,7 +371,7 @@ whileloop:
         code DOT
     CLOSEDBRACE exit_scope {
         char label[20];
-        sprintf(label, "%d", $1-1); 
+        sprintf(label, "%d", $1); 
         emit("goto","","",label);
         addjump($1,nextQuad());
     }
@@ -1440,27 +1440,30 @@ void free_all_tables() {
 
 int main(int argc, char **argv)
 {
-    current_scope = create_table(211, NULL); // global scope
+    current_scope = create_table(211, NULL);
     initQuadTable();
-    if (argc > 1) {
-        yyin = fopen(argv[1], "r");
-        if (!yyin)
-        {
-            perror("Error opening file");
-            return 1;
-        }
+
+    if (argc < 2) {
+        fprintf(stderr, "No input file provided\n");
+        return 1;
+    }
+
+    yyin = fopen(argv[1], "r");
+    if (!yyin) {
+        perror("Error opening file");
+        return 1;
     }
 
     if (yyparse() == 0) {
-        printf("===== UNUSED =====\n");
-        report_unused(current_scope);
         printf("===== SYMBOL TABLE =====\n");
-        print_all_scopes(current_scope);
+        print_all_scopes(stdout);
+
         printf("===== QUADRUPLES =====\n");
         printQuadruples();
-        free_all_tables(current_scope);
         return 0;
     }
 
+    fclose(yyin);
+    free_all_tables();
     return 1;
 }
