@@ -206,7 +206,20 @@ inner_declaration:
                  fprintf(stderr, "Line %d: Type mismatch in declaration. Expected %s, got %s\n", 
                          yylineno, type_name(current_type), type_name($3.type));
             }
-            emit("=",$3.place,"",$1);
+            char* t3 = $3.place;
+            if (current_type != $3.type) {
+                if ($3.type == SYM_INT) {
+                    char* t = newTemp();
+                    emit("intTofloat",$3.place,"",t);
+                    t3 = t;
+                }
+                if ($3.type == SYM_FLOAT) {
+                    char* t = newTemp();
+                    emit("floatToint",$3.place,"",t);
+                    t3 = t;
+                }
+            }
+            emit("=", t3, "", $1); 
         }
     } 
 
@@ -961,8 +974,20 @@ assignment:
         } 
         else {
             s->initialized = true;
-            
-            emit("=", $3.place, "", $1); 
+            char* t3 = $3.place;
+            if (s->type != $3.type) {
+                if ($3.type == SYM_INT) {
+                    char* t = newTemp();
+                    emit("intTofloat",$3.place,"",t);
+                    t3 = t;
+                }
+                if ($3.type == SYM_FLOAT) {
+                    char* t = newTemp();
+                    emit("floatToint",$3.place,"",t);
+                    t3 = t;
+                }
+            }
+            emit("=", t3, "", $1); 
             
             $$.type = s->type;
             $$.place = $1;
@@ -1082,7 +1107,20 @@ assignment:
             $$.place = "error";
         } 
         else {
-            emit("+", $1, $3.place, $1); 
+            char* t3 = $3.place;
+            if (s->type != $3.type) {
+                if ($3.type == SYM_INT) {
+                    char* t = newTemp();
+                    emit("intTofloat",$3.place,"",t);
+                    t3 = t;
+                }
+                if ($3.type == SYM_FLOAT) {
+                    char* t = newTemp();
+                    emit("floatToint",$3.place,"",t);
+                    t3 = t;
+                }
+            }
+            emit("+", $1, t3, $1);
             $$.type = s->type;
             $$.place = $1;
         }
@@ -1107,7 +1145,20 @@ assignment:
             $$.place = "error";
         } 
         else {
-            emit("-", $1, $3.place, $1); 
+            char* t3 = $3.place;
+            if (s->type != $3.type) {
+                if ($3.type == SYM_INT) {
+                    char* t = newTemp();
+                    emit("intTofloat",$3.place,"",t);
+                    t3 = t;
+                }
+                if ($3.type == SYM_FLOAT) {
+                    char* t = newTemp();
+                    emit("floatToint",$3.place,"",t);
+                    t3 = t;
+                }
+            }
+            emit("-", $1, t3, $1);
             $$.type = s->type;
             $$.place = $1;
         }
@@ -1132,7 +1183,20 @@ assignment:
             $$.place = "error";
         } 
         else {
-            emit("*", $1, $3.place, $1); 
+            char* t3 = $3.place;
+            if (s->type != $3.type) {
+                if ($3.type == SYM_INT) {
+                    char* t = newTemp();
+                    emit("intTofloat",$3.place,"",t);
+                    t3 = t;
+                }
+                if ($3.type == SYM_FLOAT) {
+                    char* t = newTemp();
+                    emit("floatToint",$3.place,"",t);
+                    t3 = t;
+                }
+            }
+            emit("*", $1, t3, $1);
             $$.type = s->type;
             $$.place = $1;
         }
@@ -1157,7 +1221,20 @@ assignment:
             $$.place = "error";
         } 
         else {
-            emit("/", $1, $3.place, $1); 
+            char* t3 = $3.place;
+            if (s->type != $3.type) {
+                if ($3.type == SYM_INT) {
+                    char* t = newTemp();
+                    emit("intTofloat",$3.place,"",t);
+                    t3 = t;
+                }
+                if ($3.type == SYM_FLOAT) {
+                    char* t = newTemp();
+                    emit("floatToint",$3.place,"",t);
+                    t3 = t;
+                }
+            }
+            emit("/", $1, t3, $1);
             $$.type = s->type;
             $$.place = $1;
         }
