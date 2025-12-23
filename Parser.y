@@ -1730,7 +1730,7 @@ exit_scope:
 void syntax_error(const char *msg) {
     extern char *yytext;
     fprintf(stderr, "Line %d: %s (found '%s')\n", 
-            yylineno-1, msg, yytext);
+            yylineno, msg, yytext);
 }
 
 void report_unused(SymbolTable *table)
