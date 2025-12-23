@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
-
+static int scope_counter = 0;
 // FNV-1a hashfunction
 unsigned long hash(unsigned char *str)
 {

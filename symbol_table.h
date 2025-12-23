@@ -9,7 +9,7 @@ typedef struct symbol_table
     struct symbol_table *parent;
     int scope_id;
 } SymbolTable;
-int scope_counter = 0;
+
 SymbolTable *create_table(int size, SymbolTable *parent);
 void insert(Symbol *symbol, SymbolTable *table);
 Symbol *lookup(char *name, SymbolTable *table);

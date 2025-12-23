@@ -103,7 +103,7 @@ int scope_count=0;
 
 
 /* Line 189 of yacc.c  */
-#line 107 "Parser.tab.c"
+#line 107 "parser.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -139,7 +139,7 @@ int scope_count=0;
 
 
 /* Line 209 of yacc.c  */
-#line 143 "Parser.tab.c"
+#line 143 "parser.c"
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
@@ -225,7 +225,7 @@ typedef union YYSTYPE
 
 
 /* Line 214 of yacc.c  */
-#line 229 "Parser.tab.c"
+#line 229 "parser.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -237,7 +237,7 @@ typedef union YYSTYPE
 
 
 /* Line 264 of yacc.c  */
-#line 241 "Parser.tab.c"
+#line 241 "parser.c"
 
 #ifdef short
 # undef short
@@ -3340,7 +3340,7 @@ yyreduce:
 
 
 /* Line 1455 of yacc.c  */
-#line 3344 "Parser.tab.c"
+#line 3344 "parser.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
