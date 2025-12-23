@@ -200,6 +200,10 @@ inner_declaration:
         } else {
             Symbol* s = create_symbol($1, current_type, current_kind, true, NULL);
             insert(s, current_scope);   
+            if (!type_compatible(current_type, $3.type)) {
+                 fprintf(stderr, "Line %d: Type mismatch in declaration. Expected %s, got %s\n", 
+                         yylineno, type_name(current_type), type_name($3.type));
+            }
             emit("=",$3.place,"",$1);
         }
     } 
@@ -208,6 +212,10 @@ inner_declaration:
         if (lookup_current($1, current_scope)) {
             fprintf(stderr,"Line %d:Multiple declaration of variable %s\n ",yylineno,$1);
         } else {
+            if(!type_compatible(current_type, SYM_BOOL)) {
+                 fprintf(stderr, "Line %d: Type mismatch in declaration. Expected %s, got boolean\n", 
+                         yylineno, type_name(current_type));
+            }
             Symbol* s = create_symbol($1, current_type, current_kind, true, NULL);
             insert(s, current_scope);
             emit("=",$3,"",$1);
@@ -217,6 +225,10 @@ inner_declaration:
         if (lookup_current($1, current_scope)) {
             fprintf(stderr,"Line %d:Multiple declaration of variable %s\n",yylineno,$1);
         } else {
+            if(!type_compatible(current_type, SYM_STRING)) {
+                 fprintf(stderr, "Line %d: Type mismatch in declaration. Expected %s, got STRING\n", 
+                         yylineno, type_name(current_type));
+            }
             Symbol* s = create_symbol($1, current_type, current_kind, true, NULL);
             insert(s, current_scope);
             emit("=",$3,"",$1);
@@ -226,6 +238,10 @@ inner_declaration:
         if (lookup_current($1, current_scope)) {
             fprintf(stderr,"Line %d:Multiple declaration of variable %s\n",yylineno,$1);
         } else {
+            if (!type_compatible(current_type, $3.type)) {
+                 fprintf(stderr, "Line %d: Type mismatch in declaration. Expected %s, got %s\n", 
+                         yylineno, type_name(current_type), type_name($3.type));
+            }
             Symbol* s = create_symbol($1, current_type, current_kind, true, NULL);
             insert(s, current_scope);
             emit("=",$3.place,"",$1);
@@ -1320,11 +1336,11 @@ G: OPENBRACKET EXPR CLOSEDBRACKET {
         $$.type = SYM_ERROR;
         $$.place = "error";
     }
-    else if (s->type != SYM_INT && s->type != SYM_FLOAT && s->type != SYM_BOOL) {
-        fprintf(stderr, "Line %d: Unsupported type in expression: %s\n", yylineno, $1);
-        $$.type = SYM_ERROR;
-        $$.place = "error";
-    }
+    // else if (s->type != SYM_INT && s->type != SYM_FLOAT && s->type != SYM_BOOL) {
+    //     fprintf(stderr, "Line %d: Unsupported type in expression: %s\n", yylineno, $1);
+    //     $$.type = SYM_ERROR;
+    //     $$.place = "error";
+    // }
     else {
         if (!s->initialized) {
             fprintf(stderr,"Line %d:Variable %s used before initialization\n", yylineno, $1);
