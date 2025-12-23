@@ -3645,6 +3645,7 @@ void free_all_tables() {
 int main(int argc, char **argv)
 {
     current_scope = create_table(211, NULL);
+    all_scopes[scope_count++] = current_scope;
     initQuadTable();
 
     if (argc < 2) {

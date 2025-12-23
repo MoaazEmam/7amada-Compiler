@@ -111,6 +111,10 @@ void print_table(SymbolTable *table)
 {
     if (!table)
         return;
+    
+    printf("\n--- Scope %d ---\n", table->scope_id);
+    
+    bool found_any = false;
     for (int i = 0; i < table->size; i++)
     {
         Symbol *current = table->table[i];
@@ -120,6 +124,16 @@ void print_table(SymbolTable *table)
                    current->name, current->type, current->kind,
                    current->initialized, current->used);
             current = current->next;
+            found_any = true;
         }
+    }
+    
+    if (!found_any)
+        printf("(empty scope)\n");
+    
+    // Recursively print parent scope
+    if (table->parent)
+    {
+        print_table(table->parent);
     }
 }
