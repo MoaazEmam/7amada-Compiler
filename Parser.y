@@ -120,9 +120,11 @@ Start : S;
 
 S : code DOT { printf("Correct Syntax\n"); };
 
-code : inner_code | code DOT inner_code;
+code : inner_code | code DOT inner_code ;
 
-inner_code: assignment
+inner_code:
+OPENBRACE enter_scope code DOT CLOSEDBRACE exit_scope
+| assignment
 | declaration
 | Ifstmt
 | whileloop
