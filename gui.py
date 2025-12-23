@@ -27,7 +27,7 @@ def compile_code():
 
     try:
         result = subprocess.run(
-            ["./a.exe", filename],
+            ["compiler.exe", filename],
             capture_output=True,
             text=True
         )
