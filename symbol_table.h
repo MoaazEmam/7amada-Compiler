@@ -7,6 +7,7 @@ typedef struct symbol_table
     int size;
     Symbol **table;
     struct symbol_table *parent;
+    int scope_id;
 } SymbolTable;
 
 SymbolTable *create_table(int size, SymbolTable *parent);
