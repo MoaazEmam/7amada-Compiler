@@ -28,6 +28,9 @@ char *current_func_id = NULL;
 int return_count = 0;
 int cases[100];
 int case_count = 0;
+#define MAX_SCOPES 1000
+SymbolTable* all_scopes[MAX_SCOPES];
+int scope_count=0;
 %}
 
 %code requires {
@@ -1348,16 +1351,17 @@ G: OPENBRACKET EXPR CLOSEDBRACKET {
 enter_scope:
 {
     current_scope = create_table(211, current_scope);
+    all_scopes[scope_count++]= current_scope;
 };
 
 exit_scope:
     {
-        SymbolTable* old = current_scope;
-        print_table(current_scope);
+        // SymbolTable* old = current_scope;
+        // print_table(current_scope);
         report_unused(current_scope);
-        printf("_____________________________ \n");
+        // printf("_____________________________ \n");
         current_scope = current_scope->parent;
-        free_table(old);
+        //free_table(old);
     }
 ;
 
@@ -1384,6 +1388,55 @@ void report_unused(SymbolTable *table)
         }
     }
 }
+const char* type_to_string(DATATYPE t) {
+    switch(t) {
+        case SYM_INT: return "int";
+        case SYM_FLOAT: return "float";
+        case SYM_BOOL: return "bool";
+        case SYM_STRING: return "string";
+        case SYM_VOID: return "void";
+        default: return "unknown";
+    }
+}
+
+const char* kind_to_string(KIND k) {
+    switch(k) {
+        case VAR: return "VAR";
+        case FUNC: return "FUNC";
+        case SYM_CONST: return "CONST";
+        default: return "unknown";
+    }
+}
+
+void print_all_scopes(FILE* out) {
+    for (int s = 0; s < scope_count; s++) {
+        SymbolTable* table = all_scopes[s];
+
+        fprintf(out, "\nSCOPE %d\n", s);
+        fprintf(out, "--------------------------------\n");
+        fprintf(out, "Name\tKind\tType\tInit\tUsed\n");
+
+        for (int i = 0; i < table->size; i++) {
+            Symbol* sym = table->table[i];
+            while (sym) {
+                fprintf(out, "%s\t%s\t%s\t%s\t%s\n",
+                    sym->name,
+                    kind_to_string(sym->kind),
+                    type_to_string(sym->type),
+                    sym->initialized ? "yes" : "no",
+                    sym->used ? "yes" : "no"
+                );
+                sym = sym->next;
+            }
+        }
+    }
+}
+
+void free_all_tables() {
+    for (int i = 0; i < scope_count; i++) {
+        free_table(all_scopes[i]);
+    }
+}
 
 int main(int argc, char **argv)
 {
@@ -1399,10 +1452,13 @@ int main(int argc, char **argv)
     }
 
     if (yyparse() == 0) {
-        print_table(current_scope);
+        printf("===== UNUSED =====\n");
         report_unused(current_scope);
+        printf("===== SYMBOL TABLE =====\n");
+        print_all_scopes(current_scope);
+        printf("===== QUADRUPLES =====\n");
         printQuadruples();
-        free_table(current_scope);
+        free_all_tables(current_scope);
         return 0;
     }
 
