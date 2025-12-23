@@ -2039,7 +2039,7 @@ yyreduce:
 #line 372 "Parser.y"
     {
         char label[20];
-        sprintf(label, "%d", (yyvsp[(1) - (7)].i)); 
+        sprintf(label, "%d", (yyvsp[(1) - (7)].i)-1); 
         emit("goto","","",label);
         addjump((yyvsp[(1) - (7)].i),nextQuad());
     ;}
