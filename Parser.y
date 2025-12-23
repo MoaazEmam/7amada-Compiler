@@ -266,7 +266,7 @@ if_start: IF OPENBRACKET condition CLOSEDBRACKET
 }
 |IF error{
     syntax_error("Missing '(' after 'law'");
-        while (yychar != CLOSEDBRACKET && yychar != OPENBRACE && yychar != 0)
+        while (yychar != DOT && yychar != OPENBRACE && yychar != 0)
             yychar = yylex();
         yyerrok;
 }
@@ -378,7 +378,7 @@ repeat:
     CLOSEDBRACE exit_scope
     UNTIL error {
     syntax_error("Missing '(' or ')' after 'lehad'");
-    while (yychar != CLOSEDBRACKET && yychar != 0)
+    while (yychar != 0 &&yychar != CLOSEDBRACKET)
         yychar = yylex();
     yyerrok;
 };
@@ -400,20 +400,20 @@ forloop:
     }
 | FOR error {
     syntax_error("Missing '(' after 'karar'");
-    while (yychar != CLOSEDBRACKET && yychar != 0)
+    while (yychar != 0 && yychar != CLOSEDBRACKET)
         yychar = yylex();
     yyerrok;
 }
 | FOR OPENBRACKET enter_scope iterator COMMA assignment error for_loop_start {
     syntax_error("Missing ')' in 'karar' loop");
-    while (yychar != OPENBRACE && yychar != 0)
+    while (yychar != 0 && yychar != OPENBRACE)
         yychar = yylex();
     yyerrok;
 }
 | FOR OPENBRACKET enter_scope iterator COMMA assignment CLOSEDBRACKET for_loop_start
     error exit_scope {
     syntax_error("Missing '{' after 'karar' loop header");
-    while (yychar != DOT && yychar != CLOSEDBRACE && yychar != 0)
+    while (yychar != 0 && yychar != DOT && yychar != CLOSEDBRACE)
         yychar = yylex();
     yyerrok;
 }
@@ -422,13 +422,13 @@ forloop:
         code DOT
     error exit_scope {
     syntax_error("Missing '}' in 'karar' loop body");
-    while (yychar != DOT && yychar != 0)
+    while (yychar != 0 && yychar != DOT)
         yychar = yylex();
     yyerrok;
 }
 | FOR OPENBRACKET enter_scope iterator error {
         syntax_error("Missing ',' between iterator and assignment in 'karar' loop");
-        while (yychar != CLOSEDBRACKET && yychar != 0)
+        while (yychar != 0 && yychar != CLOSEDBRACKET)
             yychar = yylex();
         yyerrok;
     }
@@ -497,13 +497,13 @@ while_start: WHILE OPENBRACKET condition CLOSEDBRACKET {
 }
 | WHILE error {
         syntax_error("Missing '(' after 'tol_ma'");
-        while (yychar != CLOSEDBRACKET && yychar != OPENBRACE && yychar != 0)
+        while (yychar != 0 && yychar != CLOSEDBRACKET && yychar != OPENBRACE)
             yychar = yylex();
         yyerrok;
     }
 | WHILE OPENBRACKET condition error {
         syntax_error("Missing ')' after 'tol_ma' condition");
-        while (yychar != OPENBRACE && yychar != 0)
+        while (yychar != 0 && yychar != OPENBRACE)
             yychar = yylex();
         yyerrok;
     }
@@ -521,13 +521,13 @@ whileloop:
     }
 | while_start error {
         syntax_error("Missing '{' after 'tol_ma' condition");
-        while (yychar != DOT && yychar != 0)
+        while (yychar != 0 && yychar != DOT)
             yychar = yylex();
         yyerrok;
     }
 | while_start OPENBRACE enter_scope code DOT error exit_scope {
         syntax_error("Missing '}' after 'tol_ma' block");
-        while (yychar != DOT && yychar != 0)
+        while (yychar != 0 && yychar != DOT)
             yychar = yylex();
         yyerrok;
     }
@@ -561,10 +561,10 @@ parameters : datatype IDENTIFIER
         append_param($2, $1, current_function->params);
     }
 }
-|error{
-    syntax_error("Invalid parameter syntax or missing brackets");
-    yyerrok;
-}
+// |error{
+//     syntax_error("Invalid parameter syntax or missing brackets");
+//     yyerrok;
+// }
 | datatype error {
         syntax_error("Missing parameter name after type");
         yyerrok;
@@ -655,13 +655,13 @@ function:
     }
     | function_header enter_scope parameters CLOSEDBRACKET error {
         syntax_error("Missing '{' after function header");
-        while (yychar != DOT && yychar != 0)
+        while (yychar != 0 && yychar != DOT)
             yychar = yylex();
         yyerrok;
     }
     | function_header CLOSEDBRACKET error {
         syntax_error("Missing '{' after function header");
-        while (yychar != DOT && yychar != 0)
+        while (yychar != 0 && yychar != DOT)
             yychar = yylex();
         yyerrok;
     }
@@ -808,13 +808,13 @@ switch_start: SWITCH OPENBRACKET IDENTIFIER CLOSEDBRACKET {
 }
 |SWITCH error{
         syntax_error("Missing '(' after 'switch'");
-        while (yychar != CLOSEDBRACKET && yychar != OPENBRACE && yychar != 0)
+        while (yychar != 0 && yychar != CLOSEDBRACKET && yychar != OPENBRACE)
             yychar = yylex();
         yyerrok;
 }
 |SWITCH OPENBRACKET IDENTIFIER error{
     syntax_error("Missing ')' after 'switch' condition");
-        while (yychar != OPENBRACE && yychar != 0)
+        while (yychar != 0 && yychar != OPENBRACE)
         yychar = yylex();
         yyerrok;
 };
@@ -843,7 +843,7 @@ switchstmt:
   }
 | switch_start error {
         syntax_error("Missing '{' after 'switch'");
-        while (yychar != DOT && yychar != 0)
+        while (yychar != 0 && yychar != DOT)
             yychar = yylex();
         yyerrok;
     }
@@ -854,7 +854,7 @@ switchstmt:
     CLOSEDBRACE exit_scope
     error exit_scope {
     syntax_error("Missing '}' at end of switch statement");
-    while (yychar != DOT && yychar != 0)
+    while (yychar != 0 && yychar != DOT)
         yychar = yylex();
     yyerrok;
 }
@@ -864,7 +864,7 @@ switchstmt:
   case_structure 
   error exit_scope {
     syntax_error("Missing '}' at end of switch statement");
-    while (yychar != DOT && yychar != 0)
+    while (yychar != 0 && yychar != DOT)
         yychar = yylex();
     yyerrok;
 }
@@ -884,13 +884,13 @@ start_inner_case: CASE OPENBRACKET INTEGER CLOSEDBRACKET{
 }
 |CASE error {
     syntax_error("Missing '(' after 'case'");
-    while (yychar != CLOSEDBRACKET && yychar != OPENBRACE && yychar != 0)
+    while (yychar != 0 && yychar != CLOSEDBRACKET && yychar != OPENBRACE)
         yychar = yylex();
     yyerrok;
 }
 |CASE OPENBRACKET INTEGER error{
     syntax_error("Missing ')' after 'case' condition");
-    while (yychar != OPENBRACE && yychar != 0)
+    while (yychar != 0 && yychar != OPENBRACE)
     yychar = yylex();
     yyerrok;
 };
@@ -909,7 +909,7 @@ inner_case:
     }
 |start_inner_case error{
      syntax_error("Missing '{' after 'case'");
-        while (yychar != DOT && yychar != 0)
+        while (yychar != 0 && yychar != DOT)
             yychar = yylex();
         yyerrok;
 }
@@ -918,7 +918,7 @@ inner_case:
         code DOT
     error exit_scope{
         syntax_error("Missing '}' after 'case' block");
-        while (yychar != DOT && yychar != 0)
+        while (yychar != 0 && yychar != DOT)
             yychar = yylex();
         yyerrok;
     };
@@ -1031,15 +1031,15 @@ condition AND inner_condition {
 ;
 
 inner_condition: OPENBRACKET condition CLOSEDBRACKET {$$=$2;}
-|error{
-    syntax_error("Missing '('");
-    while (yychar != CLOSEDBRACKET && yychar != OPENBRACE && yychar != 0)
-        yychar = yylex();
-    yyerrok;
-}
+// |error{
+//     syntax_error("Missing '('");
+//     while (yychar != 0 && yychar != CLOSEDBRACKET && yychar != OPENBRACE )
+//         yychar = yylex();
+//     yyerrok;
+// }
 | OPENBRACKET condition error{
     syntax_error("Missing ')'");
-    while (yychar != OPENBRACE && yychar != 0)
+    while (yychar != 0 && yychar != OPENBRACE)
     yychar = yylex();
     yyerrok;
 }
