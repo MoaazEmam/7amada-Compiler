@@ -24,3 +24,12 @@ parser
 
 # Logs
 *.log
+
+# Build outputs from `make` (bison/flex/gcc)
+Parser.tab.c
+Parser.tab.h
+Parser.output
+y.output
+parser.c
+parser.h
+compiler

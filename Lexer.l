@@ -5,12 +5,12 @@
     #include <stdbool.h>
     #include "Parser.tab.h"
 %}
-
+%option yylineno
 %%
-[1-9]+[0-9]*|0     {yylval.i = atoi(yytext); return INTEGER;}
-([1-9]+[0-9]*|0)\.[0-9]+  {yylval.f = atof(yytext); return FLOAT;}
-"true"     { yylval.b = true; return BOOLEAN; }
-"false"    { yylval.b = false; return BOOLEAN; }
+[1-9]+[0-9]*|0     { yylval.str = strdup(yytext); return INTEGER; }
+([1-9]+[0-9]*|0)\.[0-9]+  {yylval.str = strdup(yytext); return FLOAT;}
+"true"     { yylval.str = strdup(yytext); return BOOLEAN; }
+"false"    { yylval.str = strdup(yytext); return BOOLEAN; }
 \"[^\"]*\"    { yylval.str = yytext; return STRING;}  
 ">="         {return GREATERTHANEQ;}
 "<="         {return LESSTHANEQ;}
@@ -67,7 +67,8 @@
 ">"          {return GREATERTHAN;}
 "<"          {return LESSTHAN;}
 
-[\t\n ]      {/* ignore whitespace */}
+[\t ]+       ;      // ignore spaces and tabs
+\n           ;      // newline (Flex auto increments yylineno)
 
 %%
 int yywrap(){
