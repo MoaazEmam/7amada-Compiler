@@ -3,6 +3,13 @@ from tkinter import ttk, messagebox
 import subprocess
 import tempfile
 import os
+
+# `make` builds ./compiler (compiler.exe on Windows) next to this script
+COMPILER = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "compiler.exe" if os.name == "nt" else "compiler",
+)
+
 def update_line_numbers(event=None):
     line_numbers.config(state="normal")
     line_numbers.delete("1.0", tk.END)
@@ -27,7 +34,7 @@ def compile_code():
 
     try:
         result = subprocess.run(
-            ["compiler.exe", filename],
+            [COMPILER, filename],
             capture_output=True,
             text=True
         )
