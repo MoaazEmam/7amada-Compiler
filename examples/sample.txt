@@ -1,0 +1,12 @@
+int 3ala_wad3o limit = 10.
+int square(int n) {
+    raga3 n * n.
+}.
+int x = 4.
+int result = square(x).
+law (result > limit) {
+    result -= limit.
+}
+tayeb {
+    result += 1.
+}.
